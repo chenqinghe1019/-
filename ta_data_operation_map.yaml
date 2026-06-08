@@ -1,0 +1,73 @@
+ta_data:
+  name: "数数后台"
+  base_url: "https://ta-data.feiyu.com"
+
+  account_policy:
+    username: null
+    password: null
+    notes:
+      - "不保存账号或密码。"
+      - "后续由 Codex 打开浏览器，用户手动完成登录与验证后，Codex 只接管已登录会话继续操作。"
+      - "不要从环境变量、历史记录或本地文件读取数数账号密码。"
+
+  browser_session:
+    preferred_tool: "ta_cdp_tool.ps1"
+    chrome_debug_url: "http://127.0.0.1:9222"
+    auth_rule:
+      - "仅从当前浏览器 localStorage 读取 ACCESS_TOKEN。"
+      - "不要打印、保存或提交 ACCESS_TOKEN。"
+      - "接口脚本只保存通用流程，不保存会话 token。"
+
+  project_table_rules:
+    - "右上角可切换项目。"
+    - "切换项目后，SQL 查询里的表结构会随项目变化。"
+    - "每个项目的表后缀不同，例如 v_user_41、v_user_44、v_user_46。"
+    - "写 SQL 前必须读取当前项目表结构，确认用户表、事件表、字段名、日期字段和分区字段。"
+
+  known_projects:
+    - project_id: 41
+      name: "下方了"
+      likely_tables:
+        user_table: "ta.v_user_41"
+        event_table: "ta.v_event_41"
+      known_events:
+        battle_start: "battle_star"
+        battle_result: "battle_result"
+        pay: "pay_log"
+      known_fields:
+        create_role_time: "create_role_time"
+        media: "ad_platform"
+        server: "region_id"
+        level: "map_id"
+        power: "power"
+    - project_id: 44
+      name: "弯月勇者"
+      likely_tables:
+        user_table: "ta.v_user_44"
+        event_table: "ta.v_event_44"
+    - project_id: 46
+      name: "方块也疯狂"
+      likely_tables:
+        user_table: "ta.v_user_46"
+        event_table: "ta.v_event_46"
+
+  useful_endpoints:
+    dashboard_tree:
+      method: "GET"
+      path: "/v1/ta/space/getSpaceTree?projectId={projectId}&needInDirectAuthoritySpaces=true"
+    dashboard_detail:
+      method: "POST"
+      path: "/v1/ta/dashboard/search-dashboard?dashboardId={dashboardId}&dashbordId={dashboardId}&projectId={projectId}&useCache=false&useDashboardFilter=false"
+    report_detail:
+      method: "GET"
+      path: "/v1/ta/event/reportsearch?projectId={projectId}&reportId={reportId}&searchSource=model_search"
+    move_asset:
+      method: "POST"
+      path: "/v1/ta/space/moveAsset?projectId={projectId}"
+    edit_dashboard_report:
+      method: "GET"
+      path: "/v1/ta/dashbord/editDashboardReport?projectId={projectId}&dashbordId={dashboardId}&dashboardId={dashboardId}&reportId={reportId}&reportWidth={width}&reportGraphShape={shape}&reportsVersion={version}"
+
+  notes:
+    - "该文件记录项目通用操作地图，不记录密码、token 或私密会话信息。"
+    - "更完整的埋点结构见 tracking_projects.yaml 指向的项目 YAML。"

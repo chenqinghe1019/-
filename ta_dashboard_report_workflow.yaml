@@ -1,0 +1,41 @@
+ta_dashboard_report_workflow:
+  login_policy:
+    username: null
+    password: null
+    rule: "Codex 打开浏览器；用户手动登录并完成验证；Codex 只接管已登录会话继续操作。"
+
+  project_switching:
+    rule:
+      - "操作任何看板或 SQL 前，先确认右上角当前项目。"
+      - "切换项目后，进入 SQL 查询读取当前项目的表结构。"
+      - "不要假设表后缀固定；以当前项目展示的 v_user_xx、v_event_xx 为准。"
+      - "跨项目复用 SQL 时，必须先做表后缀、字段名、事件名、日期字段映射。"
+
+  dashboard_report_editing:
+    read_before_write:
+      - "先读取看板 report list，记录 dashboardId、projectId、reportId、reportName、reportsVersion。"
+      - "逐个读取 reportsearch，确认 SQL、动态参数、图表配置和报表名。"
+      - "批量修改前按报表名确认业务口径，避免用同一段 SQL 覆盖不同报表。"
+    save_checks:
+      - "保存 SQL 后重新读取 reportsearch，确认 SQL 已落库。"
+      - "保存图表配置后打开看板复查展示列、筛选器、动态参数。"
+      - "卡片展示不完整时，把图表尺寸从中图调为大图。"
+
+  dashboard_card_size_rule:
+    default_size: "中图"
+    large_size: "大图"
+    switch_to_large_when:
+      - "表格包含多个维度和多列 N 日指标，例如日期、媒体平台、新增当天分层、第1天到第7天指标。"
+      - "看板卡片右侧核心指标列被截断，或必须明显横向滚动才能阅读。"
+      - "用户截图中显示报表数据已出来，但卡片尺寸不足。"
+    ui_steps:
+      - "在看板报表卡片上打开报表内容设置。"
+      - "找到图表尺寸。"
+      - "从中图切换为大图。"
+      - "点击应用。"
+      - "回到看板复查表格是否完整、可读。"
+
+  completion_standard:
+    - "批量生成报表不能只以创建成功作为完成标准。"
+    - "每张报表都要完成 SQL 校验、图表配置校验、看板卡片尺寸校验。"
+    - "如果大图后仍展示不完整，保留大图，并评估是否需要减少默认展示指标或调整图表布局。"

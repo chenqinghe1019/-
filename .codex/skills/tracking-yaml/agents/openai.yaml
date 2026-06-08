@@ -1,0 +1,6 @@
+interface:
+  display_name: "Tracking YAML"
+  short_description: "Convert tracking spreadsheets into YAML."
+  default_prompt: "Use $tracking-yaml to convert exported tracking spreadsheet files into a normalized YAML schema."
+policy:
+  allow_implicit_invocation: true

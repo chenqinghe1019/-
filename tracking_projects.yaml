@@ -1,0 +1,8 @@
+﻿tracking_projects:
+  - project: "方块也疯狂"
+    yaml: "fangkuai_tracking.yaml"
+    extract: "fangkuai_tracking_extract.json"
+  - project: "下方了"
+    yaml: "xiafangle_tracking.yaml"
+    extract: "xiafangle_tracking_extract.json"
+

@@ -1,0 +1,15 @@
+# Default deny-list: this workspace contains many local exports, browser bundles,
+# screenshots, query drafts, and temporary scripts that should not be synced.
+*
+
+# Git/project metadata
+!.gitignore
+!README.md
+
+# Project knowledge YAML files
+!/*.yaml
+!/*.yml
+
+# Portable Codex project skills
+!.codex/
+!.codex/**
