@@ -71,3 +71,4 @@ ta_data:
   notes:
     - "该文件记录项目通用操作地图，不记录密码、token 或私密会话信息。"
     - "更完整的埋点结构见 tracking_projects.yaml 指向的项目 YAML。"
+    - "本项目内 skill 或 YAML 新增、修改后，需要自动 commit 并 push 到 GitHub origin/master。"

@@ -39,3 +39,12 @@ ta_dashboard_report_workflow:
     - "批量生成报表不能只以创建成功作为完成标准。"
     - "每张报表都要完成 SQL 校验、图表配置校验、看板卡片尺寸校验。"
     - "如果大图后仍展示不完整，保留大图，并评估是否需要减少默认展示指标或调整图表布局。"
+
+  github_sync_policy:
+    remote: "origin"
+    branch: "master"
+    rule:
+      - "本项目内任何 skill 或 YAML 新增、修改后，自动提交并推送到 GitHub。"
+      - "提交范围只包含 .codex/skills、*.yaml、*.yml、README.md、.gitignore 等知识资产。"
+      - "提交前检查不能包含账号、密码、ACCESS_TOKEN、Authorization Bearer、业务导出数据、截图或前端大包。"
+    default_commit_message: "Update Codex project knowledge"

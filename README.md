@@ -18,6 +18,18 @@
 3. 打开 Codex 后确认可用 skill 里出现 `tracking-yaml`。
 4. 数数后台仍按安全策略处理：Codex 打开浏览器，你手动登录，Codex 只接管已登录会话，不保存账号密码。
 
+## 同步规则
+
+以后这个项目内的 skill 或 YAML 有新增、修改后，Codex 需要自动提交并推送到 GitHub：
+
+```bash
+git add .codex/skills *.yaml *.yml README.md .gitignore
+git commit -m "Update Codex project knowledge"
+git push
+```
+
+提交前仍要检查不要包含账号、密码、token、临时业务数据、截图或前端大包。
+
 ## 不提交的内容
 
 `.gitignore` 默认忽略所有临时文件，只放行 YAML、README 和 `.codex` 项目 skill。以下内容不应进入 git：
