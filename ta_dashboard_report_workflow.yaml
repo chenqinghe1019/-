@@ -51,6 +51,17 @@ ta_dashboard_report_workflow:
       - "点击应用。"
       - "回到看板复查表格是否完整、可读。"
 
+  graph_save_pattern:
+    endpoint: "POST /v1/ta/event/graph/save?projectId={projectId}&reportId={reportId}"
+    content_type: "application/json;charset=UTF-8"
+    body_keys: ["projectId", "reportId", "graphType", "confMap", "requisiteColumns"]
+    notes:
+      - "confMap 和 requisiteColumns 必须是 JSON.stringify 后的字符串，不能直接传对象。"
+      - "confMap 路径：graphConf.confMap → parse → modify → re-stringify"
+      - "requisiteColumns 路径：graphConf.requisiteColumns → parse → re-stringify"
+      - "不要把 graphConf 整体作为 body；要把 confMap/requisiteColumns 解包后分别作为 body 的 top-level 字段。"
+      - "format key 格式: '字段名@~@1'，value: { type: 'format', formatType: '...' }"
+
   completion_standard:
     - "批量生成报表不能只以创建成功作为完成标准。"
     - "每张报表都要完成 SQL 校验、图表配置校验、看板卡片尺寸校验。"

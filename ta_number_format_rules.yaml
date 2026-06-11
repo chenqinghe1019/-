@@ -1,0 +1,61 @@
+ta_number_format_rules:
+  # TA 平台 graphConf.confMap.fieldOprObj.format 配置规则
+  # key: "字段名@~@1"  value: { type: "format", formatType: "..." }
+  # formatType 源自前端 JS：F.split("_") → [type, precision]，percent 额外 ×100 + % 符号
+
+  format_types:
+    integer:
+      display: "取整（无小数）"
+      applies_to:
+        - "次数（挑战次数、失败次数、重复挑战次数、通关次数等）"
+        - "人数（玩家数、失败玩家数、留存人数、付费人数等）"
+        - "付费金额（单位已经是元，取整展示）"
+        - "纯计数类维度指标（如关卡 ID 的计数）"
+      example_fields: ["玩家数", "挑战次数", "失败玩家数", "失败次数", "重复挑战次数", "通关次数", "D2留存人数"]
+
+    float_2:
+      display: "保留 2 位小数"
+      applies_to:
+        - "平均次数（平均失败次数、平均重复挑战次数等）"
+        - "平均时长 / 平均耗时"
+        - "LTV、ARPPU、ARPU（货币类，保留 2 位）"
+        - "其他需要精确到分位的平均值指标"
+      example_fields: ["平均失败次数", "平均重复挑战次数", "平均通关耗时", "LTV", "ARPPU", "ARPU"]
+
+    percent:
+      display: "百分比（原始值 ×100，保留 2 位，添加 % 符号）"
+      note: "SQL 中比率字段通常已用 round(x/y, 4) 存储为 0-1 之间的小数；percent 格式会自动 ×100 展示为百分比。"
+      applies_to:
+        - "率类（失败率、成功率、通关率、重复挑战率等）"
+        - "留存率（D1留存、D2留存、D7留存等）"
+        - "占比（人数占比、收入占比等）"
+        - "任何以 0–1 小数存储、需要展示为 xx.xx% 的指标"
+      example_fields: ["失败率", "重复挑战率", "人数占比", "D2留存"]
+
+  # 报表 4856 字段格式映射（D1关卡肉鸽节点报表）
+  report_4856_field_formats:
+    # 维度字段不配置格式
+    dimensions: ["新增日期", "付费分层", "D1最高关卡ID", "最终肉鸽节点"]
+    formats:
+      "玩家数":          integer
+      "挑战次数":        integer
+      "失败玩家数":      integer
+      "失败次数":        integer
+      "重复挑战次数":    integer
+      "通关次数":        integer
+      "D2留存人数":      integer
+      "平均失败次数":    float_2
+      "平均重复挑战次数": float_2
+      "平均通关耗时":    float_2
+      "人数占比":        percent
+      "失败率":          percent
+      "重复挑战率":      percent
+      "D2留存":          percent
+
+  # 通用规则（新建报表时参考）
+  general_rules:
+    - "字段名含 '次数'、'人数'、'金额' 且非平均值 → integer"
+    - "字段名含 '平均' → float_2"
+    - "字段名含 'LTV'、'ARPPU'、'ARPU' → float_2"
+    - "字段名含 '率'、'占比'、'留存'（非 '留存人数'）→ percent"
+    - "SQL 中已用 round(x, 4) 存储的比率字段配置 percent，前端会 ×100 展示"
