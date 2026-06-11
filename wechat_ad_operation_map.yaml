@@ -1,0 +1,23 @@
+wechat_ad:
+  name: "微信广告后台"
+
+  account_policy:
+    username: null
+    password: null
+    notes:
+      - "不保存账号或密码。"
+      - "由 Codex 打开浏览器，用户手动完成登录与验证后，Codex 只接管已登录会话继续操作。"
+
+  known_projects:
+    - name: "下方了"
+      ta_project_id: 41
+    - name: "方块也疯狂"
+      ta_project_id: 46
+
+  ad_location_rule:
+    - "广告位 id 和广告位名称需与埋点中 ad_location_id、ad_location_name 字段保持一致。"
+    - "各广告位清单由研发维护，变更时同步更新对应项目的 *_tracking.yaml。"
+
+  notes:
+    - "该文件记录微信广告后台通用操作规则，不记录密码、token 或私密会话信息。"
+    - "广告相关埋点字段见各项目 *_tracking.yaml 中 ad_log、ad_button 事件。"

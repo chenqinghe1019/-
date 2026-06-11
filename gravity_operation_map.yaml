@@ -1,0 +1,44 @@
+gravity:
+  name: "引力引擎"
+
+  account_policy:
+    username: null
+    password: null
+    notes:
+      - "不保存账号或密码。"
+      - "由 Codex 打开浏览器，用户手动完成登录与验证后，Codex 只接管已登录会话继续操作。"
+
+  known_projects:
+    - name: "下方了"
+      ta_project_id: 41
+    - name: "方块也疯狂"
+      ta_project_id: 46
+
+  user_property_sync:
+    rule:
+      - "引力引擎归因字段通过 user_set 写入数数用户属性。"
+      - "字段清单见各项目 *_tracking.yaml 的 user_properties 中 source: 引力引擎 的条目。"
+    common_fields:
+      - gravity_client_id
+      - ad_wx_channel
+      - ad_channel
+      - ad_openid
+      - ad_campaign_id
+      - ad_campaign_name
+      - ad_id
+      - ad_name
+      - ad_creative_id
+      - ad_creative_name
+      - ad_project_id
+      - ad_platform
+      - ad_MID1
+      - ad_MID2
+      - ad_MID3
+      - ad_MID4
+      - ad_MID5
+      - ad_MID6
+      - ad_adverser_id
+
+  notes:
+    - "该文件记录引力引擎通用操作规则，不记录密码、token 或私密会话信息。"
+    - "更完整的归因字段定义见各项目 *_tracking.yaml 的 user_properties。"

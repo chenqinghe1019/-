@@ -1,0 +1,82 @@
+sql_templates:
+
+  usage_rule:
+    - "使用前先确认当前项目，替换表后缀（41/44/46）、事件名、字段名。"
+    - "日期字段以各项目实际表结构为准，写 SQL 前先查一次字段列表。"
+    - "模板中 {project_id} 为占位符，需替换为实际项目 ID。"
+
+  templates:
+
+    - name: "新增用户数（按日）"
+      description: "统计每日新注册用户数"
+      sql: |
+        SELECT
+          date(create_role_time) AS dt,
+          count(distinct #account_id) AS new_users
+        FROM ta.v_user_{project_id}
+        WHERE date(create_role_time) BETWEEN '{start_date}' AND '{end_date}'
+        GROUP BY 1
+        ORDER BY 1
+
+    - name: "付费用户数与付费金额（按日）"
+      description: "统计每日付费人数和付费总金额"
+      sql: |
+        SELECT
+          date(#event_time) AS dt,
+          count(distinct #account_id) AS pay_users,
+          sum(payment) AS total_payment
+        FROM ta.v_event_{project_id}
+        WHERE #event_name = 'pay_log'
+          AND pay_result = 1
+          AND date(#event_time) BETWEEN '{start_date}' AND '{end_date}'
+        GROUP BY 1
+        ORDER BY 1
+
+    - name: "次留率"
+      description: "统计指定日期新增用户的次日留存率"
+      sql: |
+        SELECT
+          date(u.create_role_time) AS reg_dt,
+          count(distinct u.#account_id) AS new_users,
+          count(distinct e.#account_id) AS retained_users,
+          round(count(distinct e.#account_id) * 1.0 / count(distinct u.#account_id), 4) AS retention_rate
+        FROM ta.v_user_{project_id} u
+        LEFT JOIN ta.v_event_{project_id} e
+          ON u.#account_id = e.#account_id
+          AND date(e.#event_time) = date(u.create_role_time) + INTERVAL 1 DAY
+          AND e.#event_name = 'in_out_log'
+        WHERE date(u.create_role_time) BETWEEN '{start_date}' AND '{end_date}'
+        GROUP BY 1
+        ORDER BY 1
+
+    - name: "战斗胜率（按关卡）"
+      description: "统计各关卡战斗胜率，适用于下方了"
+      project: "下方了"
+      sql: |
+        SELECT
+          map_id,
+          count(*) AS total_battles,
+          sum(case when battle_result = 1 then 1 else 0 end) AS wins,
+          round(sum(case when battle_result = 1 then 1 else 0 end) * 1.0 / count(*), 4) AS win_rate
+        FROM ta.v_event_{project_id}
+        WHERE #event_name = 'battle_result'
+          AND date(#event_time) BETWEEN '{start_date}' AND '{end_date}'
+        GROUP BY 1
+        ORDER BY 1
+
+    - name: "广告观看率（方块也疯狂）"
+      description: "统计各广告位的弹出次数、点击次数和完成次数"
+      project: "方块也疯狂"
+      sql: |
+        SELECT
+          ad_location_name,
+          ad_location_scene,
+          sum(case when action_id = 1 then 1 else 0 end) AS show_cnt,
+          sum(case when action_id = 2 then 1 else 0 end) AS click_cnt,
+          round(sum(case when action_id = 2 then 1 else 0 end) * 1.0
+            / nullif(sum(case when action_id = 1 then 1 else 0 end), 0), 4) AS ctr
+        FROM ta.v_event_{project_id}
+        WHERE #event_name = 'ad_button'
+          AND date(#event_time) BETWEEN '{start_date}' AND '{end_date}'
+        GROUP BY 1, 2
+        ORDER BY 1, 2

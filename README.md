@@ -4,12 +4,29 @@
 
 ## 内容
 
-- `tracking_projects.yaml`：埋点项目索引。
-- `fangkuai_tracking.yaml`：方块也疯狂埋点结构。
-- `xiafangle_tracking.yaml`：下方了埋点结构。
-- `ta_data_operation_map.yaml`：数数后台项目、表后缀、接口和操作规则。
-- `ta_dashboard_report_workflow.yaml`：数数看板/报表编辑、保存、验收流程。
-- `.codex/skills/tracking-yaml/`：本项目自定义埋点文档转 YAML skill。
+### Skill 定义（`.codex/skills/`）
+- `SKILL.md`：触发描述、工作流、输出规范
+- `agents/openai.yaml`：Codex agent 接口配置
+- `references/*.md`：skill 引用的 schema 文档
+- `scripts/*.ps1`：skill 配套的自动化脚本
+
+### 埋点规格
+- `tracking_projects.yaml`：埋点项目索引（项目名 → YAML 文件映射）
+- `fangkuai_tracking.yaml`：方块也疯狂 埋点结构（事件、参数、用户属性、公共属性）
+- `xiafangle_tracking.yaml`：下方了 埋点结构
+
+### 操作地图（`*_operation_map.yaml`）
+记录各系统的项目 ID、表结构规则、接口路径，供 Codex 操作时定位。
+- `ta_data_operation_map.yaml`：数数后台
+- `gravity_operation_map.yaml`：引力引擎
+- `wechat_ad_operation_map.yaml`：微信广告后台
+
+### 工作流规范（`*_workflow.yaml`）
+记录操作流程、完成标准、注意事项。
+- `ta_dashboard_report_workflow.yaml`：数数看板 / 报表编辑、保存、验收流程
+
+### SQL 模板（`sql_templates.yaml`）
+可复用的查询模板和口径说明，按项目或主题组织。
 
 ## 换电脑恢复
 
