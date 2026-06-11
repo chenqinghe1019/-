@@ -1,4 +1,20 @@
 ta_dashboard_report_workflow:
+  cdp_startup:
+    script: ".codex/scripts/ta_start_cdp.ps1"
+    chrome_exe: "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
+    user_data_dir: "%TEMP%\\chrome-cdp-debug"
+    debug_port: 9222
+    viewport: "1920x1080"
+    steps:
+      - "运行 .codex\\scripts\\ta_start_cdp.ps1 -Navigate"
+      - "等待 Chrome 窗口出现，用户在窗口内手动输入账号密码完成登录。"
+      - "登录完成后，用 ta_cdp_tool.ps1 接管已登录会话，无需再做其他配置。"
+    notes:
+      - "Chrome 以独立 user-data-dir 启动，不影响用户的正常 Chrome 会话。"
+      - "CDP 已在线时脚本自动跳过启动，幂等可重复运行。"
+      - "ta_cdp_tool.ps1 依赖同一端口 9222；如端口被占用，先 Stop-Process chrome 再重试。"
+      - "不保存、不打印 ACCESS_TOKEN；所有 JS 脚本仅将 token 用于 Authorization 请求头。"
+
   login_policy:
     username: null
     password: null
