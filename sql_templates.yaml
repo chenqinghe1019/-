@@ -114,7 +114,7 @@ sql_templates:
         GROUP BY GROUPING SETS ((part_date, r_level), (part_date), (r_level), ())
 
     - name: "新增第N天 R档战力分布（动态新增日期参数）"
-      description: "队列视角：选定新增日期(${PartDate:date1}动态参数)，看该批新增账号在新增第N天(注册当天=第1天,第1~7天)×累计R档下的战力均值与Q1/中位数/Q3。每人每天战力取当日最后一次power事件值。dynamic param 机制见 ta_dashboard_report_workflow.yaml。参考报表 41_4914。"
+      description: "队列视角：选定新增日期(${PartDate:date1}动态参数)，看该批新增账号在新增第N天(注册当天=第1天,第1~7天)×累计R档下的战力均值与Q1/中位数/Q3。每人每天战力取当日最后一次power事件值。若要把新增日期也作为表内维度(而非仅作参数汇总)，把 reg_date 加入最外层 SELECT 与 GROUPING SETS 作前置维度即可(参考报表 41_4914 已含 新增日期×新增第N天×R档)。dynamic param 机制见 ta_dashboard_report_workflow.yaml。参考报表 41_4914。"
       project: "下方了"
       sql: |
         SELECT
