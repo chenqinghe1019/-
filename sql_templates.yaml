@@ -64,6 +64,55 @@ sql_templates:
         GROUP BY 1
         ORDER BY 1
 
+    - name: "每日R档战力分布（均值/四分位）"
+      description: "按日期×累计充值R档，统计当日活跃账号的战力均值与Q1/中位数/Q3。人群=当日活跃且power非空；每人每日战力取当日最后一次power事件值；R档按截至当日累计RMB充值(pay_log payment>0,单位分)分档。不用CTE，嵌套子查询拆解。参考报表 41_4907。"
+      project: "下方了"
+      sql: |
+        SELECT
+            CASE WHEN grouping(part_date) = 1 THEN '汇总'
+                 ELSE date_format(CAST(part_date AS date), '%Y-%m-%d') END AS "日期",
+            CASE WHEN grouping(r_level) = 1 THEN '汇总' ELSE r_level END AS "R级别",
+            count(DISTINCT account_id) AS "账号数",
+            round(avg(last_power), 0) AS "战力均值",
+            round(approx_percentile(last_power, 0.25), 0) AS "战力Q1",
+            round(approx_percentile(last_power, 0.5), 0) AS "战力中位数",
+            round(approx_percentile(last_power, 0.75), 0) AS "战力Q3"
+        FROM (
+            SELECT part_date, account_id, last_power,
+                CASE
+                    WHEN cum_pay = 0 THEN 'a_R0_免费'
+                    WHEN cum_pay <= 600    THEN 'b_(0,6]'
+                    WHEN cum_pay <= 3000   THEN 'c_(6,30]'
+                    WHEN cum_pay <= 10000  THEN 'd_(30,100]'
+                    WHEN cum_pay <= 30000  THEN 'e_(100,300]'
+                    WHEN cum_pay <= 50000  THEN 'f_(300,500]'
+                    WHEN cum_pay <= 100000 THEN 'g_(500,1000]'
+                    ELSE 'h_1000+'
+                END AS r_level
+            FROM (
+                SELECT b.part_date, b.account_id,
+                       max(b.last_power) AS last_power,
+                       COALESCE(sum(p.pay_cents), 0) AS cum_pay
+                FROM (
+                    SELECT "$part_date" AS part_date, "#account_id" AS account_id,
+                           max_by("power", "#event_time") AS last_power
+                    FROM ta.v_event_{project_id}
+                    WHERE "domain" = 'release' AND "power" IS NOT NULL AND "#account_id" IS NOT NULL
+                      AND CAST("$part_date" AS date) BETWEEN date '{start_date}' AND date '{end_date}'
+                    GROUP BY "$part_date", "#account_id"
+                ) b
+                LEFT JOIN (
+                    SELECT "#account_id" AS acc, CAST("$part_date" AS date) AS pay_date,
+                           CAST("payment" AS double) AS pay_cents
+                    FROM ta.v_event_{project_id}
+                    WHERE "domain" = 'release' AND "$part_event" = 'pay_log' AND "payment" > 0
+                      AND CAST("$part_date" AS date) <= date '{end_date}'
+                ) p ON p.acc = b.account_id AND p.pay_date <= CAST(b.part_date AS date)
+                GROUP BY b.part_date, b.account_id
+            ) acct_day
+        ) acct_day_r
+        GROUP BY GROUPING SETS ((part_date, r_level), (part_date), (r_level), ())
+
     - name: "广告观看率（方块也疯狂）"
       description: "统计各广告位的弹出次数、点击次数和完成次数"
       project: "方块也疯狂"
