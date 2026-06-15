@@ -67,6 +67,18 @@ ta_dashboard_report_workflow:
     - "每张报表都要完成 SQL 校验、图表配置校验、看板卡片尺寸校验。"
     - "如果大图后仍展示不完整，保留大图，并评估是否需要减少默认展示指标或调整图表布局。"
 
+  dynamic_partdate_param:
+    desc: "报表动态日期参数（如“新增日期”可选）的实现方式，参考报表 41_4914。"
+    mechanism:
+      - "在 SQL 里用宏 ${PartDate:dateN}（dateN 为参数名，如 date1/date2），它会展开成一个对当前作用域内 \"$part_date\" 列的日期范围过滤谓词。"
+      - "宏绑定的是作用域里名为 \"$part_date\" 的列：可以是事件表物理分区列，也可以是子查询里用别名造出来的列。"
+      - "要让参数过滤“注册日期/新增日期”，在子查询里把 date_format(create_role_time,'%Y-%m-%d') AS \"$part_date\"，再在外层 WHERE ${PartDate:date1} 即可。"
+    qp_wiring:
+      sqlVoParams: "events.sqlVoParams = [{paramType:'PartDate', paramDisplay:'新增日期', paramRemark:'', paramName:'date1', useTimezone:0}]（参数定义）"
+      sqlViewParams: "eventView.sqlViewParams = [{paramType:'PartDate', quota:'C060', recentDay:'', startToNow:-1, startTime:'YYYY-MM-DD 00:00:00', endTime:'YYYY-MM-DD 00:00:00', startToYesterday:-1, paramName:'date1'}]（默认取值）"
+      note: "校验/保存时 qp 必须同时带 sqlVoParams 和 sqlViewParams，宏才能在 fetchSqlQuery 里解析。多参数时 date1/date2 各配一份。"
+    js_template_pitfall: "在 JS 反引号模板字符串里写 SQL 时，${PartDate:date1} 必须转义成 \\${PartDate:date1}，否则被当成 JS 插值。"
+
   github_sync_policy:
     remote: "origin"
     branch: "master"

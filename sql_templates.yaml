@@ -113,6 +113,64 @@ sql_templates:
         ) acct_day_r
         GROUP BY GROUPING SETS ((part_date, r_level), (part_date), (r_level), ())
 
+    - name: "新增第N天 R档战力分布（动态新增日期参数）"
+      description: "队列视角：选定新增日期(${PartDate:date1}动态参数)，看该批新增账号在新增第N天(注册当天=第1天,第1~7天)×累计R档下的战力均值与Q1/中位数/Q3。每人每天战力取当日最后一次power事件值。dynamic param 机制见 ta_dashboard_report_workflow.yaml。参考报表 41_4914。"
+      project: "下方了"
+      sql: |
+        SELECT
+            CASE WHEN grouping(day_n) = 1 THEN '汇总'
+                 ELSE CONCAT('第', CAST(day_n AS varchar), '天') END AS "新增第N天",
+            CASE WHEN grouping(r_level) = 1 THEN '汇总' ELSE r_level END AS "R级别",
+            count(DISTINCT account_id) AS "账号数",
+            round(avg(last_power), 0) AS "战力均值",
+            round(approx_percentile(last_power, 0.25), 0) AS "战力Q1",
+            round(approx_percentile(last_power, 0.5), 0) AS "战力中位数",
+            round(approx_percentile(last_power, 0.75), 0) AS "战力Q3"
+        FROM (
+            SELECT day_n, account_id, last_power,
+                CASE
+                    WHEN cum_pay = 0 THEN 'a_R0_免费'
+                    WHEN cum_pay <= 600    THEN 'b_(0,6]'
+                    WHEN cum_pay <= 3000   THEN 'c_(6,30]'
+                    WHEN cum_pay <= 10000  THEN 'd_(30,100]'
+                    WHEN cum_pay <= 30000  THEN 'e_(100,300]'
+                    WHEN cum_pay <= 50000  THEN 'f_(300,500]'
+                    WHEN cum_pay <= 100000 THEN 'g_(500,1000]'
+                    ELSE 'h_1000+'
+                END AS r_level
+            FROM (
+                SELECT lp.day_n, lp.account_id,
+                       max(lp.last_power_at_day) AS last_power,
+                       COALESCE(sum(p.pay_cents), 0) AS cum_pay
+                FROM (
+                    SELECT na.account_id, na.reg_date,
+                           date_diff('day', na.reg_date, date(e."$part_date")) + 1 AS day_n,
+                           max_by(e."power", e."#event_time") AS last_power_at_day
+                    FROM (
+                        SELECT * FROM (
+                            SELECT "#account_id" AS account_id,
+                                   date("create_role_time") AS reg_date,
+                                   date_format("create_role_time", '%Y-%m-%d') AS "$part_date"
+                            FROM ta.v_user_{project_id}
+                            WHERE "domain" = 'release' AND "#account_id" IS NOT NULL AND "create_role_time" IS NOT NULL
+                        ) na_raw
+                        WHERE ${PartDate:date1}
+                    ) na
+                    JOIN ta.v_event_{project_id} e
+                      ON e."#account_id" = na.account_id AND e."domain" = 'release' AND e."power" IS NOT NULL
+                     AND date(e."$part_date") BETWEEN na.reg_date AND date_add('day', 6, na.reg_date)
+                    GROUP BY na.account_id, na.reg_date, date_diff('day', na.reg_date, date(e."$part_date")) + 1
+                ) lp
+                LEFT JOIN (
+                    SELECT "#account_id" AS acc, date("$part_date") AS pay_date, CAST("payment" AS double) AS pay_cents
+                    FROM ta.v_event_{project_id}
+                    WHERE "domain" = 'release' AND "$part_event" = 'pay_log' AND "payment" > 0
+                ) p ON p.acc = lp.account_id AND p.pay_date <= date_add('day', lp.day_n - 1, lp.reg_date)
+                GROUP BY lp.day_n, lp.account_id
+            ) acct_dayn
+        ) acct_dayn_r
+        GROUP BY GROUPING SETS ((day_n, r_level), (day_n), (r_level), ())
+
     - name: "广告观看率（方块也疯狂）"
       description: "统计各广告位的弹出次数、点击次数和完成次数"
       project: "方块也疯狂"
