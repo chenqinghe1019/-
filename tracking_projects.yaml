@@ -1,8 +1,10 @@
-﻿tracking_projects:
+tracking_projects:
   - project: "方块也疯狂"
     yaml: "fangkuai_tracking.yaml"
     extract: "fangkuai_tracking_extract.json"
   - project: "下方了"
     yaml: "xiafangle_tracking.yaml"
     extract: "xiafangle_tracking_extract.json"
-
+  - project: "萝卜社外挂治理"
+    yaml: "luoboshe_anti_cheat_tracking.yaml"
+    sql: "sql/anti_cheat_report_v41.sql"
