@@ -4,6 +4,7 @@ sql_templates:
     - "使用前先确认当前项目，替换表后缀（41/44/46）、事件名、字段名。"
     - "日期字段以各项目实际表结构为准，写 SQL 前先查一次字段列表。"
     - "模板中 {project_id} 为占位符，需替换为实际项目 ID。"
+    - "数数动态日期参数为所有项目通用规则：${PartDate:date} / ${PartDate:date1} 本身会展开为 \"$part_date\" between 'xxxx' and 'xxxx'，不要再手写 \"$part_date\" 拼接；需要给事件表加别名时写 e.${PartDate:date}，不要写 e.\"$part_date\"${PartDate:date}。"
 
   templates:
 
