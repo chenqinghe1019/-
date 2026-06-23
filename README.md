@@ -14,6 +14,10 @@
 - `tracking_projects.yaml`：埋点项目索引（项目名 → YAML 文件映射）
 - `fangkuai_tracking.yaml`：方块也疯狂 埋点结构（事件、参数、用户属性、公共属性）
 - `xiafangle_tracking.yaml`：下方了 埋点结构
+- `luoboshe_anti_cheat_tracking.yaml`：萝卜社/下方了外挂治理埋点与规则口径（表后缀 41）
+
+### SQL 口径
+- `sql/anti_cheat_report_v41.sql`：外挂异常玩家名单统计 SQL，按角色ID、区服、异常类型聚合，输出 VIP、累充、战力、赛季、渠道等字段。
 
 ### 操作地图（`*_operation_map.yaml`）
 记录各系统的项目 ID、表结构规则、接口路径，供 Codex 操作时定位。
