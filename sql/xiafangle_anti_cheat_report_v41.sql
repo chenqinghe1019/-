@@ -177,7 +177,7 @@ FROM
             ON CAST(e."#account_id" AS varchar) = v.role_id
 
             WHERE e."$part_event" IN ('battle_check', 'boss_battle_result')
-              AND e."$part_date"${PartDate:date}
+              AND "$part_date"${PartDate:date}
               AND COALESCE(CAST(e."domain" AS varchar), 'release') = 'release'
         ) b
     ) x
