@@ -104,7 +104,7 @@ FROM
                 CAST(e."#account_id" AS varchar) AS role_id,
 
                 CAST(e."region_id" AS varchar) AS server_id,
-                CAST(e."create_role_time" AS timestamp) AS create_role_time,
+                e.create_role_time_ts AS create_role_time,
                 v.vip_level,
 
                 COALESCE(TRY_CAST(e."total_payment" AS double), 0) AS payment_amount,
@@ -112,11 +112,11 @@ FROM
 
                 CAST(e."channel_id" AS varchar) AS channel_id,
 
-                CAST(e."#event_time" AS timestamp) AS abnormal_time,
+                e.event_time_ts AS abnormal_time,
                 CAST(e."$part_date" AS date) AS report_date,
 
                 COALESCE(CAST(e."season" AS varchar), '未知') AS season,
-                CAST(date_trunc('week', CAST(e."#event_time" AS timestamp)) AS date) AS natural_week,
+                CAST(date_trunc('week', e.event_time_ts) AS date) AS natural_week,
 
                 TRY_CAST(e."battle_type" AS integer) AS battle_type,
                 TRY_CAST(e."map_id" AS integer) AS map_id,
@@ -143,13 +143,13 @@ FROM
                 END AS power_group,
 
                 CASE
-                    WHEN e."create_role_time" IS NULL THEN 'z_未知'
-                    WHEN date_diff('day', date(CAST(e."create_role_time" AS timestamp)), date(CAST(e."#event_time" AS timestamp))) <= 0 THEN 'a_0日'
-                    WHEN date_diff('day', date(CAST(e."create_role_time" AS timestamp)), date(CAST(e."#event_time" AS timestamp))) = 1 THEN 'b_1日'
-                    WHEN date_diff('day', date(CAST(e."create_role_time" AS timestamp)), date(CAST(e."#event_time" AS timestamp))) <= 3 THEN 'c_2-3日'
-                    WHEN date_diff('day', date(CAST(e."create_role_time" AS timestamp)), date(CAST(e."#event_time" AS timestamp))) <= 7 THEN 'd_4-7日'
-                    WHEN date_diff('day', date(CAST(e."create_role_time" AS timestamp)), date(CAST(e."#event_time" AS timestamp))) <= 14 THEN 'e_8-14日'
-                    WHEN date_diff('day', date(CAST(e."create_role_time" AS timestamp)), date(CAST(e."#event_time" AS timestamp))) <= 30 THEN 'f_15-30日'
+                    WHEN e.create_role_time_ts IS NULL THEN 'z_未知'
+                    WHEN date_diff('day', date(e.create_role_time_ts), date(e.event_time_ts)) <= 0 THEN 'a_0日'
+                    WHEN date_diff('day', date(e.create_role_time_ts), date(e.event_time_ts)) = 1 THEN 'b_1日'
+                    WHEN date_diff('day', date(e.create_role_time_ts), date(e.event_time_ts)) <= 3 THEN 'c_2-3日'
+                    WHEN date_diff('day', date(e.create_role_time_ts), date(e.event_time_ts)) <= 7 THEN 'd_4-7日'
+                    WHEN date_diff('day', date(e.create_role_time_ts), date(e.event_time_ts)) <= 14 THEN 'e_8-14日'
+                    WHEN date_diff('day', date(e.create_role_time_ts), date(e.event_time_ts)) <= 30 THEN 'f_15-30日'
                     ELSE 'g_30日+'
                 END AS reg_day_group,
 
@@ -160,25 +160,58 @@ FROM
                     ELSE 'd_30000+'
                 END AS vip_group
 
-            FROM ta.v_event_41 e
+            FROM
+            (
+                SELECT
+                    e.*,
+                    CAST(
+                        from_unixtime(
+                            CASE
+                                WHEN TRY_CAST(e."#event_time" AS double) >= 1000000000000 THEN TRY_CAST(e."#event_time" AS double) / 1000
+                                ELSE TRY_CAST(e."#event_time" AS double)
+                            END
+                        ) AS timestamp
+                    ) AS event_time_ts,
+                    CAST(
+                        from_unixtime(
+                            CASE
+                                WHEN TRY_CAST(e."create_role_time" AS double) >= 1000000000000 THEN TRY_CAST(e."create_role_time" AS double) / 1000
+                                ELSE TRY_CAST(e."create_role_time" AS double)
+                            END
+                        ) AS timestamp
+                    ) AS create_role_time_ts
+                FROM ta.v_event_41 e
+                WHERE e."$part_event" IN ('battle_check', 'boss_battle_result')
+                  AND e.${PartDate:date}
+                  AND COALESCE(CAST(e."domain" AS varchar), 'release') = 'release'
+            ) e
             LEFT JOIN
             (
                 SELECT
-                    CAST("#account_id" AS varchar) AS role_id,
+                    CAST(v."#account_id" AS varchar) AS role_id,
                     max_by(
-                        TRY_CAST("after" AS double),
-                        CAST("#event_time" AS timestamp)
+                        TRY_CAST(v."after" AS double),
+                        v.event_time_ts
                     ) AS vip_level
-                FROM ta.v_event_41
-                WHERE "$part_event" = 'vip_change_log'
-                  AND "$part_date" >= '2023-10-01'
-                GROUP BY CAST("#account_id" AS varchar)
+                FROM
+                (
+                    SELECT
+                        v.*,
+                        CAST(
+                            from_unixtime(
+                                CASE
+                                    WHEN TRY_CAST(v."#event_time" AS double) >= 1000000000000 THEN TRY_CAST(v."#event_time" AS double) / 1000
+                                    ELSE TRY_CAST(v."#event_time" AS double)
+                                END
+                            ) AS timestamp
+                        ) AS event_time_ts
+                    FROM ta.v_event_41 v
+                    WHERE v."$part_event" = 'vip_change_log'
+                      AND v."$part_date" >= '2023-10-01'
+                ) v
+                GROUP BY CAST(v."#account_id" AS varchar)
             ) v
             ON CAST(e."#account_id" AS varchar) = v.role_id
-
-            WHERE e."$part_event" IN ('battle_check', 'boss_battle_result')
-              AND e.${PartDate:date}
-              AND COALESCE(CAST(e."domain" AS varchar), 'release') = 'release'
         ) b
     ) x
 
