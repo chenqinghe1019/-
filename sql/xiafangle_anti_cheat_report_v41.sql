@@ -164,14 +164,7 @@ FROM
             (
                 SELECT
                     e.*,
-                    CAST(
-                        from_unixtime(
-                            CASE
-                                WHEN TRY_CAST(e."#event_time" AS double) >= 1000000000000 THEN TRY_CAST(e."#event_time" AS double) / 1000
-                                ELSE TRY_CAST(e."#event_time" AS double)
-                            END
-                        ) AS timestamp
-                    ) AS event_time_ts,
+                    CAST(e."#event_time" AS timestamp) AS event_time_ts,
                     CAST(
                         from_unixtime(
                             CASE
@@ -197,14 +190,7 @@ FROM
                 (
                     SELECT
                         v.*,
-                        CAST(
-                            from_unixtime(
-                                CASE
-                                    WHEN TRY_CAST(v."#event_time" AS double) >= 1000000000000 THEN TRY_CAST(v."#event_time" AS double) / 1000
-                                    ELSE TRY_CAST(v."#event_time" AS double)
-                                END
-                            ) AS timestamp
-                        ) AS event_time_ts
+                        CAST(v."#event_time" AS timestamp) AS event_time_ts
                     FROM ta.v_event_41 v
                     WHERE v."$part_event" = 'vip_change_log'
                       AND v."$part_date" >= '2023-10-01'
