@@ -8,5 +8,7 @@ assistant_sql_response_rules:
     - "For cross-project SQL adaptation, keep the original query structure and only replace table suffixes, event names, fields, and type conversions required by the target project."
     - "Avoid WITH / CTE unless the user explicitly requests it."
     - "For ThinkingData dynamic date parameters, keep event table partition filters such as e.${PartDate:date1} for scan pruning; do not remove partition filters just because day-N logic is present."
+    - "When the user asks for first-day payment or first-day payment tiers, calculate payment only on the registration day / active_days = 0. Do not use cumulative_payment or query-range cumulative payment as a substitute unless the user explicitly asks for cumulative payment tiers."
   notes:
     - "This rule was added after the user explicitly requested: 后续调整sql都发给我最终版本的完整版."
+    - "First-day payment tier clarification added after the user corrected a query where cumulative_payment_R was mistaken for first-day payment."
