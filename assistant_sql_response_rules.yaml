@@ -1,0 +1,12 @@
+assistant_sql_response_rules:
+  updated_at: "2026-06-30"
+  scope: "SQL adjustments and debugging in 倍特工作室 project"
+  rules:
+    - "When the user asks to modify, debug, optimize, or adapt SQL, always return the final full SQL version, not only diffs or fragments."
+    - "If explaining the change, keep the explanation brief and place the complete runnable SQL in the same response."
+    - "Preserve the user's existing SQL style and business logic unless the user explicitly asks to change the logic."
+    - "For cross-project SQL adaptation, keep the original query structure and only replace table suffixes, event names, fields, and type conversions required by the target project."
+    - "Avoid WITH / CTE unless the user explicitly requests it."
+    - "For ThinkingData dynamic date parameters, keep event table partition filters such as e.${PartDate:date1} for scan pruning; do not remove partition filters just because day-N logic is present."
+  notes:
+    - "This rule was added after the user explicitly requested: 后续调整sql都发给我最终版本的完整版."
