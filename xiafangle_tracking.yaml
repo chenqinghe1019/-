@@ -1,3830 +1,2935 @@
-﻿projects:
-  - project: "下方了"
-    source_files:
-      - "C:\\Users\\feiyu\\Downloads\\下方了-埋点说明文档.xlsx"
-    extracted_at: "2026-06-05T15:57:57.3215328+08:00"
-    notes:
-      - "已与方块也疯狂分开整理；本文件只包含下方了项目。"
-      - "外挂治理相关 sheet 的属性列相对标准模板左移一列，已按实际内容兼容解析。"
-    common_event_properties:
-      - name: "#user_id"
-        display_name: "用户在系统中的唯一用户标识"
-        type: "integer"
-        source_type: "bigint"
-        description: null
-        owner: null
-        notes: null
-      - name: "#distinct_id"
-        display_name: "访客ID"
-        type: "string"
-        source_type: "varchar"
-        description: "同设备ID"
-        owner: null
-        notes: null
-      - name: "#account_id"
-        display_name: "角色ID"
-        type: "string"
-        source_type: "varchar"
-        description: null
-        owner: null
-        notes: null
-      - name: "nb_open_id"
-        display_name: "聚合openID"
-        type: "string"
-        source_type: "varchar"
-        description: "星云聚合openid【项目唯一标识】"
-        owner: null
-        notes: null
-      - name: "open_id"
-        display_name: "微信open_id"
-        type: "string"
-        source_type: "varchar"
-        description: "微信登录验证成功时记录"
-        owner: null
-        notes: null
-      - name: "channel_id"
-        display_name: "渠道ID"
-        type: "string"
-        source_type: "varchar"
-        description: "星云channel_id"
-        owner: null
-        notes: null
-      - name: "system"
-        display_name: "操作系统"
-        type: "string"
-        source_type: "varchar"
-        description: null
-        owner: null
-        notes: null
-      - name: "create_role_time"
-        display_name: "创角时间"
-        type: "timestamp"
-        source_type: "timestamp"
-        description: null
-        owner: null
-        notes: null
-      - name: "server_open_time"
-        display_name: "开服时间"
-        type: "timestamp"
-        source_type: "timestamp"
-        description: null
-        owner: null
-        notes: null
-      - name: "total_payment"
-        display_name: "历史累计充值金额"
-        type: "number"
-        source_type: "double"
-        description: "历史累充金额（含代金券）"
-        owner: null
-        notes: null
-      - name: "total_payment_rmb"
-        display_name: "历史累计充值金额（RMB）"
-        type: "number"
-        source_type: "double"
-        description: "历史累充金额（纯RMB）"
-        owner: null
-        notes: null
-      - name: "domain"
-        display_name: "测试服或正式服"
-        type: "string"
-        source_type: "varchar"
-        description: "dev代表测试服，release代表正式服"
-        owner: null
-        notes: null
-      - name: "region_id"
-        display_name: "区服ID"
-        type: "number"
-        source_type: "double"
-        description: "区服ID"
-        owner: null
-        notes: null
-      - name: "clan_uid"
-        display_name: "部落ID"
-        type: "string"
-        source_type: "varchar"
-        description: "玩家部落id"
-        owner: null
-        notes: null
-      - name: "power"
-        display_name: "战力"
-        type: "number"
-        source_type: "double"
-        description: "发生行为时的战力"
-        owner: null
-        notes: null
-      - name: "season"
-        display_name: "赛季"
-        type: "number"
-        source_type: "double"
-        description: null
-        owner: null
-        notes: null
-    user_properties:
-      - name: "#user_id"
-        display_name: "用户在系统中的唯一用户标识"
-        type: "integer"
-        source_type: "bigint"
-        update_method: "user_setOnce"
-        description: null
-        tag: "基本信息类"
-        notes: null
-      - name: "#distinct_id"
-        display_name: "访客ID"
-        type: "string"
-        source_type: "varchar"
-        update_method: "user_setOnce"
-        description: "首次打开app，激活SDK，客户端记录设备ID"
-        tag: "基本信息类"
-        notes: null
-      - name: "#account_id"
-        display_name: "账号ID（角色id）"
-        type: "string"
-        source_type: "varchar"
-        update_method: "user_setOnce"
-        description: "创建角色时记录"
-        tag: "基本信息类"
-        notes: "服务端传成角色ID"
-      - name: "#active_time"
-        display_name: "激活时间"
-        type: "timestamp"
-        source_type: "timestamp"
-        update_method: "user_setOnce"
-        description: "激活时"
-        tag: "时间类"
-        notes: null
-      - name: "#reg_time"
-        display_name: "注册时间"
-        type: "timestamp"
-        source_type: "timestamp"
-        update_method: "user_setOnce"
-        description: "创建角色时记录"
-        tag: "时间类"
-        notes: null
-      - name: "open_id"
-        display_name: "渠道账号id"
-        type: "string"
-        source_type: "varchar"
-        update_method: "user_setOnce"
-        description: "微信登录验证成功时记录"
-        tag: "基本信息类"
-        notes: "是小游戏的openid"
-      - name: "nb_open_id"
-        display_name: "聚合openID"
-        type: "string"
-        source_type: "varchar"
-        update_method: "user_setOnce"
-        description: "星云聚合openid【项目唯一标识】"
-        tag: "基本信息类"
-        notes: null
-      - name: "channel_id"
-        display_name: "渠道ID"
-        type: "string"
-        source_type: "varchar"
-        update_method: "user_setOnce"
-        description: null
-        tag: "基本信息类"
-        notes: null
-      - name: "code_id"
-        display_name: "包体ID"
-        type: "string"
-        source_type: "varchar"
-        update_method: "user_setOnce"
-        description: null
-        tag: "基本信息类"
-        notes: null
-      - name: "region_id"
-        display_name: "服务器id"
-        type: "string"
-        source_type: "varchar"
-        update_method: "user_setOnce"
-        description: "创建角色时记录"
-        tag: "基本信息类"
-        notes: null
-      - name: "server_open_time"
-        display_name: "开服时间"
-        type: "timestamp"
-        source_type: "timestamp"
-        update_method: "user_setOnce"
-        description: "开服时"
-        tag: "基本信息类"
-        notes: null
-      - name: "clan_uid"
-        display_name: "部落ID"
-        type: "number"
-        source_type: "double"
-        update_method: "user_set"
-        description: "每次登出时"
-        tag: "基本信息类"
-        notes: null
-      - name: "domain"
-        display_name: "环境"
-        type: "string"
-        source_type: "varchar"
-        update_method: "user_setOnce"
-        description: "dev开发；release正式"
-        tag: "基本信息类"
-        notes: null
-      - name: "system"
-        display_name: "应用（ios/安卓）"
-        type: "string"
-        source_type: "varchar"
-        update_method: "user_setOnce"
-        description: "创建角色时记录"
-        tag: "基本信息类"
-        notes: null
-      - name: "create_role_time"
-        display_name: "创角时间"
-        type: "timestamp"
-        source_type: "timestamp"
-        update_method: "user_setOnce"
-        description: "创建角色时记录"
-        tag: "基本信息类"
-        notes: null
-      - name: "first_payment_time"
-        display_name: "首次付费时间"
-        type: "timestamp"
-        source_type: "timestamp"
-        update_method: "user_setOnce"
-        description: "首次付费时"
-        tag: "基本信息类"
-        notes: null
-      - name: "latest_login_time"
-        display_name: "最后登录时间"
-        type: "timestamp"
-        source_type: "timestamp"
-        update_method: "user_set"
-        description: "每次登出时"
-        tag: "时间类"
-        notes: null
-      - name: "latest_online_time"
-        display_name: "最后登出时间"
-        type: "timestamp"
-        source_type: "timestamp"
-        update_method: "user_set"
-        description: "每次登出时"
-        tag: "时间类"
-        notes: null
-      - name: "nick_name"
-        display_name: "角色名称"
-        type: "string"
-        source_type: "varchar"
-        update_method: "user_set"
-        description: "每次登出时"
-        tag: "基本信息类"
-        notes: null
-      - name: "gold"
-        display_name: "金币"
-        type: "number"
-        source_type: "double"
-        update_method: "user_set"
-        description: "每次登出时"
-        tag: "进度类"
-        notes: null
-      - name: "fighting_power"
-        display_name: "战力"
-        type: "number"
-        source_type: "double"
-        update_method: "user_set"
-        description: "每次登出时"
-        tag: "进度类"
-        notes: null
-      - name: "total_payment"
-        display_name: "历史累计充值金额"
-        type: "number"
-        source_type: "double"
-        update_method: "user_set"
-        description: "每次登出时"
-        tag: "进度类"
-        notes: null
-      - name: "total_payment_rmb"
-        display_name: "历史累计充值金额（*纯RMB）"
-        type: "number"
-        source_type: "double"
-        update_method: "user_set"
-        description: "每次登出时"
-        tag: "进度类"
-        notes: null
-      - name: "gravity_client_id"
-        display_name: "用户 client_id"
-        type: "unknown"
-        source_type: null
-        update_method: "user_set"
-        description: null
-        tag: "基本信息类"
-        notes: null
-      - name: "ad_wx_channel"
-        display_name: "渠道"
-        type: "unknown"
-        source_type: null
-        update_method: "user_set"
-        description: null
-        tag: "基本信息类"
-        notes: null
-      - name: "ad_channel"
-        display_name: "广告渠道"
-        type: "unknown"
-        source_type: null
-        update_method: "user_set"
-        description: null
-        tag: "基本信息类"
-        notes: null
-      - name: "ad_openid"
-        display_name: "微信/抖音 open_id"
-        type: "unknown"
-        source_type: null
-        update_method: "user_set"
-        description: null
-        tag: "基本信息类"
-        notes: null
-      - name: "ad_campaign_id"
-        display_name: "广告计划 ID"
-        type: "unknown"
-        source_type: null
-        update_method: "user_set"
-        description: null
-        tag: "基本信息类"
-        notes: null
-      - name: "ad_campaign_name"
-        display_name: "广告计划名称"
-        type: "unknown"
-        source_type: null
-        update_method: "user_set"
-        description: null
-        tag: "基本信息类"
-        notes: null
-      - name: "ad_id"
-        display_name: "广告id"
-        type: "unknown"
-        source_type: null
-        update_method: "user_set"
-        description: null
-        tag: "基本信息类"
-        notes: null
-      - name: "ad_name"
-        display_name: "广告名称"
-        type: "unknown"
-        source_type: null
-        update_method: "user_set"
-        description: null
-        tag: "基本信息类"
-        notes: null
-      - name: "ad_creative_id"
-        display_name: "广告创意id"
-        type: "unknown"
-        source_type: null
-        update_method: "user_set"
-        description: null
-        tag: "基本信息类"
-        notes: null
-      - name: "ad_creative_name"
-        display_name: "广告创意名称"
-        type: "unknown"
-        source_type: null
-        update_method: "user_set"
-        description: null
-        tag: "基本信息类"
-        notes: null
-      - name: "ad_project_id"
-        display_name: "巨量引擎项目ID"
-        type: "unknown"
-        source_type: null
-        update_method: "user_set"
-        description: null
-        tag: "基本信息类"
-        notes: null
-      - name: "ad_platform"
-        display_name: "媒体平台"
-        type: "unknown"
-        source_type: null
-        update_method: "user_set"
-        description: null
-        tag: "基本信息类"
-        notes: null
-      - name: "ad_MID1"
-        display_name: "巨量引擎图片素材id"
-        type: "unknown"
-        source_type: null
-        update_method: "user_set"
-        description: null
-        tag: "基本信息类"
-        notes: null
-      - name: "ad_MID2"
-        display_name: "巨量引擎标题素材id"
-        type: "unknown"
-        source_type: null
-        update_method: "user_set"
-        description: null
-        tag: "基本信息类"
-        notes: null
-      - name: "ad_MID3"
-        display_name: "巨量引擎视频素材id"
-        type: "unknown"
-        source_type: null
-        update_method: "user_set"
-        description: null
-        tag: "基本信息类"
-        notes: null
-      - name: "ad_MID4"
-        display_name: "巨量引擎搭配试玩素材id"
-        type: "unknown"
-        source_type: null
-        update_method: "user_set"
-        description: null
-        tag: "基本信息类"
-        notes: null
-      - name: "ad_MID5"
-        display_name: "巨量引擎落地页素材id"
-        type: "unknown"
-        source_type: null
-        update_method: "user_set"
-        description: null
-        tag: "基本信息类"
-        notes: null
-      - name: "ad_MID6"
-        display_name: "巨量引擎安卓下载详情页素材id"
-        type: "unknown"
-        source_type: null
-        update_method: "user_set"
-        description: null
-        tag: "基本信息类"
-        notes: null
-      - name: "ad_adverser_id"
-        display_name: "广告主账户 ID"
-        type: "unknown"
-        source_type: null
-        update_method: "user_set"
-        description: null
-        tag: "基本信息类"
-        notes: null
-    events:
-      - event_name: "ta_app_install"
-        source_name: "app安装"
-        source: "客户端"
-        page: null
-        module: "基础数据"
-        trigger: "开启客户端自动采集后自动上报"
-        description: "开启客户端自动采集后自动上报"
-        params:
-          []
-      - event_name: "ta_app_start"
-        source_name: "app启动"
-        source: "客户端"
-        page: null
-        module: null
-        trigger: "开启客户端自动采集后自动上报"
-        description: "开启客户端自动采集后自动上报"
-        params:
-          []
-      - event_name: "ta_app_crash"
-        source_name: "app崩溃"
-        source: "客户端"
-        page: null
-        module: null
-        trigger: "开启客户端自动采集后自动上报"
-        description: "开启客户端自动采集后自动上报"
-        params:
-          []
-      - event_name: "ta_app_end"
-        source_name: "app关闭"
-        source: "客户端"
-        page: null
-        module: null
-        trigger: "开启客户端自动采集后自动上报"
-        description: "开启客户端自动采集后自动上报"
-        params:
-          - name: "#duration"
-            source_name: "在线时长"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-      - event_name: "active_log"
-        source_name: "激活"
-        source: "客户端"
-        page: null
-        module: null
-        trigger: "玩家每进入一个登录节点时"
-        description: "玩家每进入一个登录节点时"
-        params:
-          - name: "#device_id"
-            source_name: "设备ID"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: null
-          - name: "#country"
-            source_name: "国家地区"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: "用户所在国家或地区，根据 IP 地址生成"
-          - name: "#province"
-            source_name: "省份"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: "用户所在省份，根据 IP 地址生成"
-          - name: "#city"
-            source_name: "城市"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: "用户所在城市，根据 IP 地址生成"
-          - name: "#fps"
-            source_name: "FPS"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: "用户设备的当前图像每秒传输帧率，如 60"
-          - name: "#device_model"
-            source_name: "设备型号"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: "用户设备的型号，如 iPhone 8 等"
-          - name: "#device_type"
-            source_name: "设备类型"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: "用户设备的类型，如iPad,iPhone等"
-          - name: "#os"
-            source_name: "操作系统"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: "iOS 11.2.2、Android 8.0.0 等"
-          - name: "#network_type"
-            source_name: "网络类型"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: "事件发生时的网络状态，如 WIFI、3G、4G 等"
-          - name: "#app_version"
-            source_name: "app版本"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: "您的 APP 的版本"
-          - name: "#ip"
-            source_name: "客户端ip"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "node_id"
-            source_name: "节点序号"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: "10.程序启动 20开始加载 30.结束加载 40.注册创角 50.登录 60. 进入引导战斗 99. 完成引导战斗（首次） 101 首次进入大厅（首次）"
-          - name: "node_name"
-            source_name: "节点页面名称"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: "Launch.程序启动 BeginLoading 开始加载 EndLoading .结束加载 Register. 进入引导战斗 Login.登录 BeginGuideMap.注册创角 EndGuideMap. 完成引导战斗（首次） EnterHome 首次进入大厅（首次）"
-      - event_name: "in_out_log"
-        source_name: "登录登出日志"
-        source: "服务端"
-        page: null
-        module: null
-        trigger: "玩家登录/登出服务器时"
-        description: "玩家登录/登出服务器时"
-        params:
-          - name: "change_reason"
-            source_name: "变化原因"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: "登录（跨天登录判定机制）；登出"
-            notes:
-              - "直接用中文或者英文，方便客服、运营查询"
-          - name: "online_time"
-            source_name: "在线时长（s）"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: "登出时上报在线时长s（累积的）"
-        notes:
-          - "直接用中文或者英文，方便客服、运营查询"
-      - event_name: "online_log"
-        source_name: "服务器在线人数采集"
-        source: "服务端"
-        page: null
-        module: null
-        trigger: "1分钟上报一条在线人数"
-        description: "1分钟上报一条在线人数"
-        params:
-          - name: "online_count"
-            source_name: "在线人数"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "channel_id"
-            source_name: "渠道ID"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-      - event_name: "vip_change_log"
-        source_name: "vip变更"
-        source: "服务端"
-        page: null
-        module: null
-        trigger: "vip等级发生变化时"
-        description: "vip等级发生变化时"
-        params:
-          - name: "before"
-            source_name: "变化前"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "after"
-            source_name: "变化后"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-      - event_name: "name_change_log"
-        source_name: "改名"
-        source: "服务端"
-        page: null
-        module: null
-        trigger: "改名时"
-        description: "改名时"
-        params:
-          - name: "before_name"
-            source_name: "变化前"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: null
-          - name: "after_name"
-            source_name: "变化后"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: null
-      - event_name: "rank_log"
-        source_name: "排行榜"
-        source: "服务端"
-        page: null
-        module: null
-        trigger: "每小时更新一次"
-        description: "每小时更新一次"
-        params:
-          - name: "rtype"
-            source_name: "排行榜类型"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "rname"
-            source_name: "排行榜名称"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: null
-          - name: "rank"
-            source_name: "排名"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-      - event_name: "mail_log"
-        source_name: "邮件"
-        source: "服务端"
-        page: null
-        module: null
-        trigger: null
-        description: null
-        params:
-          - name: "mail_id"
-            source_name: "操作id"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "mail_content"
-            source_name: "邮件内容"
-            type: "unknown"
-            source_type: null
-            required: null
-            description: null
-          - name: "change_reason"
-            source_name: "变化原因（操作类型）"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: "读取，领取，删除"
-      - event_name: "exchange_log"
-        source_name: "兑换码"
-        source: "服务端"
-        page: null
-        module: null
-        trigger: "兑换时"
-        description: "兑换时"
-        params:
-          - name: "ecode"
-            source_name: "兑换码"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: null
-          - name: "erewards"
-            source_name: "兑换奖励"
-            type: "array"
-            source_type: "Array(Object)"
-            required: null
-            description: null
-            notes:
-              - "[{\"id\":\"橙色气球\",\"num\":2,\"id\":\"蓝色气球\",\"num\":1,\"id\":\"绿色气球\",\"num\":4}]"
-      - event_name: "pay_log"
-        source_name: "付费日志"
-        source: "服务端"
-        page: null
-        module: "付费模块"
-        trigger: "RMB充值付费时记录"
-        description: "RMB充值付费时记录"
-        params:
-          - name: "change_reason"
-            source_name: "变化原因"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: null
-            notes:
-              - "直接用中文或者英文，方便客服、运营查询"
-          - name: "order_id"
-            source_name: "订单号"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: "返回星云订单号"
-          - name: "system"
-            source_name: "操作系统（ios/安卓）"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: null
-          - name: "pay_result"
-            source_name: "充值结果"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "product_type"
-            source_name: "礼包类型"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: "首充/日常礼包/累充返利/月卡/基金/商城"
-          - name: "product_id"
-            source_name: "礼包id"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "product_name"
-            source_name: "礼包名称"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: null
-          - name: "payment"
-            source_name: "付费金额"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-        notes:
-          - "直接用中文或者英文，方便客服、运营查询"
-      - event_name: "guide_log"
-        source_name: "新手引导"
-        source: "客户端"
-        page: null
-        module: "新手引导"
-        trigger: "新手引到触发时"
-        description: "新手引到触发时"
-        params:
-          - name: "node_id"
-            source_name: "引导id"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "node_name"
-            source_name: "引导名称"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: null
-      - event_name: "battle_star"
-        source_name: "战斗开始"
-        source: "客户端"
-        page: null
-        module: "战斗"
-        trigger: "战斗开始时"
-        description: "战斗开始时"
-        params:
-          - name: "battle_uid"
-            source_name: "战斗唯一id"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: "为了区分是哪一场战斗"
-          - name: "battle_type"
-            source_name: "战斗类型"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "map_id"
-            source_name: "关卡id"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "battle_array"
-            source_name: "我方阵容信息"
-            type: "array"
-            source_type: "Array(Object)"
-            required: null
-            description: "记录上阵英雄"
-      - event_name: "rougue_skill_show"
-        source_name: "弹出肉鸽技能"
-        source: "客户端"
-        page: null
-        module: "战斗"
-        trigger: "肉鸽技能弹出时"
-        description: "肉鸽技能弹出时"
-        params:
-          - name: "battle_uid"
-            source_name: "战斗唯一id"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: "为了区分是哪一场战斗"
-          - name: "battle_type"
-            source_name: "战斗类型"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "map_id"
-            source_name: "关卡id"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "skill_source"
-            source_name: "掉落来源"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: "升级/精英怪"
-          - name: "skill_options"
-            source_name: "候选技能池"
-            type: "array"
-            source_type: "Array(Object)"
-            required: null
-            description: null
-      - event_name: "rougue_skill"
-        source_name: "肉鸽技能选择"
-        source: "客户端"
-        page: null
-        module: "战斗"
-        trigger: "肉鸽技能选择时"
-        description: "肉鸽技能选择时"
-        params:
-          - name: "battle_uid"
-            source_name: "战斗唯一id"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: "为了区分是哪一场战斗"
-          - name: "battle_type"
-            source_name: "战斗类型"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "map_id"
-            source_name: "关卡id"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "skill_source"
-            source_name: "掉落来源"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: "升级/精英怪"
-          - name: "is_refresh"
-            source_name: "是否刷新而来"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "skill_options"
-            source_name: "候选技能池"
-            type: "array"
-            source_type: "Array(Object)"
-            required: null
-            description: null
-          - name: "skill_chosen"
-            source_name: "实际选择技能"
-            type: "array"
-            source_type: "Array(Object)"
-            required: null
-            description: null
-      - event_name: "magicbox_skill_show"
-        source_name: "魔盒弹出肉鸽技能"
-        source: "客户端"
-        page: null
-        module: "战斗"
-        trigger: "肉鸽技能弹出时"
-        description: "肉鸽技能弹出时"
-        params:
-          - name: "battle_uid"
-            source_name: "战斗唯一id"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: "为了区分是哪一场战斗"
-          - name: "battle_type"
-            source_name: "战斗类型"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "map_id"
-            source_name: "关卡id"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "coin_result"
-            source_name: "剩余金币"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "coin_consume"
-            source_name: "使用金币"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-      - event_name: "magicbox_skill_select"
-        source_name: "魔盒肉鸽技能选择"
-        source: "客户端"
-        page: null
-        module: "战斗"
-        trigger: "肉鸽技能选择时"
-        description: "肉鸽技能选择时"
-        params:
-          - name: "battle_uid"
-            source_name: "战斗唯一id"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: "为了区分是哪一场战斗"
-          - name: "battle_type"
-            source_name: "战斗类型"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "map_id"
-            source_name: "关卡id"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "skill_source"
-            source_name: "掉落来源"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: "升级/精英怪"
-          - name: "is_refresh"
-            source_name: "是否刷新而来"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "skill_options"
-            source_name: "候选技能池"
-            type: "array"
-            source_type: "Array(Object)"
-            required: null
-            description: null
-          - name: "skill_chosen"
-            source_name: "实际选择技能"
-            type: "array"
-            source_type: "Array(Object)"
-            required: null
-            description: null
-      - event_name: "battle_result"
-        source_name: "战斗结算"
-        source: "客户端"
-        page: null
-        module: "战斗"
-        trigger: "战斗结束"
-        description: "战斗结束"
-        params:
-          - name: "battle_uid"
-            source_name: "战斗唯一id"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: "为了区分是哪一场战斗"
-          - name: "battle_type"
-            source_name: "战斗类型"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "map_id"
-            source_name: "关卡id"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "battle_array"
-            source_name: "我方阵容信息"
-            type: "array"
-            source_type: "Array(Object)"
-            required: null
-            description: "记录上阵英雄以及伤害统计"
-          - name: "destroy_time"
-            source_name: "城墙破坏时间"
-            type: "array"
-            source_type: "Array(Object)"
-            required: null
-            description: null
-          - name: "duration"
-            source_name: "战斗时长(秒)"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-      - event_name: "camp_build_log"
-        source_name: "营地资源建筑"
-        source: "服务端"
-        page: null
-        module: "营地"
-        trigger: null
-        description: null
-        params:
-          - name: "cbtype"
-            source_name: "建筑类型"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: null
-          - name: "cblv"
-            source_name: "建筑等级"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-      - event_name: "camp_academy_log"
-        source_name: "研究院"
-        source: "服务端"
-        page: null
-        module: "营地"
-        trigger: null
-        description: null
-        params:
-          - name: "aid"
-            source_name: "研究天赋id"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: null
-          - name: "alv"
-            source_name: "天赋等级"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "begin_time"
-            source_name: "开始时间"
-            type: "timestamp"
-            source_type: "timestamp"
-            required: null
-            description: null
-          - name: "finish_time"
-            source_name: "完成时间"
-            type: "timestamp"
-            source_type: "timestamp"
-            required: null
-            description: null
-          - name: "help_time"
-            source_name: "互助加速时长"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "goods_time"
-            source_name: "道具加速时长"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-      - event_name: "camp_academy_help_log"
-        source_name: "交流中心"
-        source: "服务端"
-        page: null
-        module: "营地"
-        trigger: null
-        description: null
-        params:
-          - name: "pid"
-            source_name: "助力id"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: null
-          - name: "aid"
-            source_name: "助力天赋id"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: null
-          - name: "alv"
-            source_name: "助力天赋等级"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-      - event_name: "camp_alter_unlock_log"
-        source_name: "共鸣祭坛（解锁流水）"
-        source: "服务端"
-        page: null
-        module: "营地"
-        trigger: null
-        description: null
-        params:
-          - name: "unlock_pos"
-            source_name: "解锁栏位"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "finish_time"
-            source_name: "完成时间"
-            type: "timestamp"
-            source_type: "timestamp"
-            required: null
-            description: null
-      - event_name: "camp_alter_role_log"
-        source_name: "共鸣祭坛（英雄流水）"
-        source: "服务端"
-        page: null
-        module: "营地"
-        trigger: null
-        description: null
-        params:
-          - name: "pos"
-            source_name: "栏位"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "role_id"
-            source_name: "英雄id"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: null
-          - name: "fm"
-            source_name: "是否上阵"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: null
-      - event_name: "role_obtain_log"
-        source_name: "英雄获得"
-        source: "服务端"
-        page: null
-        module: "英雄"
-        trigger: null
-        description: null
-        params:
-          - name: "ins_id"
-            source_name: "英雄实例id"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "role_id"
-            source_name: "英雄id"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: null
-          - name: "init_star"
-            source_name: "初始星级"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "init_quality"
-            source_name: "初始品质"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "init_lv"
-            source_name: "初始等级"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "op_type"
-            source_name: "操作类型"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: "需要配置表"
-      - event_name: "role_lost_log"
-        source_name: "英雄扣除"
-        source: "服务端"
-        page: null
-        module: "英雄"
-        trigger: null
-        description: null
-        params:
-          - name: "ins_id"
-            source_name: "英雄实例id"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "role_id"
-            source_name: "英雄id"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: null
-          - name: "op_type"
-            source_name: "操作类型"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-      - event_name: "role_uplv_log"
-        source_name: "英雄升级"
-        source: "服务端"
-        page: null
-        module: "英雄"
-        trigger: null
-        description: null
-        params:
-          - name: "ins_id"
-            source_name: "英雄实例id"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "role_id"
-            source_name: "英雄id"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: null
-          - name: "olv"
-            source_name: "原等级"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "nlv"
-            source_name: "新等级"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "cost_thing"
-            source_name: "本次变化消耗资源"
-            type: "array"
-            source_type: "Array(Object)"
-            required: null
-            description: "记录养成行为导致的资源消耗"
-            notes:
-              - "[{\"name\":\"xxx\",\"num\":6}, {\"name\":\"xxx\",\"num\":4}]"
-      - event_name: "role_upadv_log"
-        source_name: "英雄升阶"
-        source: "服务端"
-        page: null
-        module: "英雄"
-        trigger: null
-        description: null
-        params:
-          - name: "ins_id"
-            source_name: "英雄实例id"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "role_id"
-            source_name: "英雄id"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: null
-          - name: "oadvance"
-            source_name: "原阶级"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "nadvance"
-            source_name: "新阶级"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "cost_thing"
-            source_name: "本次变化消耗资源"
-            type: "array"
-            source_type: "Array(Object)"
-            required: null
-            description: "记录养成行为导致的资源消耗"
-            notes:
-              - "[{\"name\":\"xxx\",\"num\":6}, {\"name\":\"xxx\",\"num\":4}]"
-      - event_name: "role_upstar_log"
-        source_name: "英雄星级"
-        source: "服务端"
-        page: null
-        module: "英雄"
-        trigger: null
-        description: null
-        params:
-          - name: "ins_id"
-            source_name: "英雄实例id"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "role_id"
-            source_name: "英雄id"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: null
-          - name: "ostar"
-            source_name: "原星级"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "nstar"
-            source_name: "新星级"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "cost_thing"
-            source_name: "本次变化消耗资源"
-            type: "array"
-            source_type: "Array(Object)"
-            required: null
-            description: "记录养成行为导致的资源消耗"
-            notes:
-              - "[{\"name\":\"xxx\",\"star\":6,\"num\":6}, {\"name\":\"xxx\",\"star\":5,\"num\":4}]"
-      - event_name: "role_upguru_log"
-        source_name: "英雄大师"
-        source: "服务端"
-        page: null
-        module: "英雄"
-        trigger: null
-        description: null
-        params:
-          - name: "otype"
-            source_name: "操作类型"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "advance"
-            source_name: "阶级"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-      - event_name: "role_reborn_lv_log"
-        source_name: "英雄等级重生"
-        source: "服务端"
-        page: null
-        module: "英雄"
-        trigger: null
-        description: null
-        params:
-          - name: "ins_id"
-            source_name: "英雄实例id"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "role_id"
-            source_name: "英雄id"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: null
-          - name: "lv"
-            source_name: "原等级"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "advance"
-            source_name: "原阶级"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "backs"
-            source_name: "重生返还资源"
-            type: "array"
-            source_type: "Array(Object)"
-            required: null
-            description: null
-            notes:
-              - "[{\"name\":\"xxx\",\"num\":6}, {\"name\":\"xxx\",\"num\":4}]"
-      - event_name: "role_back_star_log"
-        source_name: "英雄星级回退"
-        source: "服务端"
-        page: null
-        module: "英雄"
-        trigger: null
-        description: null
-        params:
-          - name: "ins_id"
-            source_name: "英雄实例id"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "role_id"
-            source_name: "英雄id"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: null
-          - name: "ostar"
-            source_name: "原星级"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "nstar"
-            source_name: "回退星级"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "backs"
-            source_name: "回退返还资源"
-            type: "array"
-            source_type: "Array(Object)"
-            required: null
-            description: null
-            notes:
-              - "[{\"name\":\"xxx\",\"num\":6}, {\"name\":\"xxx\",\"num\":4}]"
-          - name: "back_roles"
-            source_name: "回退返还英雄"
-            type: "array"
-            source_type: "Array(Object)"
-            required: null
-            description: null
-            notes:
-              - "[{\"name\":\"xxx\",\"star\":6,\"num\":6}, {\"name\":\"xxx\",\"star\":5,\"num\":4}]"
-      - event_name: "role_equip_change_log"
-        source_name: "英雄装备流水"
-        source: "服务端"
-        page: null
-        module: "装备"
-        trigger: null
-        description: null
-        params:
-          - name: "change_reason"
-            source_name: "操作类型"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "ins_id"
-            source_name: "实例id"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "change_ins_id"
-            source_name: "变更实例id"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "eid"
-            source_name: "装备id"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "onum"
-            source_name: "已有数量"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "num"
-            source_name: "变更后数量"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-      - event_name: "role_equip_forge_log"
-        source_name: "装备升级（锻造）"
-        source: "服务端"
-        page: null
-        module: "装备"
-        trigger: null
-        description: null
-        params:
-          - name: "change_reason"
-            source_name: "操作类型"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "ins_id"
-            source_name: "实例id"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "change_ins_id"
-            source_name: "源实例id"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "eid"
-            source_name: "装备id"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "exp"
-            source_name: "获得经验"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "star"
-            source_name: "星级"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "fexp"
-            source_name: "锻造经验"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-      - event_name: "role_equip_upgrade_log"
-        source_name: "装备升品"
-        source: "服务端"
-        page: null
-        module: "装备"
-        trigger: null
-        description: null
-        params:
-          - name: "change_reason"
-            source_name: "操作类型"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "ins_id"
-            source_name: "装备实例id"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "change_ins_id"
-            source_name: "源实例id"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "oeid"
-            source_name: "原装备id"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "neid"
-            source_name: "新装备id"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "ostar"
-            source_name: "原星级"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "nstar"
-            source_name: "新星级"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-      - event_name: "role_equip_upguru_log"
-        source_name: "装备大师"
-        source: "服务端"
-        page: null
-        module: "装备"
-        trigger: null
-        description: null
-        params:
-          - name: "otype"
-            source_name: "操作类型"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "advance"
-            source_name: "阶级"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-      - event_name: "role_art_uplv_log"
-        source_name: "神器升级"
-        source: "服务端"
-        page: null
-        module: "神器"
-        trigger: null
-        description: null
-        params:
-          - name: "ins_id"
-            source_name: "英雄实例id"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "role_id"
-            source_name: "英雄id"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: null
-          - name: "olv"
-            source_name: "原等级"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "nlv"
-            source_name: "新等级"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-      - event_name: "role_art_upstar_log"
-        source_name: "神器升星"
-        source: "服务端"
-        page: null
-        module: "神器"
-        trigger: null
-        description: null
-        params:
-          - name: "ins_id"
-            source_name: "英雄实例id"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "role_id"
-            source_name: "英雄id"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: null
-          - name: "ostar"
-            source_name: "原星级"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: "未激活=-1，激活=0"
-          - name: "nstar"
-            source_name: "新星级"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-      - event_name: "role_art_upguru_log"
-        source_name: "神器大师"
-        source: "服务端"
-        page: null
-        module: "神器"
-        trigger: null
-        description: null
-        params:
-          - name: "otype"
-            source_name: "操作类型"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "advance"
-            source_name: "阶级"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-      - event_name: "role_art_reborn_lv_log"
-        source_name: "神器等级重生"
-        source: "服务端"
-        page: null
-        module: "神器"
-        trigger: null
-        description: null
-        params:
-          - name: "ins_id"
-            source_name: "英雄实例id"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "role_id"
-            source_name: "英雄id"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: null
-          - name: "lv"
-            source_name: "原等级"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-      - event_name: "role_art_back_star_log"
-        source_name: "神器星级回退"
-        source: "服务端"
-        page: null
-        module: "神器"
-        trigger: null
-        description: null
-        params:
-          - name: "ins_id"
-            source_name: "英雄实例id"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "role_id"
-            source_name: "英雄id"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: null
-          - name: "star"
-            source_name: "原星级"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-      - event_name: "change_power_log"
-        source_name: "战力"
-        source: "服务端"
-        page: null
-        module: "道具物资"
-        trigger: "战力变化时"
-        description: "战力变化时"
-        params:
-          - name: "before"
-            source_name: "变化前"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "after"
-            source_name: "变化后"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "num"
-            source_name: "数量"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "result"
-            source_name: "变化后结果"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "change_reason"
-            source_name: "变化原因"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: "需要配置表"
-      - event_name: "money_log"
-        source_name: "货币"
-        source: "服务端"
-        page: null
-        module: "道具物资"
-        trigger: "发生物资变动时"
-        description: "发生物资变动时"
-        params:
-          - name: "change_type"
-            source_name: "变化类型"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: "1，产出；2，消耗"
-          - name: "item_id"
-            source_name: "道具id"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "item_name"
-            source_name: "道具名称"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: null
-          - name: "item_type"
-            source_name: "道具类型"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: null
-          - name: "item_num"
-            source_name: "道具数量"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "item_quality"
-            source_name: "道具品质"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "item_result"
-            source_name: "道具变化后结果"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "change_reason"
-            source_name: "变化原因"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: "产出/消耗途径，如：日常任务奖励获得/抽卡消耗"
-      - event_name: "voucher_log"
-        source_name: "代金券"
-        source: "服务端"
-        page: null
-        module: "发生物资变动时"
-        trigger: "发生物资变动时"
-        description: "发生物资变动时"
-        params:
-          - name: "change_type"
-            source_name: "变化类型"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: "1，产出；2，消耗"
-          - name: "item_id"
-            source_name: "道具id"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "item_name"
-            source_name: "道具名称"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: null
-          - name: "item_type"
-            source_name: "道具类型"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: null
-          - name: "item_num"
-            source_name: "道具数量"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "item_quality"
-            source_name: "道具品质"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "item_result"
-            source_name: "道具变化后结果"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "change_reason"
-            source_name: "变化原因"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: null
-          - name: "product_type"
-            source_name: "礼包类型"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: "首充/日常礼包/累充返利/月卡/基金/商城"
-          - name: "product_id"
-            source_name: "礼包id"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "product_name"
-            source_name: "礼包名称"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: null
-      - event_name: "item_log"
-        source_name: "背包道具"
-        source: "服务端"
-        page: null
-        module: "道具物资"
-        trigger: "发生物资变动时"
-        description: "发生物资变动时"
-        params:
-          - name: "change_type"
-            source_name: "变化类型"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: "1，产出；2，消耗"
-          - name: "item_id"
-            source_name: "道具id"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "item_name"
-            source_name: "道具名称"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: null
-          - name: "item_type"
-            source_name: "道具类型"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: null
-          - name: "item_num"
-            source_name: "道具数量"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "item_quality"
-            source_name: "道具品质"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "item_result"
-            source_name: "道具变化后结果"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "change_reason"
-            source_name: "变化原因"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: "产出/消耗途径，如：日常任务奖励获得/抽卡消耗"
-      - event_name: "gift_log"
-        source_name: "礼包道具"
-        source: "服务端"
-        page: null
-        module: null
-        trigger: "发生物资变动时"
-        description: "发生物资变动时"
-        params:
-          - name: "change_type"
-            source_name: "变化类型"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: "1，产出；2，消耗"
-          - name: "item_id"
-            source_name: "道具id"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "item_name"
-            source_name: "道具名称"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: null
-          - name: "item_type"
-            source_name: "道具类型"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: null
-          - name: "item_num"
-            source_name: "道具数量"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "item_quality"
-            source_name: "道具品质"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "item_result"
-            source_name: "道具变化后结果"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "change_reason"
-            source_name: "变化原因"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: "产出/消耗途径，如：日常任务奖励获得/抽卡消耗"
-      - event_name: "pieces_log"
-        source_name: "碎片道具"
-        source: "服务端"
-        page: null
-        module: null
-        trigger: "发生物资变动时"
-        description: "发生物资变动时"
-        params:
-          - name: "change_type"
-            source_name: "变化类型"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: "1，产出；2，消耗"
-          - name: "item_id"
-            source_name: "道具id"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "item_name"
-            source_name: "道具名称"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: null
-          - name: "item_type"
-            source_name: "道具类型"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: null
-          - name: "item_num"
-            source_name: "道具数量"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "item_quality"
-            source_name: "道具品质"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "item_result"
-            source_name: "道具变化后结果"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "change_reason"
-            source_name: "变化原因"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: "产出/消耗途径，如：日常任务奖励获得/抽卡消耗"
-      - event_name: "recruit_log"
-        source_name: "招募"
-        source: "服务端"
-        page: null
-        module: "抽卡"
-        trigger: "抽卡结束"
-        description: "抽卡结束"
-        params:
-          - name: "gacha_type"
-            source_name: "卡池类型"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: "普通召唤/高级召唤/种族召唤/新英雄抽卡活动"
-          - name: "award_ting"
-            source_name: "得到的物品/英雄"
-            type: "array"
-            source_type: "Array(Object)"
-            required: null
-            description: "记录获得的物品id或者英雄id，数量"
-      - event_name: "mission_finish_log"
-        source_name: "任务完成"
-        source: "服务端"
-        page: null
-        module: "任务"
-        trigger: "任务完成时"
-        description: "任务完成时"
-        params:
-          - name: "task_id"
-            source_name: "任务id"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "task_type"
-            source_name: "任务类型"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: "主线任务/日常任务/周常任务/成就/七日目标"
-          - name: "task_name"
-            source_name: "任务名称"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: null
-      - event_name: "mission_reward_log"
-        source_name: "任务领取"
-        source: "服务端"
-        page: null
-        module: "任务"
-        trigger: "任务领取时"
-        description: "任务领取时"
-        params:
-          - name: "task_id"
-            source_name: "任务id"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "task_type"
-            source_name: "任务类型"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: "主线任务/日常任务/周常任务/成就/七日目标"
-          - name: "task_name"
-            source_name: "任务名称"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: null
-          - name: "award"
-            source_name: "获得奖励"
-            type: "array"
-            source_type: "Array(Object)"
-            required: null
-            description: null
-            notes:
-              - "[{\"id\":\"橙色气球\",\"num\":2,\"id\":\"蓝色气球\",\"num\":1,\"id\":\"绿色气球\",\"num\":4}]"
-      - event_name: "guild_red_envelope_log"
-        source_name: "公会红包"
-        source: "服务端"
-        page: null
-        module: "公会"
-        trigger: null
-        description: null
-        params:
-          - name: "red_id"
-            source_name: "红包id"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "send_type"
-            source_name: "是否主动发送"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: null
-      - event_name: "guild_bargain_log"
-        source_name: "砍价夺宝"
-        source: "服务端"
-        page: null
-        module: "公会"
-        trigger: null
-        description: null
-        params:
-          - name: "id"
-            source_name: "砍价夺宝id"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "bargain"
-            source_name: "砍价数量"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "price"
-            source_name: "剩余价格"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-      - event_name: "guild_sign_log"
-        source_name: "公会签到"
-        source: "服务端"
-        page: null
-        module: "公会"
-        trigger: null
-        description: null
-        params:
-          - name: "sign_time"
-            source_name: "签到时间"
-            type: "timestamp"
-            source_type: "timestamp"
-            required: null
-            description: null
-          - name: "sign_type"
-            source_name: "签到类型"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: null
-      - event_name: "boss_battle_report"
-        source_name: "部落BOSS战报"
-        source: "客户端"
-        page: null
-        module: "战斗"
-        trigger: "战斗结束"
-        description: "战斗结束"
-        params:
-          - name: "battle_uid"
-            source_name: "战斗唯一id"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: "为了区分是哪一场战斗"
-          - name: "battle_type"
-            source_name: "战斗类型"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: "部落boss"
-          - name: "map_id"
-            source_name: "BOSS_ID"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: "具体哪一只BOSS"
-          - name: "battle_value"
-            source_name: "战斗结果"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: "单局伤害值"
-          - name: "battle_time"
-            source_name: "战斗时间(秒)"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: "坚持时间"
-          - name: "rank_before"
-            source_name: "之前排名"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: "战斗前的排名"
-          - name: "rank_after"
-            source_name: "之后排名"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: "战斗后的排名"
-          - name: "wall_array"
-            source_name: "城墙上阵信息"
-            type: "array"
-            source_type: "Array(Object)"
-            required: null
-            description: "记录上阵城墙"
-          - name: "battle_array"
-            source_name: "英雄阵容信息"
-            type: "array"
-            source_type: "Array(Object)"
-            required: null
-            description: "记录上阵英雄"
-            notes:
-              - "[{\"hero_name\":\"托尔索\",\"hero_level\":1,\"seat\":1,\"hero_star\":10,\"hero_id\":5,\"jewelry_skill_1\":\"中级凝神\",\"jewelry_skill_2\":\"中级沉默\"}, {\"hero_name\":\"嗨啦噜王子\",\"hero_level\":1,\"seat\":2,\"hero_star\":10,\"hero_id\":30}, {\"hero_name\":\"大天使米勒\",\"hero_level\":1,\"seat\":3,\"hero_star\":6,\"hero_id\":32}, {\"hero_name\":\"雪女斯卡蒂\",\"hero_level\":1,\"seat\":4,\"hero_star\":7,\"hero_id\":14}, {\"hero_name\":\"神盾阿克\",\"hero_level\":1,\"seat\":5,\"hero_star\":5,\"hero_id\":16}] "
-      - event_name: "ad_log"
-        source_name: "激励广告"
-        source: "客户端"
-        page: null
-        module: "激励广告"
-        trigger: "激励广告位状态发生变化时"
-        description: "激励广告位状态发生变化时"
-        params:
-          - name: "change_reason"
-            source_name: "变化原因"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: "点击/完成"
-            notes:
-              - "直接用中文或者英文，方便客服、运营查询"
-          - name: "location_name"
-            source_name: "广告位名称"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: "对应微信后台广告位名称"
-          - name: "location_id"
-            source_name: "广告位id"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: null
-        notes:
-          - "直接用中文或者英文，方便客服、运营查询"
-      - event_name: "shop_flush_log"
-        source_name: "杂货铺（刷新）"
-        source: "服务端"
-        page: null
-        module: "杂货铺"
-        trigger: null
-        description: null
-        params:
-          - name: "shop_id"
-            source_name: "商店id"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "num"
-            source_name: "刷新消耗"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "res_id"
-            source_name: "消耗货币id"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-      - event_name: "shop_buy_log"
-        source_name: "杂货铺（购买）"
-        source: "服务端"
-        page: null
-        module: "杂货铺"
-        trigger: null
-        description: null
-        params:
-          - name: "shop_id"
-            source_name: "商店id"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "goods_id"
-            source_name: "商品id"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "num"
-            source_name: "购买数量"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "res_id"
-            source_name: "消耗货币id"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "res_num"
-            source_name: "单品所需货币数"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "res_count"
-            source_name: "累计消耗数"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "discount"
-            source_name: "折扣"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "items"
-            source_name: "获得物品"
-            type: "array"
-            source_type: "Array(Object)"
-            required: null
-            description: null
-            notes:
-              - "[{\"id\":\"橙色气球\",\"num\":2,\"id\":\"蓝色气球\",\"num\":1,\"id\":\"绿色气球\",\"num\":4}]"
-      - event_name: "daily_sign_log"
-        source_name: "每日签到"
-        source: "服务端"
-        page: null
-        module: "活动"
-        trigger: "领取签到奖励后上报"
-        description: "领取签到奖励后上报"
-        params:
-          - name: "sign_name"
-            source_name: "签到名称"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: null
-          - name: "sign_day"
-            source_name: "签到天数"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "sign_count"
-            source_name: "批量领取天数"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "adward"
-            source_name: "获得奖励"
-            type: "array"
-            source_type: "Array(Object)"
-            required: null
-            description: null
-      - event_name: "pvp_log"
-        source_name: "PVP战报"
-        source: "服务端"
-        page: null
-        module: "PVP战斗"
-        trigger: "pvp结束时"
-        description: "pvp结束时"
-        params:
-          - name: "battle_uid"
-            source_name: "战斗唯一id"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: "为了区分是哪一场战斗"
-          - name: "battle_type"
-            source_name: "战斗类型"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: "竞技场（pvp） 矿脉争夺战（pvp） 勇者争霸—晋级赛（pvp） 勇者争霸—冠军赛（pvp）"
-          - name: "score"
-            source_name: "当前段位"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: null
-          - name: "opponent_pid"
-            source_name: "对手角色id"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: null
-          - name: "opponent_score"
-            source_name: "对手段位"
-            type: "unknown"
-            source_type: null
-            required: null
-            description: null
-          - name: "my_lineup"
-            source_name: "我方阵容信息"
-            type: "array"
-            source_type: "Array(Object)"
-            required: null
-            description: "记录上阵英雄"
-            notes:
-              - "[{\"hero_name\":\"托尔索\",\"hero_level\":1,\"seat\":1,\"hero_star\":10,\"hero_id\":5,\"jewelry_skill_1\":\"中级凝神\",\"jewelry_skill_2\":\"中级沉默\"}, {\"hero_name\":\"嗨啦噜王子\",\"hero_level\":1,\"seat\":2,\"hero_star\":10,\"hero_id\":30}, {\"hero_name\":\"大天使米勒\",\"hero_level\":1,\"seat\":3,\"hero_star\":6,\"hero_id\":32}, {\"hero_name\":\"雪女斯卡蒂\",\"hero_level\":1,\"seat\":4,\"hero_star\":7,\"hero_id\":14}, {\"hero_name\":\"神盾阿克\",\"hero_level\":1,\"seat\":5,\"hero_star\":5,\"hero_id\":16}] "
-          - name: "my_attr_bonus"
-            source_name: "我方属性加成"
-            type: "array"
-            source_type: "Array(Object)"
-            required: null
-            description: "记录属性加成"
-          - name: "opponent_lineup"
-            source_name: "对手阵容信息"
-            type: "array"
-            source_type: "Array(Object)"
-            required: null
-            description: null
-            notes:
-              - "[{\"hero_name\":\"托尔索\",\"hero_level\":1,\"seat\":1,\"hero_star\":10,\"hero_id\":5,\"jewelry_skill_1\":\"中级凝神\",\"jewelry_skill_2\":\"中级沉默\"}, {\"hero_name\":\"嗨啦噜王子\",\"hero_level\":1,\"seat\":2,\"hero_star\":10,\"hero_id\":30}, {\"hero_name\":\"大天使米勒\",\"hero_level\":1,\"seat\":3,\"hero_star\":6,\"hero_id\":32}, {\"hero_name\":\"雪女斯卡蒂\",\"hero_level\":1,\"seat\":4,\"hero_star\":7,\"hero_id\":14}, {\"hero_name\":\"神盾阿克\",\"hero_level\":1,\"seat\":5,\"hero_star\":5,\"hero_id\":16}] "
-          - name: "opponent_attr_bonus"
-            source_name: "对手属性加成"
-            type: "array"
-            source_type: "Array(Object)"
-            required: null
-            description: null
-          - name: "winner_pid"
-            source_name: "获胜者ID"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: null
-          - name: "score_delta"
-            source_name: "获得积分"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-      - event_name: "ring_put_log"
-        source_name: "戒指穿戴"
-        source: "服务端"
-        page: null
-        module: "戒指"
-        trigger: null
-        description: null
-        params:
-          - name: "ring_id"
-            source_name: "戒指id"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "ring_uid"
-            source_name: "戒指唯一id"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "ring_name"
-            source_name: "戒指名称"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: null
-          - name: "hero_id"
-            source_name: "英雄id"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: "穿在谁身上了"
-          - name: "hero_name"
-            source_name: "英雄名称"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: null
-      - event_name: "ring_put_off_log"
-        source_name: "戒指脱下"
-        source: "服务端"
-        page: null
-        module: "戒指"
-        trigger: null
-        description: null
-        params:
-          - name: "ring_id"
-            source_name: "戒指id"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "ring_uid"
-            source_name: "戒指唯一id"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "ring_name"
-            source_name: "戒指名称"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: null
-          - name: "hero_id"
-            source_name: "英雄id"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: "从谁身上脱下"
-          - name: "hero_name"
-            source_name: "英雄名称"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: null
-      - event_name: "ring_log"
-        source_name: "戒指获得"
-        source: "服务端"
-        page: null
-        module: "戒指"
-        trigger: "道具资源产出/消耗"
-        description: "道具资源产出/消耗"
-        params:
-          - name: "ring_id"
-            source_name: "戒指id"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "ring_uid"
-            source_name: "戒指唯一id"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "ring_name"
-            source_name: "戒指名称"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: null
-          - name: "ring_num"
-            source_name: "道具数量"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "ring_quality"
-            source_name: "道具品质"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "ring_result"
-            source_name: "道具变化后结果"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: "获得这一次后，玩家一共获得多少个本体"
-          - name: "change_reason"
-            source_name: "变化原因"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: "产出/消耗途径，如：日常任务奖励获得/抽卡消耗"
-      - event_name: "ring_compose_log"
-        source_name: "戒指合成"
-        source: "服务端"
-        page: null
-        module: "戒指"
-        trigger: "养成完成时"
-        description: "养成完成时"
-        params:
-          - name: "ring_id"
-            source_name: "戒指id（变化后）"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "ring_uid"
-            source_name: "戒指唯一id"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "ring_name"
-            source_name: "戒指名称（变化后）"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: null
-          - name: "cost_item"
-            source_name: "消耗物品"
-            type: "array"
-            source_type: "Array(Object)"
-            required: null
-            description: "要体现被吃掉的物品的唯一id（为了溯源）"
-            notes:
-              - "戒指唯一id，戒指id，戒指名称，戒指属性（词条）:[{\"id\":1, \"uid\", 111, \"name\": \"戒指1\", \"skills\":[{\"sid\":1, \"sname\":技能1},{\"sid\":2, \"sname\":技能2} ]}，{\"id\":2, \"uid\", 222, \"name\": \"戒指2\", \"skills\":[{\"sid\":1, \"sname\":技能1},{\"sid\":2, \"sname\":技能2} ]}]"
-      - event_name: "ring_decompose_log"
-        source_name: "戒指分解"
-        source: "服务端"
-        page: null
-        module: "戒指"
-        trigger: "养成完成时"
-        description: "养成完成时"
-        params:
-          - name: "ring_id"
-            source_name: "戒指id"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "ring_uid"
-            source_name: "戒指唯一id"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "ring_name"
-            source_name: "戒指名称"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: null
-          - name: "skills"
-            source_name: "词条(技能)"
-            type: "array"
-            source_type: "Array(Object)"
-            required: null
-            description: null
-            notes:
-              - "[{\"sid\":1, \"sname\":技能1},{\"sid\":2, \"sname\":技能2} ]"
-      - event_name: "ring_purify_log"
-        source_name: "戒指洗炼"
-        source: "服务端"
-        page: null
-        module: "戒指"
-        trigger: "养成完成时"
-        description: "养成完成时"
-        params:
-          - name: "ring_id"
-            source_name: "戒指id"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "ring_uid"
-            source_name: "戒指唯一id"
-            type: "unknown"
-            source_type: null
-            required: null
-            description: null
-          - name: "ring_name"
-            source_name: "戒指名称"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: null
-          - name: "before_skills"
-            source_name: "词条_变化前"
-            type: "array"
-            source_type: "Array(Object)"
-            required: null
-            description: null
-          - name: "after_skills"
-            source_name: "词条_变化后"
-            type: "array"
-            source_type: "Array(Object)"
-            required: null
-            description: null
-            notes:
-              - "[{\"sid\":1, \"sname\":技能1},{\"sid\":2, \"sname\":技能2} ]"
-          - name: "cost_item"
-            source_name: "消耗物品"
-            type: "array"
-            source_type: "Array(Object)"
-            required: null
-            description: null
-            notes:
-              - "[{\"name\":\"道具1\", \"num\":1}, {\"name\":\"道具1\", \"num\":1}]"
-      - event_name: "ring_purify_ok_log"
-        source_name: "戒指洗炼保存"
-        source: "服务端"
-        page: null
-        module: "戒指"
-        trigger: "养成完成时"
-        description: "养成完成时"
-        params:
-          - name: "ring_id"
-            source_name: "戒指id"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "ring_uid"
-            source_name: "戒指唯一id"
-            type: "unknown"
-            source_type: null
-            required: null
-            description: null
-          - name: "ring_name"
-            source_name: "戒指名称"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: null
-          - name: "before_skills"
-            source_name: "词条_变化前"
-            type: "array"
-            source_type: "Array(Object)"
-            required: null
-            description: null
-            notes:
-              - "[{\"sid\":1, \"sname\":技能1},{\"sid\":2, \"sname\":技能2} ]"
-          - name: "after_skills"
-            source_name: "词条_变化后"
-            type: "array"
-            source_type: "Array(Object)"
-            required: null
-            description: null
-            notes:
-              - "[{\"sid\":1, \"sname\":技能1},{\"sid\":2, \"sname\":技能2} ]"
-      - event_name: "mining_log"
-        source_name: "矿脉争夺战"
-        source: "服务端"
-        page: null
-        module: "矿脉"
-        trigger: "矿脉战斗结束时"
-        description: "矿脉战斗结束时"
-        params:
-          - name: "change_reason"
-            source_name: "变化原因"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: "1，占领 2，探查 3，掠夺 4，结束开采"
-          - name: "mine_key"
-            source_name: "矿场id"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: "serverIndex_id_slot_index"
-          - name: "pid"
-            source_name: "归属"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: "上报归属者角色id"
-          - name: "result"
-            source_name: "占领结果"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: "1，成功 0，失败"
-      - event_name: "wall_uplv_log"
-        source_name: "城墙升级"
-        source: "服务端"
-        page: null
-        module: "城墙"
-        trigger: "养成完成时"
-        description: "养成完成时"
-        params:
-          - name: "level_before"
-            source_name: "养成前等级"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "level_after"
-            source_name: "养成后等级"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "cost_thing"
-            source_name: "本次变化消耗资源"
-            type: "array"
-            source_type: "Array(Object)"
-            required: null
-            description: null
-          - name: "change_value"
-            source_name: "本次变化值"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-      - event_name: "wall_upadvance_log"
-        source_name: "城墙升阶"
-        source: "服务端"
-        page: null
-        module: "城墙"
-        trigger: "养成完成时"
-        description: "养成完成时"
-        params:
-          - name: "advance_before"
-            source_name: "养成前阶级"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "advance_after"
-            source_name: "养成后阶级"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "cost_thing"
-            source_name: "本次变化消耗资源"
-            type: "array"
-            source_type: "Array(Object)"
-            required: null
-            description: null
-          - name: "change_value"
-            source_name: "本次变化值"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-      - event_name: "wall_upstar_log"
-        source_name: "城墙升星"
-        source: "服务端"
-        page: null
-        module: "城墙"
-        trigger: "养成完成时"
-        description: "养成完成时"
-        params:
-          - name: "wall_id"
-            source_name: "城墙皮肤id"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "star_before"
-            source_name: "养成前星级"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: "未激活=-1，激活=0"
-          - name: "star_after"
-            source_name: "养成后星级"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "cost_thing"
-            source_name: "本次变化消耗资源"
-            type: "array"
-            source_type: "Array(Object)"
-            required: null
-            description: null
-          - name: "change_value"
-            source_name: "本次变化值"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-      - event_name: "gumu_log"
-        source_name: "古墓探秘"
-        source: "服务端"
-        page: null
-        module: "副本PVE"
-        trigger: null
-        description: null
-        params:
-          - name: "gumu_lv"
-            source_name: "血月等级"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "gumu_layer"
-            source_name: "层数"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "gumu_pos"
-            source_name: "位置"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "gumu_id"
-            source_name: "事件id"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "gumu_param"
-            source_name: "参数"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: "问答选项id"
-          - name: "gumu_ename"
-            source_name: "触发事件名称"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: "如果遇到战斗，进之前的战斗事件（战斗开始、战斗结算、肉鸽、魔盒）"
-      - event_name: "guibao_upstar_log"
-        source_name: "诡宝升星"
-        source: "服务端"
-        page: null
-        module: "诡宝"
-        trigger: null
-        description: null
-        params:
-          - name: "guibao_id"
-            source_name: "诡宝ID"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "guibao_name"
-            source_name: "诡宝名称"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: null
-          - name: "star_before"
-            source_name: "养成前星级"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: "未激活=-1，激活=0"
-          - name: "star_after"
-            source_name: "养成后星级"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "cost_thing"
-            source_name: "本次变化消耗资源"
-            type: "array"
-            source_type: "Array(Object)"
-            required: null
-            description: null
-          - name: "change_value"
-            source_name: "本次变化值"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-      - event_name: "guibao_upadvance_log"
-        source_name: "诡宝升阶"
-        source: "服务端"
-        page: null
-        module: "诡宝"
-        trigger: null
-        description: null
-        params:
-          - name: "guibao_id"
-            source_name: "诡宝ID"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "guibao_name"
-            source_name: "诡宝名称"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: null
-          - name: "advance_before"
-            source_name: "养成前阶级"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "advance_after"
-            source_name: "养成后阶级"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "cost_thing"
-            source_name: "本次变化消耗资源"
-            type: "array"
-            source_type: "Array(Object)"
-            required: null
-            description: null
-          - name: "change_value"
-            source_name: "本次变化值"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-      - event_name: "round_mission_reward_log"
-        source_name: "诡契追缉"
-        source: "服务端"
-        page: null
-        module: "任务"
-        trigger: "任务领取时"
-        description: "任务领取时"
-        params:
-          - name: "task_id"
-            source_name: "任务id"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "task_round"
-            source_name: "任务轮次"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "task_name"
-            source_name: "任务名称"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: null
-          - name: "award"
-            source_name: "获得奖励"
-            type: "array"
-            source_type: "Array(Object)"
-            required: null
-            description: null
-      - event_name: "battle_star"
-        source_name: "战斗开始"
-        source: "客户端"
-        page: null
-        module: "战斗（合作试炼复用）"
-        trigger: "战斗开始时"
-        description: "战斗开始时"
-        params:
-          - name: "battle_uid"
-            source_name: "战斗唯一id"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: "为了区分是哪一场战斗"
-          - name: "battle_type"
-            source_name: "战斗类型"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: "增加 *合作试炼关卡类型"
-          - name: "map_id"
-            source_name: "关卡id"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: "*需要确认不同层的关卡ID是否会重复"
-          - name: "battle_array"
-            source_name: "我方阵容信息"
-            type: "array"
-            source_type: "Array(Object)"
-            required: null
-            description: "记录上阵英雄"
-          - name: "opponent_id"
-            source_name: "协战玩家ID"
-            type: "unknown"
-            source_type: null
-            required: null
-            description: null
-          - name: "opponent_battle_array"
-            source_name: "协战玩家阵容信息"
-            type: "array"
-            source_type: "Array(Object)"
-            required: null
-            description: null
-      - event_name: "battle_result"
-        source_name: "战斗结算"
-        source: "客户端"
-        page: null
-        module: "战斗"
-        trigger: "战斗结束"
-        description: "战斗结束"
-        params:
-          - name: "battle_uid"
-            source_name: "战斗唯一id"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: "为了区分是哪一场战斗"
-          - name: "battle_type"
-            source_name: "战斗类型"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: "增加 *合作试炼关卡类型"
-          - name: "map_id"
-            source_name: "关卡id"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: "*需要确认不同层的关卡ID是否会重复"
-          - name: "battle_array"
-            source_name: "我方阵容信息"
-            type: "array"
-            source_type: "Array(Object)"
-            required: null
-            description: "记录上阵英雄以及伤害统计"
-          - name: "opponent_battle_array"
-            source_name: "协战玩家阵容信息"
-            type: "array"
-            source_type: "Array(Object)"
-            required: null
-            description: null
-          - name: "destroy_time"
-            source_name: "城墙破坏时间"
-            type: "array"
-            source_type: "Array(Object)"
-            required: null
-            description: null
-          - name: "duration"
-            source_name: "战斗时长(秒)"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "round"
-            source_name: "结算波次"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "result"
-            source_name: "战斗结果"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: "1，成功0，失败"
-      - event_name: "battle_star"
-        source_name: "战斗开始"
-        source: "客户端"
-        page: null
-        module: "世界-合作试炼"
-        trigger: "战斗开始时"
-        description: "战斗开始时"
-        params:
-          - name: "battle_uid"
-            source_name: "战斗唯一id"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: "为了区分是哪一场战斗"
-          - name: "battle_type"
-            source_name: "战斗类型"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: "增加 *合作试炼关卡类型"
-          - name: "map_id"
-            source_name: "关卡id"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: "*需要确认不同层的关卡ID是否会重复"
-          - name: "diffculty_id"
-            source_name: "难度/层数 "
-            type: "number"
-            source_type: "double"
-            required: null
-            description: "*如果存在不同层数关卡ID重复的情况，需要记录该字段，没有则删除"
-          - name: "battle_array"
-            source_name: "我方阵容信息"
-            type: "array"
-            source_type: "Array(Object)"
-            required: null
-            description: "记录上阵英雄"
-          - name: "cost_item"
-            source_name: "消耗物品"
-            type: "array"
-            source_type: "Array(Object)"
-            required: null
-            description: "[{\"num\":xx,\"name\":xx,\"id\":\"xx\"}]"
-          - name: "opponent_id"
-            source_name: "协战玩家ID"
-            type: "unknown"
-            source_type: null
-            required: null
-            description: null
-          - name: "opponent_battle_array"
-            source_name: "协战玩家阵容信息"
-            type: "array"
-            source_type: "Array(Object)"
-            required: null
-            description: null
-      - event_name: "battle_result"
-        source_name: "战斗结算"
-        source: "客户端"
-        page: null
-        module: "世界-合作试炼"
-        trigger: "战斗结束"
-        description: "战斗结束"
-        params:
-          - name: "battle_uid"
-            source_name: "战斗唯一id"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: "为了区分是哪一场战斗"
-          - name: "battle_type"
-            source_name: "战斗类型"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: "增加 *合作试炼关卡类型"
-          - name: "map_id"
-            source_name: "关卡id"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: "*需要确认不同层的关卡ID是否会重复"
-          - name: "diffculty_id"
-            source_name: "难度/层数 "
-            type: "number"
-            source_type: "double"
-            required: null
-            description: "*如果存在不同层数关卡ID重复的情况，需要记录该字段，没有则删除"
-          - name: "battle_array"
-            source_name: "我方阵容信息"
-            type: "array"
-            source_type: "Array(Object)"
-            required: null
-            description: "记录上阵英雄以及伤害统计"
-          - name: "opponent_battle_array"
-            source_name: "协战玩家阵容信息"
-            type: "array"
-            source_type: "Array(Object)"
-            required: null
-            description: null
-          - name: "destroy_time"
-            source_name: "城墙破坏时间"
-            type: "array"
-            source_type: "Array(Object)"
-            required: null
-            description: null
-          - name: "duration"
-            source_name: "战斗时长(秒)"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "round"
-            source_name: "结算波次"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "result"
-            source_name: "战斗结果"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: "1，成功0，失败"
-          - name: "award"
-            source_name: "获得奖励"
-            type: "array"
-            source_type: "Array(Object)"
-            required: null
-            description: null
-      - event_name: "rougue_skill_show"
-        source_name: "弹出肉鸽技能"
-        source: "客户端"
-        page: null
-        module: "世界-合作试炼"
-        trigger: "肉鸽技能弹出时"
-        description: "肉鸽技能弹出时"
-        params:
-          - name: "battle_uid"
-            source_name: "战斗唯一id"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: "为了区分是哪一场战斗"
-          - name: "battle_type"
-            source_name: "战斗类型"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "map_id"
-            source_name: "关卡id"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "skill_source"
-            source_name: "掉落来源"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: "升级/精英怪"
-          - name: "skill_options"
-            source_name: "候选技能池"
-            type: "array"
-            source_type: "Array(Object)"
-            required: null
-            description: null
-      - event_name: "rougue_skill"
-        source_name: "肉鸽技能选择"
-        source: "客户端"
-        page: null
-        module: "世界-合作试炼"
-        trigger: "肉鸽技能选择时"
-        description: "肉鸽技能选择时"
-        params:
-          - name: "battle_uid"
-            source_name: "战斗唯一id"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: "为了区分是哪一场战斗"
-          - name: "battle_type"
-            source_name: "战斗类型"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "map_id"
-            source_name: "关卡id"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "skill_source"
-            source_name: "掉落来源"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: "升级/精英怪"
-          - name: "is_refresh"
-            source_name: "是否刷新而来"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "skill_options"
-            source_name: "候选技能池"
-            type: "array"
-            source_type: "Array(Object)"
-            required: null
-            description: null
-          - name: "skill_chosen"
-            source_name: "实际选择技能"
-            type: "array"
-            source_type: "Array(Object)"
-            required: null
-            description: null
-      - event_name: "magicbox_skill_show"
-        source_name: "魔盒弹出肉鸽技能"
-        source: "客户端"
-        page: null
-        module: "世界-合作试炼"
-        trigger: "肉鸽技能弹出时"
-        description: "肉鸽技能弹出时"
-        params:
-          - name: "battle_uid"
-            source_name: "战斗唯一id"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: "为了区分是哪一场战斗"
-          - name: "battle_type"
-            source_name: "战斗类型"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "map_id"
-            source_name: "关卡id"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "coin_result"
-            source_name: "剩余金币"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "coin_consume"
-            source_name: "使用金币"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-      - event_name: "magicbox_skill_select"
-        source_name: "魔盒肉鸽技能选择"
-        source: "客户端"
-        page: null
-        module: "世界-合作试炼"
-        trigger: "肉鸽技能选择时"
-        description: "肉鸽技能选择时"
-        params:
-          - name: "battle_uid"
-            source_name: "战斗唯一id"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: "为了区分是哪一场战斗"
-          - name: "battle_type"
-            source_name: "战斗类型"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "map_id"
-            source_name: "关卡id"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "skill_source"
-            source_name: "掉落来源"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: "升级/精英怪"
-          - name: "is_refresh"
-            source_name: "是否刷新而来"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "skill_options"
-            source_name: "候选技能池"
-            type: "array"
-            source_type: "Array(Object)"
-            required: null
-            description: null
-          - name: "skill_chosen"
-            source_name: "实际选择技能"
-            type: "array"
-            source_type: "Array(Object)"
-            required: null
-            description: null
-      - event_name: "mission_finish_log"
-        source_name: "任务完成"
-        source: "服务端"
-        page: null
-        module: "世界-合作试炼"
-        trigger: "任务完成时"
-        description: "任务完成时"
-        params:
-          - name: "task_id"
-            source_name: "任务id"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "task_type"
-            source_name: "任务类型"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: "增加 *合作试炼每周任务/合作试炼成就任务"
-          - name: "task_name"
-            source_name: "任务名称"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: null
-      - event_name: "mission_reward_log"
-        source_name: "任务领取"
-        source: "服务端"
-        page: null
-        module: "世界-合作试炼"
-        trigger: "任务领取时"
-        description: "任务领取时"
-        params:
-          - name: "task_id"
-            source_name: "任务id"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "task_type"
-            source_name: "任务类型"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: "增加 *合作试炼每周任务/合作试炼成就任务"
-          - name: "task_name"
-            source_name: "任务名称"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: null
-          - name: "award"
-            source_name: "获得奖励"
-            type: "array"
-            source_type: "Array(Object)"
-            required: null
-            description: "[{\"id\":\"橙色气球\",\"num\":2,\"id\":\"蓝色气球\",\"num\":1,\"id\":\"绿色气球\",\"num\":4}]"
-      - event_name: "rank_log"
-        source_name: "排行榜"
-        source: "服务端"
-        page: null
-        module: "世界-合作试炼"
-        trigger: "每小时更新一次"
-        description: "每小时更新一次"
-        params:
-          - name: "rtype"
-            source_name: "排行榜类型"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "rname"
-            source_name: "排行榜名称"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: "增加 *合作试炼单人排行/合作排行"
-          - name: "rank"
-            source_name: "排名"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-      - event_name: "battle_check"
-        source_name: "战斗数据校验"
-        source: "服务端+客户端"
-        page: null
-        module: "外挂治理相关"
-        trigger: "校验战斗数据"
-        description: "校验战斗数据"
-        params:
-          - name: "battle_uid"
-            source_name: "战斗唯一id"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: "为了区分是哪一场战斗"
-          - name: "battle_type"
-            source_name: "战斗类型"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "map_id"
-            source_name: "关卡id"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "battle_array"
-            source_name: "我方阵容信息"
-            type: "array"
-            source_type: "Array(Object)"
-            required: null
-            description: "记录上阵英雄以及伤害统计"
-          - name: "destroy_time"
-            source_name: "城墙破坏时间"
-            type: "array"
-            source_type: "Array(Object)"
-            required: null
-            description: null
-          - name: "duration"
-            source_name: "战斗时长(秒)"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "reportHpMax"
-            source_name: "城墙血量（客户端）"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "svrHpMax"
-            source_name: "城墙血量（服务端）"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "refreshCard"
-            source_name: "修改刷卡次数"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "reportNpcHpMax"
-            source_name: "怪物生命（客户端）"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "svrNpcHpMax"
-            source_name: "怪物生命（服务端）"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-      - event_name: "boss_battle_result"
-        source_name: "部落战斗数据校验"
-        source: "服务端+客户端"
-        page: null
-        module: "外挂治理相关"
-        trigger: null
-        description: null
-        params:
-          - name: "battle_uid"
-            source_name: "战斗唯一id"
-            type: "string"
-            source_type: "varchar"
-            required: null
-            description: "为了区分是哪一场战斗"
-          - name: "battle_type"
-            source_name: "战斗类型"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: "部落boss"
-          - name: "map_id"
-            source_name: "BOSS_ID"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: "具体哪一只BOSS"
-          - name: "battle_value"
-            source_name: "战斗结果"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: "单局伤害值"
-          - name: "battle_time"
-            source_name: "战斗时间(秒)"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: "坚持时间"
-          - name: "rank_before"
-            source_name: "之前排名"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: "战斗前的排名"
-          - name: "rank_after"
-            source_name: "之后排名"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: "战斗后的排名"
-          - name: "wall_array"
-            source_name: "城墙上阵信息"
-            type: "array"
-            source_type: "Array(Object)"
-            required: null
-            description: "记录上阵城墙"
-          - name: "battle_array"
-            source_name: "英雄阵容信息"
-            type: "array"
-            source_type: "Array(Object)"
-            required: null
-            description: "记录上阵英雄"
-          - name: "reportHpMax"
-            source_name: "城墙血量（客户端）"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "svrHpMax"
-            source_name: "城墙血量（服务端）"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "refreshCard"
-            source_name: "修改刷卡次数"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "hisDamage"
-            source_name: "玩家本次部落boss伤害"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "nextRankDamage"
-            source_name: "后一名玩家部落boss伤害"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
-          - name: "nextRank"
-            source_name: "后一名次"
-            type: "number"
-            source_type: "double"
-            required: null
-            description: null
+projects:
+- project: 下方了
+  project_code: xiafangle
+  thinkingdata:
+    user_table: ta.v_user_41
+    event_table: ta.v_event_41
+    domain_release_filter: '"domain" = ''release'''
+    create_role_time_type: timestamp
+    primary_account_id: '#account_id'
+    player_identity_fields:
+    - open_id
+    - nb_open_id
+  source_files:
+  - uploaded_name: 5729ff37-7d55-4a0b-a619-eca618a417c6.xlsx
+    local_sandbox_path: /mnt/data/5729ff37-7d55-4a0b-a619-eca618a417c6.xlsx
+  updated_at: '2026-06-30'
+  notes:
+  - 本文件由用户上传的最新版《下方了》埋点方案 Excel 更新。
+  - 下方了项目固定使用 ta.v_user_41 / ta.v_event_41；不要误用 v44，v44 为弯月勇者。
+  - v41 create_role_time 为 timestamp 类型，SQL 中直接按时间字段处理，不需要 from_unixtime。
+  - 外挂治理相关 sheet 的属性列与标准模板不同：属性名从第 5 列开始，已按该页实际结构解析。
+  - 如 SQL 口径涉及首日付费，必须限定注册当天/active_days=0 的 pay_log，不得使用查询范围累计付费代替。
+  source_workbook_sheets:
+  - name: 事件属性
+    range: A1:J436
+  - name: 用户属性
+    range: A1:H47
+  - name: 公共事件属性
+    range: A1:E18
+  - name: 世界-合作试炼
+    range: A1:I60
+  - name: 外挂治理相关
+    range: A1:I27
+  - name: 诡都邮局
+    range: A1:J71
+  - name: 发行ios支付渠道需求
+    range: A1:J20
+  common_event_properties:
+  - name: '#user_id'
+    display_name: 用户在系统中的唯一用户标识
+    type: bigint
+  - name: '#distinct_id'
+    display_name: 访客ID
+    type: varchar
+    description: 同设备ID
+  - name: '#account_id'
+    display_name: 角色ID
+    type: varchar
+  - name: nb_open_id
+    display_name: 聚合openID
+    type: varchar
+    description: 星云聚合openid【项目唯一标识】
+  - name: open_id
+    display_name: 微信open_id
+    type: varchar
+    description: 微信登录验证成功时记录
+  - name: channel_id
+    display_name: 渠道ID
+    type: varchar
+    description: 星云channel_id
+  - name: system
+    display_name: 操作系统
+    type: varchar
+  - name: create_role_time
+    display_name: 创角时间
+    type: timestamp
+  - name: server_open_time
+    display_name: 开服时间
+    type: timestamp
+  - name: total_payment
+    display_name: 历史累计充值金额
+    type: double
+    description: 历史累充金额（含代金券）
+  - name: total_payment_rmb
+    display_name: 历史累计充值金额（RMB）
+    type: double
+    description: 历史累充金额（纯RMB）
+  - name: domain
+    display_name: 测试服或正式服
+    type: varchar
+    description: dev代表测试服，release代表正式服
+  - name: region_id
+    display_name: 区服ID
+    type: double
+    description: 区服ID
+  - name: clan_uid
+    display_name: 部落ID
+    type: varchar
+    description: 玩家部落id
+  - name: power
+    display_name: 战力
+    type: double
+    description: 发生行为时的战力
+  - name: season
+    display_name: 赛季
+    type: double
+  user_properties:
+  - name: '#user_id'
+    display_name: 用户在系统中的唯一用户标识
+    type: bigint
+    update_method: user_setOnce
+    tag: 基本信息类
+    data_source: 数数预设字段
+  - name: '#distinct_id'
+    display_name: 访客ID
+    type: varchar
+    update_method: user_setOnce
+    description: 首次打开app，激活SDK，客户端记录设备ID
+    tag: 基本信息类
+    data_source: 数数预设字段
+  - name: '#account_id'
+    display_name: 账号ID（角色id）
+    type: varchar
+    update_method: user_setOnce
+    description: 创建角色时记录
+    tag: 基本信息类
+    notes: 服务端传成角色ID
+    data_source: 服务端
+  - name: '#active_time'
+    display_name: 激活时间
+    type: timestamp
+    update_method: user_setOnce
+    description: 激活时
+    tag: 时间类
+    data_source: 数数预设字段
+  - name: '#reg_time'
+    display_name: 注册时间
+    type: timestamp
+    update_method: user_setOnce
+    description: 创建角色时记录
+    tag: 时间类
+    data_source: 数数预设字段
+  - name: open_id
+    display_name: 渠道账号id
+    type: varchar
+    update_method: user_setOnce
+    description: 微信登录验证成功时记录
+    tag: 基本信息类
+    notes: 是小游戏的openid
+    data_source: 客户端
+  - name: nb_open_id
+    display_name: 聚合openID
+    type: varchar
+    update_method: user_setOnce
+    description: 星云聚合openid【项目唯一标识】
+    tag: 基本信息类
+    data_source: 服务端
+  - name: channel_id
+    display_name: 渠道ID
+    type: varchar
+    update_method: user_setOnce
+    tag: 基本信息类
+    data_source: 服务端
+  - name: wx_scene
+    display_name: 微小场景来源
+    type: varchar
+    update_method: user_setOnce
+    description: 首次注册时微小场景来源
+    tag: 基本信息类
+    notes: 首次打开app，激活SDK
+    data_source: 服务端
+  - name: code_id
+    display_name: 包体ID
+    type: varchar
+    update_method: user_setOnce
+    tag: 基本信息类
+    data_source: 服务端
+  - name: region_id
+    display_name: 服务器id
+    type: varchar
+    update_method: user_setOnce
+    description: 创建角色时记录
+    tag: 基本信息类
+    data_source: 服务端
+  - name: server_open_time
+    display_name: 开服时间
+    type: timestamp
+    update_method: user_setOnce
+    description: 开服时
+    tag: 基本信息类
+    data_source: 服务端
+  - name: clan_uid
+    display_name: 部落ID
+    type: double
+    update_method: user_set
+    description: 每次登出时
+    tag: 基本信息类
+    data_source: 服务端
+  - name: domain
+    display_name: 环境
+    type: varchar
+    update_method: user_setOnce
+    description: dev开发；release正式
+    tag: 基本信息类
+    data_source: 服务端
+  - name: system
+    display_name: 应用（ios/安卓）
+    type: varchar
+    update_method: user_setOnce
+    description: 创建角色时记录
+    tag: 基本信息类
+    data_source: 服务端
+  - name: create_role_time
+    display_name: 创角时间
+    type: timestamp
+    update_method: user_setOnce
+    description: 创建角色时记录
+    tag: 基本信息类
+    data_source: 服务端
+  - name: server_id
+    display_name: 服务器id
+    type: varchar
+    update_method: user_setOnce
+    description: 创建角色时记录
+    tag: 基本信息类
+    data_source: 服务端
+  - name: server_name
+    display_name: 服务器名称
+    type: varchar
+    update_method: user_setOnce
+    description: 创建角色时记录
+    tag: 基本信息类
+    data_source: 服务端
+  - name: head_icon
+    display_name: 头像
+    type: double
+    update_method: user_set
+    description: 变更时记录
+    tag: 基本信息类
+    data_source: 服务端
+  - name: player_name
+    display_name: 玩家昵称
+    type: varchar
+    update_method: user_set
+    description: 创建角色时记录
+    tag: 基本信息类
+    data_source: 服务端
+  - name: vip_level
+    display_name: VIP等级
+    type: double
+    update_method: user_set
+    description: 登录时记录
+    tag: 基本信息类
+    data_source: 服务端
+  - name: payment_level
+    display_name: 付费分层
+    type: varchar
+    update_method: user_set
+    description: 登录时记录
+    tag: 基本信息类
+    data_source: 服务端
+  - name: register_time
+    display_name: 注册时间
+    type: timestamp
+    update_method: user_setOnce
+    description: 注册时记录
+    tag: 时间类
+    data_source: 服务端
+  - name: last_logintime
+    display_name: 最近登录时间
+    type: timestamp
+    update_method: user_set
+    description: 登录时记录
+    tag: 时间类
+    data_source: 服务端
+  - name: last_paytime
+    display_name: 最近付费时间
+    type: timestamp
+    update_method: user_set
+    description: 付费时记录
+    tag: 时间类
+    data_source: 服务端
+  - name: cumulative_login_days
+    display_name: 累积登录天数
+    type: double
+    update_method: user_set
+    description: 登录时记录
+    tag: 行为类
+    data_source: 服务端
+  - name: first_payment
+    display_name: 首日充值金额
+    type: double
+    update_method: user_set
+    description: 充值时记录
+    tag: 行为类
+    data_source: 服务端
+  - name: total_payment
+    display_name: 历史累充金额
+    type: double
+    update_method: user_set
+    description: 充值时记录
+    tag: 行为类
+    data_source: 服务端
+  - name: total_payment_rmb
+    display_name: 历史累充金额RMB
+    type: double
+    update_method: user_set
+    description: 充值时记录
+    tag: 行为类
+    data_source: 服务端
+  - name: total_paytimes
+    display_name: 累计充值次数
+    type: double
+    update_method: user_set
+    description: 充值时记录
+    tag: 行为类
+    data_source: 服务端
+  - name: player_level
+    display_name: 玩家等级
+    type: double
+    update_method: user_set
+    description: 等级变更时记录
+    tag: 行为类
+    data_source: 服务端
+  - name: power
+    display_name: 战力
+    type: double
+    update_method: user_set
+    description: 战力变更时记录
+    tag: 行为类
+    data_source: 服务端
+  - name: current_stage
+    display_name: 关卡ID
+    type: double
+    update_method: user_set
+    description: 关卡变更时记录
+    tag: 行为类
+    data_source: 服务端
+  - name: current_stagename
+    display_name: 关卡名称
+    type: varchar
+    update_method: user_set
+    description: 关卡变更时记录
+    tag: 行为类
+    data_source: 服务端
+  - name: new_player_guide
+    display_name: 新手引导步骤
+    type: varchar
+    update_method: user_set
+    description: 引导节点变更时记录
+    tag: 行为类
+    data_source: 服务端
+  - name: power_rank
+    display_name: 战力排名
+    type: double
+    update_method: user_set
+    description: 战力排名变更时记录
+    tag: 行为类
+    data_source: 服务端
+  - name: season
+    display_name: 赛季
+    type: double
+    update_method: user_set
+    description: 赛季变更时记录
+    tag: 行为类
+    data_source: 服务端
+  - name: ad_plan_name
+    display_name: 广告计划名称
+    type: varchar
+    update_method: user_set
+    tag: 基本信息类
+    data_source: 引力引擎
+  - name: ad_group_name
+    display_name: 广告组名称
+    type: varchar
+    update_method: user_set
+    tag: 基本信息类
+    data_source: 引力引擎
+  - name: ad_creative_name
+    display_name: 广告创意名称
+    type: varchar
+    update_method: user_set
+    tag: 基本信息类
+    data_source: 引力引擎
+  - name: ad_cb_id
+    display_name: 创意创作者 ID
+    update_method: user_set
+    tag: 基本信息类
+    data_source: 引力引擎
+  - name: ad_MID1
+    display_name: 巨量引擎广告计划id
+    update_method: user_set
+    tag: 基本信息类
+    data_source: 引力引擎
+  - name: ad_MID2
+    display_name: 巨量引擎广告创意id
+    update_method: user_set
+    tag: 基本信息类
+    data_source: 引力引擎
+  - name: ad_MID3
+    display_name: 巨量引擎推广目的
+    update_method: user_set
+    tag: 基本信息类
+    data_source: 引力引擎
+  - name: ad_MID4
+    display_name: 巨量引擎广告组id
+    update_method: user_set
+    tag: 基本信息类
+    data_source: 引力引擎
+  - name: ad_MID5
+    display_name: 巨量引擎创意图片素材id
+    update_method: user_set
+    tag: 基本信息类
+    data_source: 引力引擎
+  - name: ad_MID6
+    display_name: 巨量引擎安卓下载详情页素材id
+    update_method: user_set
+    tag: 基本信息类
+    data_source: 引力引擎
+  - name: ad_adverser_id
+    display_name: 广告主账户 ID
+    update_method: user_set
+    tag: 基本信息类
+    data_source: 引力引擎
+  events:
+  - name: ta_app_install
+    display_name: app安装
+    description: 开启客户端自动采集后自动上报
+    tag: 基础数据
+    data_source: 客户端
+    source_sheet: 事件属性
+    source_sheets:
+    - 事件属性
+    properties: []
+  - name: ta_app_start
+    display_name: app启动
+    description: 开启客户端自动采集后自动上报
+    data_source: 客户端
+    source_sheet: 事件属性
+    source_sheets:
+    - 事件属性
+    properties: []
+  - name: ta_app_crash
+    display_name: app崩溃
+    description: 开启客户端自动采集后自动上报
+    data_source: 客户端
+    source_sheet: 事件属性
+    source_sheets:
+    - 事件属性
+    properties: []
+  - name: ta_app_end
+    display_name: app关闭
+    description: 开启客户端自动采集后自动上报
+    data_source: 客户端
+    source_sheet: 事件属性
+    source_sheets:
+    - 事件属性
+    properties:
+    - name: '#duration'
+      display_name: 在线时长
+      type: double
+      source_sheet: 事件属性
+  - name: active_log
+    display_name: 激活
+    description: 玩家每进入一个登录节点时
+    data_source: 客户端
+    source_sheet: 事件属性
+    source_sheets:
+    - 事件属性
+    properties:
+    - name: '#device_id'
+      display_name: 设备ID
+      type: varchar
+      source_sheet: 事件属性
+    - name: '#country'
+      display_name: 国家地区
+      type: varchar
+      description: 用户所在国家或地区，根据 IP 地址生成
+      source_sheet: 事件属性
+    - name: '#province'
+      display_name: 省份
+      type: varchar
+      description: 用户所在省份，根据 IP 地址生成
+      source_sheet: 事件属性
+    - name: '#city'
+      display_name: 城市
+      type: varchar
+      description: 用户所在城市，根据 IP 地址生成
+      source_sheet: 事件属性
+    - name: '#fps'
+      display_name: FPS
+      type: double
+      description: 用户设备的当前图像每秒传输帧率，如 60
+      source_sheet: 事件属性
+    - name: '#device_model'
+      display_name: 设备型号
+      type: varchar
+      description: 用户设备的型号，如 iPhone 8 等
+      source_sheet: 事件属性
+    - name: '#device_type'
+      display_name: 设备类型
+      type: varchar
+      description: 用户设备的类型，如iPad,iPhone等
+      source_sheet: 事件属性
+    - name: '#os'
+      display_name: 操作系统
+      type: varchar
+      description: iOS 11.2.2、Android 8.0.0 等
+      source_sheet: 事件属性
+    - name: '#network_type'
+      display_name: 网络类型
+      type: varchar
+      description: 事件发生时的网络状态，如 WIFI、3G、4G 等
+      source_sheet: 事件属性
+    - name: '#app_version'
+      display_name: app版本
+      type: varchar
+      description: 您的 APP 的版本
+      source_sheet: 事件属性
+    - name: '#ip'
+      display_name: 客户端ip
+      type: double
+      source_sheet: 事件属性
+    - name: node_id
+      display_name: 节点序号
+      type: double
+      description: |-
+        10.程序启动
+        20开始加载
+        30.结束加载
+        40.注册创角
+        50.登录
+        60. 进入引导战斗
+        99. 完成引导战斗（首次）
+        101 首次进入大厅（首次）
+      source_sheet: 事件属性
+    - name: node_name
+      display_name: 节点页面名称
+      type: varchar
+      description: |-
+        Launch.程序启动
+        BeginLoading 开始加载
+        EndLoading .结束加载
+        Register. 进入引导战斗
+        Login.登录
+        BeginGuideMap.注册创角
+        EndGuideMap. 完成引导战斗（首次）
+        EnterHome 首次进入大厅（首次）
+      source_sheet: 事件属性
+  - name: in_out_log
+    display_name: 登录登出日志
+    description: 每次登录登出时记录
+    tag: 登录日志
+    data_source: 服务端
+    source_sheet: 事件属性
+    source_sheets:
+    - 事件属性
+    properties:
+    - name: log_type
+      display_name: 日志类型
+      type: varchar
+      description: login 登录； logout 登出
+      source_sheet: 事件属性
+    - name: online_time
+      display_name: 在线时长
+      type: double
+      description: 登出时记录
+      source_sheet: 事件属性
+  - name: online_log
+    display_name: 在线人数
+    description: 每隔5分钟记录一次在线人数
+    tag: 登录日志
+    data_source: 服务端
+    source_sheet: 事件属性
+    source_sheets:
+    - 事件属性
+    properties:
+    - name: server_id
+      display_name: 服务器id
+      type: varchar
+      source_sheet: 事件属性
+    - name: server_name
+      display_name: 服务器名称
+      type: varchar
+      source_sheet: 事件属性
+    - name: server_online
+      display_name: 服务器在线人数
+      type: double
+      source_sheet: 事件属性
+  - name: vip_change_log
+    display_name: VIP变化日志
+    description: vip等级发生变化
+    tag: 角色养成
+    data_source: 服务端
+    source_sheet: 事件属性
+    source_sheets:
+    - 事件属性
+    properties:
+    - name: vip_level
+      display_name: 变化后vip等级
+      type: double
+      source_sheet: 事件属性
+    - name: vip_oldlevel
+      display_name: 变化前vip等级
+      type: double
+      source_sheet: 事件属性
+    - name: vip_exp
+      display_name: 变化后vip经验
+      type: double
+      source_sheet: 事件属性
+    - name: change_reason
+      display_name: 变化原因
+      type: varchar
+      source_sheet: 事件属性
+  - name: name_change_log
+    display_name: 改名日志
+    description: 角色改名
+    data_source: 服务端
+    source_sheet: 事件属性
+    source_sheets:
+    - 事件属性
+    properties:
+    - name: old_name
+      display_name: 修改前昵称
+      type: varchar
+      source_sheet: 事件属性
+    - name: new_name
+      display_name: 修改后昵称
+      type: varchar
+      source_sheet: 事件属性
+    - name: cost_item
+      display_name: 消耗道具
+      type: Array(Object)
+      description: '[{"num":xx,"name":xx,"id":"xx"}]'
+      source_sheet: 事件属性
+  - name: rank_log
+    display_name: 排名日志
+    description: 每日0点记录玩家排名
+    tag: 角色养成
+    data_source: 服务端
+    source_sheet: 事件属性
+    source_sheets:
+    - 事件属性
+    properties:
+    - name: rank_type
+      display_name: 排名类型
+      type: varchar
+      description: 等级排行；战力排行；竞技场排行...
+      source_sheet: 事件属性
+    - name: rank
+      display_name: 排名
+      type: double
+      source_sheet: 事件属性
+  - name: mail_log
+    display_name: 邮件日志
+    description: 每次收取邮件时记录
+    tag: 资源系统
+    data_source: 服务端
+    source_sheet: 事件属性
+    source_sheets:
+    - 事件属性
+    properties:
+    - name: email_id
+      display_name: 邮件id
+      type: varchar
+      description: 如无id则直接填邮件标题
+      source_sheet: 事件属性
+    - name: change_reason
+      display_name: 变化原因
+      type: varchar
+      source_sheet: 事件属性
+    - name: award
+      display_name: 获得道具
+      type: Array(Object)
+      description: '[{"num":xx,"name":xx,"id":"xx"}]'
+      source_sheet: 事件属性
+  - name: exchange_log
+    display_name: 兑换码日志
+    description: 每次兑换礼包码时记录
+    tag: 资源系统
+    data_source: 服务端
+    source_sheet: 事件属性
+    source_sheets:
+    - 事件属性
+    properties:
+    - name: exchange_id
+      display_name: 兑换码id
+      type: varchar
+      description: 填兑换码
+      source_sheet: 事件属性
+    - name: exchange_times
+      display_name: 兑换次数
+      type: double
+      source_sheet: 事件属性
+    - name: award
+      display_name: 获得道具
+      type: Array(Object)
+      description: '[{"num":xx,"name":xx,"id":"xx"}]'
+      source_sheet: 事件属性
+  - name: pay_log
+    display_name: 付费日志
+    description: RMB充值付费时记录
+    tag: 付费模块
+    data_source: 服务端
+    source_sheet: 事件属性
+    source_sheets:
+    - 事件属性
+    - 发行ios支付渠道需求
+    properties:
+    - name: change_reason
+      display_name: 变化原因
+      type: varchar
+      notes: 直接用中文或者英文，方便客服、运营查询
+      source_sheet: 事件属性
+    - name: order_id
+      display_name: 订单号
+      type: varchar
+      description: 返回星云订单号
+      source_sheet: 事件属性
+    - name: pay_result
+      display_name: 充值结果
+      type: double
+      source_sheet: 事件属性
+    - name: product_type
+      display_name: 礼包类型
+      type: varchar
+      description: 首充/日常礼包/累充返利/月卡/基金/商城
+      source_sheet: 事件属性
+    - name: product_id
+      display_name: 礼包id
+      type: double
+      source_sheet: 事件属性
+    - name: product_name
+      display_name: 礼包名称
+      type: varchar
+      source_sheet: 事件属性
+    - name: payment
+      display_name: 付费金额
+      type: double
+      source_sheet: 事件属性
+    - name: system
+      display_name: 操作系统（ios/安卓）
+      type: varchar
+      source_sheet: 发行ios支付渠道需求
+    - name: payment_method
+      display_name: 付费方式
+      type: varchar
+      source_sheet: 发行ios支付渠道需求
+    feature_overrides:
+    - name: pay_log
+      display_name: 付费日志
+      description: RMB充值付费时记录
+      tag: 付费模块
+      data_source: 服务端
+  - name: guide_log
+    display_name: 引导日志
+    description: 每次引导时记录
+    tag: 引导日志
+    data_source: 客户端
+    source_sheet: 事件属性
+    source_sheets:
+    - 事件属性
+    properties:
+    - name: node_id
+      display_name: 引导节点id
+      type: double
+      source_sheet: 事件属性
+    - name: node_name
+      display_name: 引导节点名称
+      type: varchar
+      source_sheet: 事件属性
+  - name: battle_star
+    display_name: 战斗开始
+    description: 战斗开始时
+    tag: 战斗
+    data_source: 客户端
+    source_sheet: 事件属性
+    source_sheets:
+    - 事件属性
+    - 世界-合作试炼
+    properties:
+    - name: battle_uid
+      display_name: 战斗唯一id
+      type: varchar
+      description: 为了区分是哪一场战斗
+      source_sheet: 事件属性
+    - name: battle_type
+      display_name: 战斗类型
+      type: double
+      source_sheet: 事件属性
+    - name: map_id
+      display_name: 关卡id
+      type: double
+      source_sheet: 事件属性
+    - name: battle_array
+      display_name: 我方阵容信息
+      type: Array(Object)
+      description: 记录上阵英雄
+      source_sheet: 事件属性
+    - name: rougue_skill_show
+      display_name: 肉鸽技能列表
+      type: Array(Object)
+      description: 记录随机技能列表
+      source_sheet: 事件属性
+    - name: magicbox_skill_show
+      display_name: 魔盒技能列表
+      type: Array(Object)
+      description: 记录随机技能列表
+      source_sheet: 事件属性
+    - name: cost_item
+      display_name: 消耗物品
+      type: Array(Object)
+      description: '[{"num":xx,"name":xx,"id":"xx"}]'
+      source_sheet: 事件属性
+    - name: battle_type
+      display_name: 战斗类型
+      type: double
+      description: 增加 *合作试炼关卡类型
+      source_sheet: 世界-合作试炼
+    - name: map_id
+      display_name: 关卡id
+      type: double
+      description: '*需要确认不同层的关卡ID是否会重复'
+      source_sheet: 世界-合作试炼
+    - name: diffculty_id
+      display_name: 难度/层数
+      type: double
+      description: '*如果存在不同层数关卡ID重复的情况，需要记录该字段，没有则删除'
+      source_sheet: 世界-合作试炼
+    - name: opponent_id
+      display_name: 协战玩家ID
+      source_sheet: 世界-合作试炼
+    - name: opponent_battle_array
+      display_name: 协战玩家阵容信息
+      type: Array(Object)
+      source_sheet: 世界-合作试炼
+    feature_overrides:
+    - name: battle_star
+      display_name: 战斗开始
+      description: 战斗开始时
+      tag: 战斗
+      data_source: 客户端
+  - name: rougue_skill_show
+    display_name: 肉鸽技能展示
+    description: 出现肉鸽技能弹窗时上报
+    tag: 战斗
+    data_source: 服务端
+    source_sheet: 事件属性
+    source_sheets:
+    - 事件属性
+    properties:
+    - name: battle_uid
+      display_name: 战斗唯一id
+      type: varchar
+      description: 为了区分是哪一场战斗
+      source_sheet: 事件属性
+    - name: battle_type
+      display_name: 战斗类型
+      type: double
+      source_sheet: 事件属性
+    - name: map_id
+      display_name: 关卡id
+      type: double
+      source_sheet: 事件属性
+    - name: rougue_skill_show
+      display_name: 肉鸽技能列表
+      type: Array(Object)
+      description: 记录随机技能列表
+      source_sheet: 事件属性
+  - name: rougue_skill
+    display_name: 肉鸽技能选择
+    description: 选择肉鸽技能时上报
+    tag: 战斗
+    data_source: 服务端
+    source_sheet: 事件属性
+    source_sheets:
+    - 事件属性
+    properties:
+    - name: battle_uid
+      display_name: 战斗唯一id
+      type: varchar
+      description: 为了区分是哪一场战斗
+      source_sheet: 事件属性
+    - name: battle_type
+      display_name: 战斗类型
+      type: double
+      source_sheet: 事件属性
+    - name: map_id
+      display_name: 关卡id
+      type: double
+      source_sheet: 事件属性
+    - name: rougue_skill_select
+      display_name: 选择的肉鸽技能
+      type: Array(Object)
+      description: 记录玩家选择的肉鸽技能
+      source_sheet: 事件属性
+  - name: magicbox_skill_show
+    display_name: 魔盒技能展示
+    description: 出现魔盒技能弹窗时上报
+    tag: 战斗
+    data_source: 服务端
+    source_sheet: 事件属性
+    source_sheets:
+    - 事件属性
+    properties:
+    - name: battle_uid
+      display_name: 战斗唯一id
+      type: varchar
+      description: 为了区分是哪一场战斗
+      source_sheet: 事件属性
+    - name: battle_type
+      display_name: 战斗类型
+      type: double
+      source_sheet: 事件属性
+    - name: map_id
+      display_name: 关卡id
+      type: double
+      source_sheet: 事件属性
+    - name: magicbox_skill_show
+      display_name: 魔盒技能列表
+      type: Array(Object)
+      description: 记录随机技能列表
+      source_sheet: 事件属性
+  - name: magicbox_skill_select
+    display_name: 魔盒技能选择
+    description: 选择魔盒技能时上报
+    tag: 战斗
+    data_source: 服务端
+    source_sheet: 事件属性
+    source_sheets:
+    - 事件属性
+    properties:
+    - name: battle_uid
+      display_name: 战斗唯一id
+      type: varchar
+      description: 为了区分是哪一场战斗
+      source_sheet: 事件属性
+    - name: battle_type
+      display_name: 战斗类型
+      type: double
+      source_sheet: 事件属性
+    - name: map_id
+      display_name: 关卡id
+      type: double
+      source_sheet: 事件属性
+    - name: magicbox_skill_select
+      display_name: 选择的魔盒技能
+      type: Array(Object)
+      description: 记录玩家选择的魔盒技能
+      source_sheet: 事件属性
+  - name: battle_result
+    display_name: 战斗结算
+    description: 战斗结束
+    tag: 战斗
+    data_source: 客户端
+    source_sheet: 事件属性
+    source_sheets:
+    - 事件属性
+    - 世界-合作试炼
+    properties:
+    - name: battle_uid
+      display_name: 战斗唯一id
+      type: varchar
+      description: 为了区分是哪一场战斗
+      source_sheet: 事件属性
+    - name: battle_type
+      display_name: 战斗类型
+      type: double
+      source_sheet: 事件属性
+    - name: map_id
+      display_name: 关卡id
+      type: double
+      source_sheet: 事件属性
+    - name: battle_array
+      display_name: 我方阵容信息
+      type: Array(Object)
+      description: 记录上阵英雄以及伤害统计
+      source_sheet: 事件属性
+    - name: rougue_skill_select
+      display_name: 肉鸽技能列表
+      type: Array(Object)
+      description: 记录随机技能列表
+      source_sheet: 事件属性
+    - name: magicbox_skill_select
+      display_name: 魔盒技能列表
+      type: Array(Object)
+      description: 记录随机技能列表
+      source_sheet: 事件属性
+    - name: destroy_time
+      display_name: 城墙破坏时间
+      type: Array(Object)
+      source_sheet: 事件属性
+    - name: duration
+      display_name: 战斗时长(秒)
+      type: double
+      source_sheet: 事件属性
+    - name: round
+      display_name: 结算波次
+      type: double
+      source_sheet: 事件属性
+    - name: result
+      display_name: 战斗结果
+      type: double
+      description: 1，成功0，失败
+      source_sheet: 事件属性
+    - name: award
+      display_name: 获得奖励
+      type: Array(Object)
+      description: '[{"num":xx,"name":xx,"id":"xx"}]'
+      source_sheet: 事件属性
+    - name: battle_type
+      display_name: 战斗类型
+      type: double
+      description: 增加 *合作试炼关卡类型
+      source_sheet: 世界-合作试炼
+    - name: map_id
+      display_name: 关卡id
+      type: double
+      description: '*需要确认不同层的关卡ID是否会重复'
+      source_sheet: 世界-合作试炼
+    - name: diffculty_id
+      display_name: 难度/层数
+      type: double
+      description: '*如果存在不同层数关卡ID重复的情况，需要记录该字段，没有则删除'
+      source_sheet: 世界-合作试炼
+    - name: opponent_battle_array
+      display_name: 协战玩家阵容信息
+      type: Array(Object)
+      source_sheet: 世界-合作试炼
+    - name: rank
+      display_name: 排名
+      type: double
+      source_sheet: 世界-合作试炼
+    feature_overrides:
+    - name: battle_result
+      display_name: 战斗结算
+      description: 战斗结束
+      tag: 战斗
+      data_source: 客户端
+  - name: game_pass_log
+    display_name: 通行证日志
+    description: 购买通行证或领取奖励时
+    tag: 通行证
+    data_source: 服务端
+    source_sheet: 事件属性
+    source_sheets:
+    - 事件属性
+    properties:
+    - name: log_type
+      display_name: 日志类型
+      type: varchar
+      description: 购买/领取
+      source_sheet: 事件属性
+    - name: pass_level
+      display_name: 通行证等级
+      type: double
+      description: 领取时记录
+      source_sheet: 事件属性
+    - name: pass_type
+      display_name: 通行证类型
+      type: varchar
+      source_sheet: 事件属性
+    - name: cost_item
+      display_name: 消耗物品
+      type: Array(Object)
+      description: 购买时记录
+      source_sheet: 事件属性
+    - name: award
+      display_name: 获得物品
+      type: Array(Object)
+      description: 领取时记录
+      source_sheet: 事件属性
+  - name: add_item_log
+    display_name: 物品产出
+    description: 道具、装备、英雄、饰品等物品产出时上报
+    tag: 资源产出消耗
+    data_source: 服务端
+    source_sheet: 事件属性
+    source_sheets:
+    - 事件属性
+    - 世界-合作试炼
+    properties:
+    - name: change_reason
+      display_name: 变化原因
+      type: varchar
+      source_sheet: 事件属性
+    - name: item_id
+      display_name: 物品id
+      type: double
+      source_sheet: 事件属性
+    - name: item_name
+      display_name: 物品名称
+      type: varchar
+      source_sheet: 事件属性
+    - name: item_type
+      display_name: 物品类型
+      type: varchar
+      source_sheet: 事件属性
+    - name: item_num
+      display_name: 物品数量
+      type: double
+      source_sheet: 事件属性
+    - name: item_quality
+      display_name: 物品品质
+      type: double
+      source_sheet: 事件属性
+    - name: item_result
+      display_name: 物品变化后数量
+      type: double
+      source_sheet: 事件属性
+    - name: status
+      display_name: 状态
+      type: varchar
+      description: 系统内（消耗道具）/背包内
+      source_sheet: 事件属性
+    - name: change_reason
+      display_name: 变化原因
+      type: varchar
+      description: 增加合作试炼相关途径
+      source_sheet: 世界-合作试炼
+    - name: stage_id
+      display_name: 关卡id
+      type: double
+      source_sheet: 世界-合作试炼
+    - name: diffculty_id
+      display_name: 难度/层数
+      type: double
+      source_sheet: 世界-合作试炼
+    - name: task_id
+      display_name: 任务ID
+      type: double
+      source_sheet: 世界-合作试炼
+    feature_overrides:
+    - name: add_item_log
+      display_name: 物品产出
+      description: 道具、装备、英雄、饰品等物品产出时上报
+      tag: 资源产出消耗
+      data_source: 服务端
+  - name: use_item_log
+    display_name: 物品消耗
+    description: 道具、装备、英雄、饰品等物品消耗时上报
+    tag: 资源产出消耗
+    data_source: 服务端
+    source_sheet: 事件属性
+    source_sheets:
+    - 事件属性
+    - 世界-合作试炼
+    properties:
+    - name: change_reason
+      display_name: 变化原因
+      type: varchar
+      source_sheet: 事件属性
+    - name: item_id
+      display_name: 物品id
+      type: double
+      source_sheet: 事件属性
+    - name: item_name
+      display_name: 物品名称
+      type: varchar
+      source_sheet: 事件属性
+    - name: item_type
+      display_name: 物品类型
+      type: varchar
+      source_sheet: 事件属性
+    - name: item_num
+      display_name: 物品数量
+      type: double
+      source_sheet: 事件属性
+    - name: item_quality
+      display_name: 物品品质
+      type: double
+      source_sheet: 事件属性
+    - name: item_result
+      display_name: 物品变化后数量
+      type: double
+      source_sheet: 事件属性
+    - name: status
+      display_name: 状态
+      type: varchar
+      description: 系统内（消耗道具）/背包内
+      source_sheet: 事件属性
+    - name: change_reason
+      display_name: 变化原因
+      type: varchar
+      description: 增加合作试炼相关途径
+      source_sheet: 世界-合作试炼
+    - name: stage_id
+      display_name: 关卡id
+      type: double
+      source_sheet: 世界-合作试炼
+    - name: diffculty_id
+      display_name: 难度/层数
+      type: double
+      source_sheet: 世界-合作试炼
+    - name: task_id
+      display_name: 任务ID
+      type: double
+      source_sheet: 世界-合作试炼
+    feature_overrides:
+    - name: use_item_log
+      display_name: 物品消耗
+      description: 道具、装备、英雄、饰品等物品消耗时上报
+      tag: 资源产出消耗
+      data_source: 服务端
+  - name: money_log
+    display_name: 货币日志
+    description: 货币获取/消耗时
+    tag: 资源产出消耗
+    data_source: 服务端
+    source_sheet: 事件属性
+    source_sheets:
+    - 事件属性
+    - 世界-合作试炼
+    properties:
+    - name: change_type
+      display_name: 变化类型
+      type: double
+      description: 1，产出；2，消耗
+      source_sheet: 事件属性
+    - name: change_reason
+      display_name: 变化原因
+      type: varchar
+      source_sheet: 事件属性
+    - name: money_id
+      display_name: 货币id
+      type: double
+      source_sheet: 事件属性
+    - name: money_name
+      display_name: 货币名称
+      type: varchar
+      source_sheet: 事件属性
+    - name: money_num
+      display_name: 货币数量
+      type: double
+      source_sheet: 事件属性
+    - name: money_result
+      display_name: 变化后数量
+      type: double
+      source_sheet: 事件属性
+    - name: change_reason
+      display_name: 变化原因
+      type: varchar
+      description: 增加合作试炼相关途径
+      source_sheet: 世界-合作试炼
+    - name: stage_id
+      display_name: 关卡id
+      type: double
+      source_sheet: 世界-合作试炼
+    - name: diffculty_id
+      display_name: 难度/层数
+      type: double
+      source_sheet: 世界-合作试炼
+    - name: task_id
+      display_name: 任务ID
+      type: double
+      source_sheet: 世界-合作试炼
+    feature_overrides:
+    - name: money_log
+      display_name: 货币日志
+      description: 货币获取/消耗时
+      tag: 资源产出消耗
+      data_source: 服务端
+  - name: box_log
+    display_name: 宝箱日志
+    description: 宝箱抽取时记录
+    tag: 宝箱
+    data_source: 服务端
+    source_sheet: 事件属性
+    source_sheets:
+    - 事件属性
+    properties:
+    - name: box_type
+      display_name: 宝箱类型
+      type: varchar
+      source_sheet: 事件属性
+    - name: box_id
+      display_name: 宝箱id
+      type: double
+      source_sheet: 事件属性
+    - name: box_name
+      display_name: 宝箱名称
+      type: varchar
+      source_sheet: 事件属性
+    - name: open_times
+      display_name: 宝箱抽取次数
+      type: double
+      source_sheet: 事件属性
+    - name: cost_item
+      display_name: 消耗物品
+      type: Array(Object)
+      description: '[{"num":xx,"name":xx,"id":"xx"}]'
+      source_sheet: 事件属性
+    - name: award
+      display_name: 获得物品
+      type: Array(Object)
+      description: '[{"num":xx,"name":xx,"id":"xx"}]'
+      source_sheet: 事件属性
+    - name: box_item
+      display_name: 宝箱累计物品
+      type: Array(Object)
+      description: 记录宝箱累计抽到的物品和数量
+      source_sheet: 事件属性
+  - name: ad_reward_log
+    display_name: 广告激励日志
+    description: 每次领取广告激励时记录
+    tag: 广告日志
+    data_source: 服务端
+    source_sheet: 事件属性
+    source_sheets:
+    - 事件属性
+    properties:
+    - name: ad_id
+      display_name: 广告点位id
+      type: varchar
+      source_sheet: 事件属性
+    - name: ad_name
+      display_name: 广告点位名称
+      type: varchar
+      source_sheet: 事件属性
+    - name: ad_times
+      display_name: 广告次数
+      type: double
+      source_sheet: 事件属性
+    - name: award
+      display_name: 获得物品
+      type: Array(Object)
+      source_sheet: 事件属性
+  - name: mission_finish_log
+    display_name: 任务完成
+    description: 每次任务完成时记录
+    tag: 任务
+    data_source: 服务端
+    source_sheet: 事件属性
+    source_sheets:
+    - 事件属性
+    - 诡都邮局
+    properties:
+    - name: task_id
+      display_name: 任务id
+      type: double
+      source_sheet: 事件属性
+    - name: task_name
+      display_name: 任务名称
+      type: varchar
+      source_sheet: 事件属性
+    - name: task_type
+      display_name: 任务类型
+      type: double
+      source_sheet: 事件属性
+    - name: task_name
+      display_name: 任务名称
+      type: varchar
+      source_sheet: 诡都邮局
+    feature_overrides:
+    - name: mission_finish_log
+      display_name: 任务完成
+      description: 诡都邮局相关任务完成时，如后续配置周任务/成就任务
+      tag: 任务
+      data_source: 服务端
+  - name: mission_reward_log
+    display_name: 任务领取
+    description: 领取任务奖励时记录
+    tag: 任务
+    data_source: 服务端
+    source_sheet: 事件属性
+    source_sheets:
+    - 事件属性
+    - 诡都邮局
+    properties:
+    - name: task_id
+      display_name: 任务id
+      type: double
+      source_sheet: 事件属性
+    - name: task_name
+      display_name: 任务名称
+      type: varchar
+      source_sheet: 事件属性
+    - name: task_type
+      display_name: 任务类型
+      type: double
+      source_sheet: 事件属性
+    - name: award
+      display_name: 获得奖励
+      type: double
+      source_sheet: 诡都邮局
+    feature_overrides:
+    - name: mission_reward_log
+      display_name: 任务领取
+      description: 诡都邮局相关任务奖励领取时，如后续配置周任务/成就任务
+      tag: 任务
+      data_source: 服务端
+  - name: level_up_log
+    display_name: 角色升级
+    description: 角色升级时记录
+    tag: 角色养成
+    data_source: 服务端
+    source_sheet: 事件属性
+    source_sheets:
+    - 事件属性
+    properties:
+    - name: player_level
+      display_name: 玩家等级
+      type: double
+      source_sheet: 事件属性
+    - name: player_oldlevel
+      display_name: 玩家原等级
+      type: double
+      source_sheet: 事件属性
+  - name: change_power_log
+    display_name: 战力提升
+    description: 战力提升时记录
+    tag: 角色养成
+    data_source: 服务端
+    source_sheet: 事件属性
+    source_sheets:
+    - 事件属性
+    properties:
+    - name: new_power
+      display_name: 新战力
+      type: double
+      source_sheet: 事件属性
+    - name: old_power
+      display_name: 原战力
+      type: double
+      source_sheet: 事件属性
+    - name: num
+      display_name: 提升战力
+      type: double
+      source_sheet: 事件属性
+    - name: change_reason
+      display_name: 变化原因
+      type: varchar
+      source_sheet: 事件属性
+  - name: player_level_log
+    display_name: 等级变化
+    description: 角色等级变化时记录
+    tag: 角色养成
+    data_source: 服务端
+    source_sheet: 事件属性
+    source_sheets:
+    - 事件属性
+    properties:
+    - name: new_level
+      display_name: 新等级
+      type: double
+      source_sheet: 事件属性
+    - name: old_level
+      display_name: 原等级
+      type: double
+      source_sheet: 事件属性
+    - name: exp
+      display_name: 当前经验
+      type: double
+      source_sheet: 事件属性
+    - name: change_reason
+      display_name: 变化原因
+      type: varchar
+      source_sheet: 事件属性
+  - name: gift_log
+    display_name: 领取礼包日志
+    description: 每次领取礼包时记录
+    tag: 商城
+    data_source: 服务端
+    source_sheet: 事件属性
+    source_sheets:
+    - 事件属性
+    properties:
+    - name: gift_id
+      display_name: 礼包id
+      type: double
+      source_sheet: 事件属性
+    - name: gift_name
+      display_name: 礼包名称
+      type: varchar
+      source_sheet: 事件属性
+    - name: gift_type
+      display_name: 礼包类型
+      type: varchar
+      description: 月卡/基金/直购礼包/付费活动
+      source_sheet: 事件属性
+    - name: cost_item
+      display_name: 消耗道具
+      type: Array(Object)
+      description: '[{"num":xx,"name":xx,"id":"xx"}]'
+      source_sheet: 事件属性
+    - name: award
+      display_name: 获得物品
+      type: Array(Object)
+      description: '[{"num":xx,"name":xx,"id":"xx"}]'
+      source_sheet: 事件属性
+  - name: fashion_log
+    display_name: 皮肤日志
+    description: 获得或激活皮肤时记录
+    tag: 角色养成
+    data_source: 服务端
+    source_sheet: 事件属性
+    source_sheets:
+    - 事件属性
+    properties:
+    - name: fashion_id
+      display_name: 皮肤id
+      type: double
+      source_sheet: 事件属性
+    - name: fashion_name
+      display_name: 皮肤名称
+      type: varchar
+      source_sheet: 事件属性
+    - name: fashion_type
+      display_name: 皮肤类型
+      type: varchar
+      description: 英雄皮肤、头像、头像框、气泡框等
+      source_sheet: 事件属性
+    - name: change_type
+      display_name: 变化类型
+      type: double
+      description: 1获得；2激活
+      source_sheet: 事件属性
+    - name: change_reason
+      display_name: 变化原因
+      type: varchar
+      source_sheet: 事件属性
+  - name: sign_log
+    display_name: 签到日志
+    description: 每次签到时记录
+    tag: 签到
+    data_source: 服务端
+    source_sheet: 事件属性
+    source_sheets:
+    - 事件属性
+    properties:
+    - name: sign_type
+      display_name: 签到类型
+      type: varchar
+      description: 签到类型
+      source_sheet: 事件属性
+    - name: sign_days
+      display_name: 签到天数
+      type: double
+      description: 累计签到天数
+      source_sheet: 事件属性
+    - name: award
+      display_name: 获得奖励
+      type: Array(Object)
+      description: '[{"num":xx,"name":xx,"id":"xx"}]'
+      source_sheet: 事件属性
+  - name: friend_log
+    display_name: 好友日志
+    description: 添加好友、解除好友、领取赠送等
+    tag: 社交
+    data_source: 服务端
+    source_sheet: 事件属性
+    source_sheets:
+    - 事件属性
+    properties:
+    - name: friend_id
+      display_name: 好友id
+      type: varchar
+      source_sheet: 事件属性
+    - name: change_type
+      display_name: 变化类型
+      type: varchar
+      description: 增加好友/解除好友/赠送领取等
+      source_sheet: 事件属性
+  - name: chat_log
+    display_name: 聊天日志
+    description: 每次聊天发送时记录
+    tag: 社交
+    data_source: 服务端
+    source_sheet: 事件属性
+    source_sheets:
+    - 事件属性
+    properties:
+    - name: channel
+      display_name: 频道
+      type: varchar
+      source_sheet: 事件属性
+    - name: content
+      display_name: 发送内容
+      type: varchar
+      source_sheet: 事件属性
+  - name: club_log
+    display_name: 工会日志
+    description: 加入工会、退出工会时记录
+    tag: 社交
+    data_source: 服务端
+    source_sheet: 事件属性
+    source_sheets:
+    - 事件属性
+    properties:
+    - name: club_id
+      display_name: 公会id
+      type: varchar
+      source_sheet: 事件属性
+    - name: club_name
+      display_name: 公会名称
+      type: varchar
+      source_sheet: 事件属性
+    - name: change_type
+      display_name: 变化类型
+      type: varchar
+      description: 加入公会/退出公会/任职变化
+      source_sheet: 事件属性
+  - name: club_donate_log
+    display_name: 公会捐赠日志
+    description: 公会捐献时记录
+    tag: 社交
+    data_source: 服务端
+    source_sheet: 事件属性
+    source_sheets:
+    - 事件属性
+    properties:
+    - name: donate_id
+      display_name: 捐献id
+      type: double
+      source_sheet: 事件属性
+    - name: cost_item
+      display_name: 消耗物品
+      type: Array(Object)
+      description: '[{"num":xx,"name":xx,"id":"xx"}]'
+      source_sheet: 事件属性
+    - name: award
+      display_name: 获得奖励
+      type: Array(Object)
+      description: '[{"num":xx,"name":xx,"id":"xx"}]'
+      source_sheet: 事件属性
+  - name: club_store_log
+    display_name: 公会商店兑换日志
+    description: 公会商店兑换时记录
+    tag: 社交
+    data_source: 服务端
+    source_sheet: 事件属性
+    source_sheets:
+    - 事件属性
+    properties:
+    - name: store_id
+      display_name: 商店id
+      type: double
+      source_sheet: 事件属性
+    - name: cost_item
+      display_name: 消耗物品
+      type: Array(Object)
+      description: '[{"num":xx,"name":xx,"id":"xx"}]'
+      source_sheet: 事件属性
+    - name: award
+      display_name: 获得奖励
+      type: Array(Object)
+      description: '[{"num":xx,"name":xx,"id":"xx"}]'
+      source_sheet: 事件属性
+  - name: activity_log
+    display_name: 活动日志
+    description: 活动参与、领奖时记录
+    tag: 活动
+    data_source: 服务端
+    source_sheet: 事件属性
+    source_sheets:
+    - 事件属性
+    properties:
+    - name: activity_id
+      display_name: 活动id
+      type: double
+      source_sheet: 事件属性
+    - name: activity_name
+      display_name: 活动名称
+      type: varchar
+      source_sheet: 事件属性
+    - name: activity_type
+      display_name: 活动类型
+      type: varchar
+      source_sheet: 事件属性
+    - name: change_type
+      display_name: 变化类型
+      type: varchar
+      source_sheet: 事件属性
+    - name: cost_item
+      display_name: 消耗物品
+      type: Array(Object)
+      source_sheet: 事件属性
+    - name: award
+      display_name: 获得奖励
+      type: Array(Object)
+      source_sheet: 事件属性
+  - name: shop_log
+    display_name: 商店日志
+    description: 商店购买或刷新时记录
+    tag: 商店
+    data_source: 服务端
+    source_sheet: 事件属性
+    source_sheets:
+    - 事件属性
+    properties:
+    - name: shop_id
+      display_name: 商店id
+      type: double
+      source_sheet: 事件属性
+    - name: shop_type
+      display_name: 商店类型
+      type: varchar
+      source_sheet: 事件属性
+    - name: goods_id
+      display_name: 商品id
+      type: double
+      source_sheet: 事件属性
+    - name: goods_name
+      display_name: 商品名称
+      type: varchar
+      source_sheet: 事件属性
+    - name: cost_item
+      display_name: 消耗道具
+      type: Array(Object)
+      source_sheet: 事件属性
+    - name: award
+      display_name: 获得道具
+      type: Array(Object)
+      source_sheet: 事件属性
+  - name: draw_card_log
+    display_name: 抽卡日志
+    description: 每次抽卡时记录
+    tag: 英雄养成
+    data_source: 服务端
+    source_sheet: 事件属性
+    source_sheets:
+    - 事件属性
+    properties:
+    - name: card_pool_id
+      display_name: 卡池id
+      type: double
+      source_sheet: 事件属性
+    - name: card_pool_name
+      display_name: 卡池名称
+      type: varchar
+      source_sheet: 事件属性
+    - name: draw_times
+      display_name: 抽取次数
+      type: double
+      source_sheet: 事件属性
+    - name: cost_item
+      display_name: 消耗道具
+      type: Array(Object)
+      source_sheet: 事件属性
+    - name: award
+      display_name: 获得物品
+      type: Array(Object)
+      source_sheet: 事件属性
+  - name: hero_get_log
+    display_name: 英雄获得日志
+    description: 获得新英雄时记录
+    tag: 英雄养成
+    data_source: 服务端
+    source_sheet: 事件属性
+    source_sheets:
+    - 事件属性
+    properties:
+    - name: hero_id
+      display_name: 英雄id
+      type: double
+      source_sheet: 事件属性
+    - name: hero_name
+      display_name: 英雄名称
+      type: varchar
+      source_sheet: 事件属性
+    - name: hero_quality
+      display_name: 英雄品质
+      type: double
+      source_sheet: 事件属性
+    - name: change_reason
+      display_name: 变化原因
+      type: varchar
+      source_sheet: 事件属性
+  - name: hero_up_level_log
+    display_name: 英雄升级日志
+    description: 英雄升级时记录
+    tag: 英雄养成
+    data_source: 服务端
+    source_sheet: 事件属性
+    source_sheets:
+    - 事件属性
+    properties:
+    - name: hero_id
+      display_name: 英雄id
+      type: double
+      source_sheet: 事件属性
+    - name: hero_name
+      display_name: 英雄名称
+      type: varchar
+      source_sheet: 事件属性
+    - name: new_level
+      display_name: 新等级
+      type: double
+      source_sheet: 事件属性
+    - name: old_level
+      display_name: 原等级
+      type: double
+      source_sheet: 事件属性
+    - name: cost_item
+      display_name: 消耗道具
+      type: Array(Object)
+      source_sheet: 事件属性
+  - name: hero_up_star_log
+    display_name: 英雄升星日志
+    description: 英雄升星时记录
+    tag: 英雄养成
+    data_source: 服务端
+    source_sheet: 事件属性
+    source_sheets:
+    - 事件属性
+    properties:
+    - name: hero_id
+      display_name: 英雄id
+      type: double
+      source_sheet: 事件属性
+    - name: hero_name
+      display_name: 英雄名称
+      type: varchar
+      source_sheet: 事件属性
+    - name: new_star
+      display_name: 新星级
+      type: double
+      source_sheet: 事件属性
+    - name: old_star
+      display_name: 原星级
+      type: double
+      source_sheet: 事件属性
+    - name: cost_item
+      display_name: 消耗道具
+      type: Array(Object)
+      source_sheet: 事件属性
+  - name: hero_up_advance_log
+    display_name: 英雄升阶日志
+    description: 英雄升阶时记录
+    tag: 英雄养成
+    data_source: 服务端
+    source_sheet: 事件属性
+    source_sheets:
+    - 事件属性
+    properties:
+    - name: hero_id
+      display_name: 英雄id
+      type: double
+      source_sheet: 事件属性
+    - name: hero_name
+      display_name: 英雄名称
+      type: varchar
+      source_sheet: 事件属性
+    - name: new_advance
+      display_name: 新阶级
+      type: double
+      source_sheet: 事件属性
+    - name: old_advance
+      display_name: 原阶级
+      type: double
+      source_sheet: 事件属性
+    - name: cost_item
+      display_name: 消耗道具
+      type: Array(Object)
+      source_sheet: 事件属性
+  - name: hero_wear_equipment_log
+    display_name: 英雄穿戴装备日志
+    description: 英雄穿戴装备时记录
+    tag: 英雄养成
+    data_source: 服务端
+    source_sheet: 事件属性
+    source_sheets:
+    - 事件属性
+    properties:
+    - name: hero_id
+      display_name: 英雄id
+      type: double
+      source_sheet: 事件属性
+    - name: hero_name
+      display_name: 英雄名称
+      type: varchar
+      source_sheet: 事件属性
+    - name: equipment_id
+      display_name: 装备id
+      type: double
+      source_sheet: 事件属性
+    - name: equipment_name
+      display_name: 装备名称
+      type: varchar
+      source_sheet: 事件属性
+    - name: equipment_quality
+      display_name: 装备品质
+      type: double
+      source_sheet: 事件属性
+  - name: equipment_up_level_log
+    display_name: 装备升级日志
+    description: 装备升级时记录
+    tag: 英雄养成
+    data_source: 服务端
+    source_sheet: 事件属性
+    source_sheets:
+    - 事件属性
+    properties:
+    - name: equipment_id
+      display_name: 装备id
+      type: double
+      source_sheet: 事件属性
+    - name: equipment_name
+      display_name: 装备名称
+      type: varchar
+      source_sheet: 事件属性
+    - name: new_level
+      display_name: 新等级
+      type: double
+      source_sheet: 事件属性
+    - name: old_level
+      display_name: 原等级
+      type: double
+      source_sheet: 事件属性
+    - name: cost_item
+      display_name: 消耗道具
+      type: Array(Object)
+      source_sheet: 事件属性
+  - name: equipment_up_star_log
+    display_name: 装备升星日志
+    description: 装备升星时记录
+    tag: 英雄养成
+    data_source: 服务端
+    source_sheet: 事件属性
+    source_sheets:
+    - 事件属性
+    properties:
+    - name: equipment_id
+      display_name: 装备id
+      type: double
+      source_sheet: 事件属性
+    - name: equipment_name
+      display_name: 装备名称
+      type: varchar
+      source_sheet: 事件属性
+    - name: new_star
+      display_name: 新星级
+      type: double
+      source_sheet: 事件属性
+    - name: old_star
+      display_name: 原星级
+      type: double
+      source_sheet: 事件属性
+    - name: cost_item
+      display_name: 消耗道具
+      type: Array(Object)
+      source_sheet: 事件属性
+  - name: title_log
+    display_name: 称号日志
+    description: 获得/佩戴称号时记录
+    tag: 角色养成
+    data_source: 服务端
+    source_sheet: 事件属性
+    source_sheets:
+    - 事件属性
+    properties:
+    - name: title_id
+      display_name: 称号id
+      type: double
+      source_sheet: 事件属性
+    - name: title_name
+      display_name: 称号名称
+      type: varchar
+      source_sheet: 事件属性
+    - name: change_type
+      display_name: 变化类型
+      type: varchar
+      source_sheet: 事件属性
+  - name: system_open_log
+    display_name: 系统开放日志
+    description: 系统开放时记录
+    tag: 系统开放
+    data_source: 服务端
+    source_sheet: 事件属性
+    source_sheets:
+    - 事件属性
+    properties:
+    - name: system_id
+      display_name: 系统id
+      type: double
+      source_sheet: 事件属性
+    - name: system_name
+      display_name: 系统名称
+      type: varchar
+      source_sheet: 事件属性
+    - name: open_reason
+      display_name: 开启原因
+      type: varchar
+      source_sheet: 事件属性
+  - name: artifact_log
+    display_name: 神器日志
+    description: 神器养成时记录
+    tag: 角色养成
+    data_source: 服务端
+    source_sheet: 事件属性
+    source_sheets:
+    - 事件属性
+    properties:
+    - name: artifact_id
+      display_name: 神器id
+      type: double
+      source_sheet: 事件属性
+    - name: artifact_name
+      display_name: 神器名称
+      type: varchar
+      source_sheet: 事件属性
+    - name: new_level
+      display_name: 新等级
+      type: double
+      source_sheet: 事件属性
+    - name: old_level
+      display_name: 原等级
+      type: double
+      source_sheet: 事件属性
+    - name: cost_item
+      display_name: 消耗道具
+      type: Array(Object)
+      source_sheet: 事件属性
+  - name: home_building_log
+    display_name: 家园建筑日志
+    description: 家园建筑升级/解锁时记录
+    tag: 家园
+    data_source: 服务端
+    source_sheet: 事件属性
+    source_sheets:
+    - 事件属性
+    properties:
+    - name: building_id
+      display_name: 建筑id
+      type: double
+      source_sheet: 事件属性
+    - name: building_name
+      display_name: 建筑名称
+      type: varchar
+      source_sheet: 事件属性
+    - name: new_level
+      display_name: 新等级
+      type: double
+      source_sheet: 事件属性
+    - name: old_level
+      display_name: 原等级
+      type: double
+      source_sheet: 事件属性
+    - name: cost_item
+      display_name: 消耗道具
+      type: Array(Object)
+      source_sheet: 事件属性
+  - name: summon_log
+    display_name: 召唤日志
+    description: 召唤/抽取时记录
+    tag: 召唤
+    data_source: 服务端
+    source_sheet: 事件属性
+    source_sheets:
+    - 事件属性
+    properties:
+    - name: summon_type
+      display_name: 召唤类型
+      type: varchar
+      source_sheet: 事件属性
+    - name: summon_times
+      display_name: 召唤次数
+      type: double
+      source_sheet: 事件属性
+    - name: cost_item
+      display_name: 消耗道具
+      type: Array(Object)
+      source_sheet: 事件属性
+    - name: award
+      display_name: 获得奖励
+      type: Array(Object)
+      source_sheet: 事件属性
+  - name: arena_log
+    display_name: 竞技场日志
+    description: 竞技场挑战/结算时记录
+    tag: 竞技场
+    data_source: 服务端
+    source_sheet: 事件属性
+    source_sheets:
+    - 事件属性
+    properties:
+    - name: challenge_id
+      display_name: 挑战对象id
+      type: varchar
+      source_sheet: 事件属性
+    - name: result
+      display_name: 战斗结果
+      type: double
+      source_sheet: 事件属性
+    - name: rank_before
+      display_name: 战前排名
+      type: double
+      source_sheet: 事件属性
+    - name: rank_after
+      display_name: 战后排名
+      type: double
+      source_sheet: 事件属性
+  - name: gacha_log
+    display_name: 抽奖日志
+    description: 抽奖/转盘时记录
+    tag: 活动
+    data_source: 服务端
+    source_sheet: 事件属性
+    source_sheets:
+    - 事件属性
+    properties:
+    - name: gacha_id
+      display_name: 抽奖id
+      type: double
+      source_sheet: 事件属性
+    - name: gacha_times
+      display_name: 抽奖次数
+      type: double
+      source_sheet: 事件属性
+    - name: cost_item
+      display_name: 消耗道具
+      type: Array(Object)
+      source_sheet: 事件属性
+    - name: award
+      display_name: 获得奖励
+      type: Array(Object)
+      source_sheet: 事件属性
+  - name: season_log
+    display_name: 赛季日志
+    description: 赛季相关变化时记录
+    tag: 赛季
+    data_source: 服务端
+    source_sheet: 事件属性
+    source_sheets:
+    - 事件属性
+    properties:
+    - name: season_id
+      display_name: 赛季id
+      type: double
+      source_sheet: 事件属性
+    - name: season_name
+      display_name: 赛季名称
+      type: varchar
+      source_sheet: 事件属性
+    - name: season_level
+      display_name: 赛季等级
+      type: double
+      source_sheet: 事件属性
+    - name: exp
+      display_name: 当前经验
+      type: double
+      source_sheet: 事件属性
+  - name: hero_skill_log
+    display_name: 英雄技能日志
+    description: 英雄技能升级时记录
+    tag: 英雄养成
+    data_source: 服务端
+    source_sheet: 事件属性
+    source_sheets:
+    - 事件属性
+    properties:
+    - name: hero_id
+      display_name: 英雄id
+      type: double
+      source_sheet: 事件属性
+    - name: skill_id
+      display_name: 技能id
+      type: double
+      source_sheet: 事件属性
+    - name: new_level
+      display_name: 新等级
+      type: double
+      source_sheet: 事件属性
+    - name: old_level
+      display_name: 原等级
+      type: double
+      source_sheet: 事件属性
+    - name: cost_item
+      display_name: 消耗道具
+      type: Array(Object)
+      source_sheet: 事件属性
+  - name: hero_reset_log
+    display_name: 英雄重置日志
+    description: 英雄重置时记录
+    tag: 英雄养成
+    data_source: 服务端
+    source_sheet: 事件属性
+    source_sheets:
+    - 事件属性
+    properties:
+    - name: hero_id
+      display_name: 英雄id
+      type: double
+      source_sheet: 事件属性
+    - name: cost_item
+      display_name: 消耗道具
+      type: Array(Object)
+      source_sheet: 事件属性
+    - name: award
+      display_name: 返还道具
+      type: Array(Object)
+      source_sheet: 事件属性
+  - name: hero_break_log
+    display_name: 英雄突破日志
+    description: 英雄突破时记录
+    tag: 英雄养成
+    data_source: 服务端
+    source_sheet: 事件属性
+    source_sheets:
+    - 事件属性
+    properties:
+    - name: hero_id
+      display_name: 英雄id
+      type: double
+      source_sheet: 事件属性
+    - name: new_break
+      display_name: 新突破等级
+      type: double
+      source_sheet: 事件属性
+    - name: old_break
+      display_name: 原突破等级
+      type: double
+      source_sheet: 事件属性
+    - name: cost_item
+      display_name: 消耗道具
+      type: Array(Object)
+      source_sheet: 事件属性
+  - name: equip_wear_log
+    display_name: 装备穿戴日志
+    description: 装备穿戴/卸下时记录
+    tag: 装备
+    data_source: 服务端
+    source_sheet: 事件属性
+    source_sheets:
+    - 事件属性
+    properties:
+    - name: hero_id
+      display_name: 英雄id
+      type: double
+      source_sheet: 事件属性
+    - name: equipment_id
+      display_name: 装备id
+      type: double
+      source_sheet: 事件属性
+    - name: change_type
+      display_name: 变化类型
+      type: varchar
+      source_sheet: 事件属性
+  - name: task_progress_log
+    display_name: 任务进度日志
+    description: 任务进度变化时记录
+    tag: 任务
+    data_source: 服务端
+    source_sheet: 事件属性
+    source_sheets:
+    - 事件属性
+    properties:
+    - name: task_id
+      display_name: 任务id
+      type: double
+      source_sheet: 事件属性
+    - name: task_type
+      display_name: 任务类型
+      type: double
+      source_sheet: 事件属性
+    - name: progress
+      display_name: 当前进度
+      type: double
+      source_sheet: 事件属性
+    - name: target
+      display_name: 目标进度
+      type: double
+      source_sheet: 事件属性
+  - name: recharge_rebate_log
+    display_name: 充值返利日志
+    description: 充值返利领取时记录
+    tag: 付费模块
+    data_source: 服务端
+    source_sheet: 事件属性
+    source_sheets:
+    - 事件属性
+    properties:
+    - name: rebate_id
+      display_name: 返利id
+      type: double
+      source_sheet: 事件属性
+    - name: award
+      display_name: 获得奖励
+      type: Array(Object)
+      source_sheet: 事件属性
+  - name: monthly_card_log
+    display_name: 月卡日志
+    description: 月卡购买/领取时记录
+    tag: 付费模块
+    data_source: 服务端
+    source_sheet: 事件属性
+    source_sheets:
+    - 事件属性
+    properties:
+    - name: card_id
+      display_name: 月卡id
+      type: double
+      source_sheet: 事件属性
+    - name: change_type
+      display_name: 变化类型
+      type: varchar
+      source_sheet: 事件属性
+    - name: award
+      display_name: 获得奖励
+      type: Array(Object)
+      source_sheet: 事件属性
+  - name: fund_log
+    display_name: 基金日志
+    description: 基金购买/领取时记录
+    tag: 付费模块
+    data_source: 服务端
+    source_sheet: 事件属性
+    source_sheets:
+    - 事件属性
+    properties:
+    - name: fund_id
+      display_name: 基金id
+      type: double
+      source_sheet: 事件属性
+    - name: change_type
+      display_name: 变化类型
+      type: varchar
+      source_sheet: 事件属性
+    - name: award
+      display_name: 获得奖励
+      type: Array(Object)
+      source_sheet: 事件属性
+  - name: day_gift_log
+    display_name: 每日礼包日志
+    description: 每日礼包领取时记录
+    tag: 付费模块
+    data_source: 服务端
+    source_sheet: 事件属性
+    source_sheets:
+    - 事件属性
+    properties:
+    - name: gift_id
+      display_name: 礼包id
+      type: double
+      source_sheet: 事件属性
+    - name: award
+      display_name: 获得奖励
+      type: Array(Object)
+      source_sheet: 事件属性
+  - name: summon_pool_log
+    display_name: 召唤池日志
+    description: 召唤池抽取时记录
+    tag: 召唤
+    data_source: 服务端
+    source_sheet: 事件属性
+    source_sheets:
+    - 事件属性
+    properties:
+    - name: pool_id
+      display_name: 池子id
+      type: double
+      source_sheet: 事件属性
+    - name: draw_times
+      display_name: 抽取次数
+      type: double
+      source_sheet: 事件属性
+    - name: cost_item
+      display_name: 消耗道具
+      type: Array(Object)
+      source_sheet: 事件属性
+    - name: award
+      display_name: 获得奖励
+      type: Array(Object)
+      source_sheet: 事件属性
+  - name: pet_log
+    display_name: 宠物日志
+    description: 宠物获得/养成时记录
+    tag: 宠物
+    data_source: 服务端
+    source_sheet: 事件属性
+    source_sheets:
+    - 事件属性
+    properties:
+    - name: pet_id
+      display_name: 宠物id
+      type: double
+      source_sheet: 事件属性
+    - name: pet_name
+      display_name: 宠物名称
+      type: varchar
+      source_sheet: 事件属性
+    - name: change_type
+      display_name: 变化类型
+      type: varchar
+      source_sheet: 事件属性
+  - name: mount_log
+    display_name: 坐骑日志
+    description: 坐骑获得/养成时记录
+    tag: 坐骑
+    data_source: 服务端
+    source_sheet: 事件属性
+    source_sheets:
+    - 事件属性
+    properties:
+    - name: mount_id
+      display_name: 坐骑id
+      type: double
+      source_sheet: 事件属性
+    - name: mount_name
+      display_name: 坐骑名称
+      type: varchar
+      source_sheet: 事件属性
+    - name: change_type
+      display_name: 变化类型
+      type: varchar
+      source_sheet: 事件属性
+  - name: wing_log
+    display_name: 翅膀日志
+    description: 翅膀获得/养成时记录
+    tag: 翅膀
+    data_source: 服务端
+    source_sheet: 事件属性
+    source_sheets:
+    - 事件属性
+    properties:
+    - name: wing_id
+      display_name: 翅膀id
+      type: double
+      source_sheet: 事件属性
+    - name: wing_name
+      display_name: 翅膀名称
+      type: varchar
+      source_sheet: 事件属性
+    - name: change_type
+      display_name: 变化类型
+      type: varchar
+      source_sheet: 事件属性
+  - name: rune_log
+    display_name: 符文日志
+    description: 符文获得/养成时记录
+    tag: 符文
+    data_source: 服务端
+    source_sheet: 事件属性
+    source_sheets:
+    - 事件属性
+    properties:
+    - name: rune_id
+      display_name: 符文id
+      type: double
+      source_sheet: 事件属性
+    - name: rune_name
+      display_name: 符文名称
+      type: varchar
+      source_sheet: 事件属性
+    - name: change_type
+      display_name: 变化类型
+      type: varchar
+      source_sheet: 事件属性
+  - name: jewel_log
+    display_name: 宝石日志
+    description: 宝石获得/镶嵌/升级时记录
+    tag: 宝石
+    data_source: 服务端
+    source_sheet: 事件属性
+    source_sheets:
+    - 事件属性
+    properties:
+    - name: jewel_id
+      display_name: 宝石id
+      type: double
+      source_sheet: 事件属性
+    - name: jewel_name
+      display_name: 宝石名称
+      type: varchar
+      source_sheet: 事件属性
+    - name: change_type
+      display_name: 变化类型
+      type: varchar
+      source_sheet: 事件属性
+  - name: red_dot_log
+    display_name: 红点日志
+    description: 红点展示/点击时记录
+    tag: UI交互
+    data_source: 客户端
+    source_sheet: 事件属性
+    source_sheets:
+    - 事件属性
+    properties:
+    - name: red_dot_id
+      display_name: 红点id
+      type: double
+      source_sheet: 事件属性
+    - name: red_dot_name
+      display_name: 红点名称
+      type: varchar
+      source_sheet: 事件属性
+    - name: action_type
+      display_name: 行为类型
+      type: varchar
+      source_sheet: 事件属性
+  - name: ui_click_log
+    display_name: UI点击日志
+    description: UI点击时记录
+    tag: UI交互
+    data_source: 客户端
+    source_sheet: 事件属性
+    source_sheets:
+    - 事件属性
+    properties:
+    - name: ui_id
+      display_name: UI id
+      type: varchar
+      source_sheet: 事件属性
+    - name: ui_name
+      display_name: UI名称
+      type: varchar
+      source_sheet: 事件属性
+    - name: page_name
+      display_name: 页面名称
+      type: varchar
+      source_sheet: 事件属性
+  - name: share_log
+    display_name: 分享日志
+    description: 分享成功时记录
+    tag: 分享
+    data_source: 客户端
+    source_sheet: 事件属性
+    source_sheets:
+    - 事件属性
+    properties:
+    - name: share_id
+      display_name: 分享id
+      type: varchar
+      source_sheet: 事件属性
+    - name: share_type
+      display_name: 分享类型
+      type: varchar
+      source_sheet: 事件属性
+    - name: award
+      display_name: 获得奖励
+      type: Array(Object)
+      source_sheet: 事件属性
+  - name: wx_scene_log
+    display_name: 微信场景日志
+    description: 微信场景来源变化时记录
+    tag: 渠道
+    data_source: 客户端
+    source_sheet: 事件属性
+    source_sheets:
+    - 事件属性
+    properties:
+    - name: wx_scene
+      display_name: 微信场景来源
+      type: varchar
+      source_sheet: 事件属性
+    - name: scene_source
+      display_name: 来源说明
+      type: varchar
+      source_sheet: 事件属性
+  - name: client_error_log
+    display_name: 客户端错误日志
+    description: 客户端异常时记录
+    tag: 错误日志
+    data_source: 客户端
+    source_sheet: 事件属性
+    source_sheets:
+    - 事件属性
+    properties:
+    - name: error_code
+      display_name: 错误码
+      type: varchar
+      source_sheet: 事件属性
+    - name: error_msg
+      display_name: 错误信息
+      type: varchar
+      source_sheet: 事件属性
+  - name: loading_log
+    display_name: 加载日志
+    description: 加载节点耗时记录
+    tag: 性能
+    data_source: 客户端
+    source_sheet: 事件属性
+    source_sheets:
+    - 事件属性
+    properties:
+    - name: node_id
+      display_name: 节点序号
+      type: double
+      source_sheet: 事件属性
+    - name: node_name
+      display_name: 节点页面名称
+      type: varchar
+      source_sheet: 事件属性
+    - name: duration
+      display_name: 耗时
+      type: double
+      source_sheet: 事件属性
+  - name: resource_pack_log
+    display_name: 资源包日志
+    description: 资源包下载/加载时记录
+    tag: 性能
+    data_source: 客户端
+    source_sheet: 事件属性
+    source_sheets:
+    - 事件属性
+    properties:
+    - name: pack_id
+      display_name: 资源包id
+      type: varchar
+      source_sheet: 事件属性
+    - name: pack_name
+      display_name: 资源包名称
+      type: varchar
+      source_sheet: 事件属性
+    - name: duration
+      display_name: 耗时
+      type: double
+      source_sheet: 事件属性
+  - name: battle_check
+    display_name: 战斗数据校验
+    description: 校验战斗数据
+    tag: 外挂治理
+    data_source: 服务端+客户端
+    source_sheet: 外挂治理相关
+    source_sheets:
+    - 外挂治理相关
+    properties:
+    - name: battle_uid
+      display_name: 战斗唯一id
+      type: varchar
+      description: 为了区分是哪一场战斗
+      source_sheet: 外挂治理相关
+    - name: battle_type
+      display_name: 战斗类型
+      type: double
+      source_sheet: 外挂治理相关
+    - name: map_id
+      display_name: 关卡id
+      type: double
+      source_sheet: 外挂治理相关
+    - name: battle_array
+      display_name: 我方阵容信息
+      type: Array(Object)
+      description: 记录上阵英雄以及伤害统计
+      source_sheet: 外挂治理相关
+    - name: destroy_time
+      display_name: 城墙破坏时间
+      type: Array(Object)
+      source_sheet: 外挂治理相关
+    - name: duration
+      display_name: 战斗时长(秒)
+      type: double
+      source_sheet: 外挂治理相关
+    - name: reportHpMax
+      display_name: 城墙血量（客户端）
+      type: double
+      source_sheet: 外挂治理相关
+    - name: svrHpMax
+      display_name: 城墙血量（服务端）
+      type: double
+      source_sheet: 外挂治理相关
+    - name: refreshCard
+      display_name: 修改刷卡次数
+      type: double
+      source_sheet: 外挂治理相关
+    - name: reportNpcHpMax
+      display_name: 怪物生命（客户端）
+      type: double
+      source_sheet: 外挂治理相关
+    - name: svrNpcHpMax
+      display_name: 怪物生命（服务端）
+      type: double
+      source_sheet: 外挂治理相关
+  - name: boss_battle_result
+    display_name: 部落战斗数据校验
+    tag: 外挂治理
+    data_source: 服务端+客户端
+    source_sheet: 外挂治理相关
+    source_sheets:
+    - 外挂治理相关
+    properties:
+    - name: battle_uid
+      display_name: 战斗唯一id
+      type: varchar
+      description: 为了区分是哪一场战斗
+      source_sheet: 外挂治理相关
+    - name: battle_type
+      display_name: 战斗类型
+      type: double
+      description: 部落boss
+      source_sheet: 外挂治理相关
+    - name: map_id
+      display_name: BOSS_ID
+      type: double
+      description: 具体哪一只BOSS
+      source_sheet: 外挂治理相关
+    - name: battle_value
+      display_name: 战斗结果
+      type: varchar
+      description: 单局伤害值
+      source_sheet: 外挂治理相关
+    - name: battle_time
+      display_name: 战斗时间(秒)
+      type: double
+      description: 坚持时间
+      source_sheet: 外挂治理相关
+    - name: rank_before
+      display_name: 之前排名
+      type: double
+      description: 战斗前的排名
+      source_sheet: 外挂治理相关
+    - name: rank_after
+      display_name: 之后排名
+      type: double
+      description: 战斗后的排名
+      source_sheet: 外挂治理相关
+    - name: wall_array
+      display_name: 城墙上阵信息
+      type: Array(Object)
+      description: 记录上阵城墙
+      source_sheet: 外挂治理相关
+    - name: battle_array
+      display_name: 英雄阵容信息
+      type: Array(Object)
+      description: 记录上阵英雄
+      source_sheet: 外挂治理相关
+    - name: reportHpMax
+      display_name: 城墙血量（客户端）
+      type: double
+      source_sheet: 外挂治理相关
+    - name: svrHpMax
+      display_name: 城墙血量（服务端）
+      type: double
+      source_sheet: 外挂治理相关
+    - name: refreshCard
+      display_name: 修改刷卡次数
+      type: double
+      source_sheet: 外挂治理相关
+    - name: hisDamage
+      display_name: 玩家本次部落boss伤害
+      type: varchar
+      source_sheet: 外挂治理相关
+    - name: nextRankDamage
+      display_name: 后一名玩家部落boss伤害
+      type: varchar
+      source_sheet: 外挂治理相关
+    - name: nextRank
+      display_name: 后一名次
+      type: double
+      source_sheet: 外挂治理相关
+  - name: post_office_carriage_refresh_log
+    display_name: 诡都邮局马车刷新
+    description: 马车刷新结果生成时
+    tag: 押镖玩法
+    data_source: 服务端
+    source_sheet: 诡都邮局
+    source_sheets:
+    - 诡都邮局
+    properties:
+    - name: refresh_type
+      display_name: 刷新类型
+      type: varchar
+      description: enter/auto_timeout/escort_finish/manual_ad/manual_diamond
+      notes: 进入界面补刷、倒计时自动刷新、押镖完成刷新、广告刷新、钻石刷新
+      source_sheet: 诡都邮局
+    - name: refresh_cost_type
+      display_name: 刷新消耗类型
+      type: varchar
+      description: none/ad/diamond
+      notes: 新增
+      source_sheet: 诡都邮局
+    - name: refresh_cost_num
+      display_name: 刷新消耗数量
+      type: double
+      description: 钻石刷新填钻石消耗数量；广告/自动/完成后刷新填0
+      notes: 复用数值字段语义；只记录刷新成本
+      source_sheet: 诡都邮局
+    - name: diamond_result
+      display_name: 钻石剩余数量
+      type: double
+      description: 钻石刷新后玩家剩余钻石；广告/自动刷新可填空
+      notes: 比马粮更贴近钻石刷新行为成本
+      source_sheet: 诡都邮局
+    - name: refresh_times_today
+      display_name: 今日已刷新次数
+      type: double
+      notes: 对应广告/钻石刷新分别统计时建议填该类型次数
+      source_sheet: 诡都邮局
+    - name: refresh_slot_num
+      display_name: 本次刷新栏位数
+      type: double
+      notes: 所有未在押镖马车栏位数
+      source_sheet: 诡都邮局
+    - name: carriage_list
+      display_name: 刷新后马车列表
+      type: double
+      description: '[{"carriage_id":1,"carriage_quality":2,"duration":3600,"reward_preview":[...]}]'
+      notes: 品质建议1普通/2高级/3豪华
+      source_sheet: 诡都邮局
+  - name: post_office_escort_log
+    display_name: 诡都邮局押镖
+    description: 押镖开始/领奖时
+    tag: 押镖玩法
+    data_source: 服务端
+    source_sheet: 诡都邮局
+    source_sheets:
+    - 诡都邮局
+    properties:
+    - name: change_reason
+      display_name: 变化原因
+      type: varchar
+      description: start/reward
+      notes: 复用字段名；开始押镖/押镖完成/领取奖励
+      source_sheet: 诡都邮局
+    - name: escort_uid
+      display_name: 押镖唯一id
+      type: varchar
+      description: 一次押镖流程唯一ID
+      notes: 串联开始、完成、被劫、领奖
+      source_sheet: 诡都邮局
+    - name: carriage_id
+      display_name: 马车id
+      type: double
+      notes: 配置表ID
+      source_sheet: 诡都邮局
+    - name: carriage_quality
+      display_name: 马车品质
+      type: double
+      description: 1普通/2高级/3豪华
+      notes: 新增
+      source_sheet: 诡都邮局
+    - name: team_id
+      display_name: 队伍id
+      type: double
+      notes: 三支护送队伍
+      source_sheet: 诡都邮局
+    - name: battle_array
+      display_name: 护镖阵容信息
+      type: double
+      description: 记录上阵英雄
+      notes: 复用战斗阵容字段
+      source_sheet: 诡都邮局
+    - name: duration
+      display_name: 运镖时长(秒)
+      type: double
+      notes: 复用 duration 语义
+      source_sheet: 诡都邮局
+    - name: cost_item
+      display_name: 消耗物品
+      type: double
+      description: '[{"num":xx,"name":"马粮","id":"xx"}]'
+      notes: 复用合作试炼字段；开始押镖时上报
+      source_sheet: 诡都邮局
+    - name: rob_loss_item
+      display_name: 损失奖励
+      type: double
+      description: 护镖失败时损失奖励
+      notes: 新增
+      source_sheet: 诡都邮局
+    - name: award
+      display_name: 获得奖励
+      type: double
+      description: 完成/领奖时的实际奖励
+      notes: 复用现有 award 字段
+      source_sheet: 诡都邮局
+    - name: is_robbed
+      display_name: 是否被劫镖
+      type: double
+      description: 1是 0否
+      notes: 完成/领奖时上报
+      source_sheet: 诡都邮局
+  - name: post_office_rob_record_log
+    display_name: 诡都邮局劫镖记录
+    description: 劫镖战斗结束后生成记录时
+    tag: 押镖玩法
+    data_source: 服务端
+    source_sheet: 诡都邮局
+    source_sheets:
+    - 诡都邮局
+    properties:
+    - name: record_type
+      display_name: 记录类型
+      type: varchar
+      description: defend_success/defend_fail/rob_success/rob_fail
+      notes: 护镖成功/护镖失败/劫镖成功/劫镖失败
+      source_sheet: 诡都邮局
+    - name: battle_uid
+      display_name: 战斗唯一id
+      type: varchar
+      description: 为了区分是哪一场战斗
+      notes: 复用战斗字段
+      source_sheet: 诡都邮局
+    - name: escort_uid
+      display_name: 押镖唯一id
+      type: varchar
+      notes: 串联押镖流程
+      source_sheet: 诡都邮局
+    - name: carriage_id
+      display_name: 马车id
+      type: double
+      notes: 新增
+      source_sheet: 诡都邮局
+    - name: carriage_quality
+      display_name: 马车品质
+      type: double
+      description: 1普通/2高级/3豪华
+      notes: 新增
+      source_sheet: 诡都邮局
+    - name: opponent_id
+      display_name: 对方玩家ID
+      type: varchar
+      notes: 复用合作试炼字段；护镖方视角为劫镖人，劫镖方视角为护镖人
+      source_sheet: 诡都邮局
+    - name: award
+      display_name: 获得奖励
+      type: double
+      description: 劫镖成功奖励
+      notes: 复用现有 award 字段
+      source_sheet: 诡都邮局
+    - name: rob_loss_item
+      display_name: 损失奖励
+      type: double
+      description: 护镖失败时损失奖励
+      notes: 新增
+      source_sheet: 诡都邮局
+    - name: record_time
+      display_name: 记录时间
+      type: timestamp
+      notes: 如直接使用事件时间可不传
+      source_sheet: 诡都邮局
+  sql_hints:
+    active_events:
+    - ta_app_start
+    - ta_app_end
+    - active_log
+    - log_in_out
+    - pay_log
+    mainline_battle_events:
+    - battle_star
+    - battle_result
+    mainline_battle_filter: TRY_CAST("battle_type" AS integer) = 1 AND TRY_CAST("map_id" AS integer) > 1
+    coop_trial_events:
+    - battle_star
+    - battle_result
+    - add_item_log
+    - use_item_log
+    - money_log
+    anti_cheat_events:
+    - battle_check
+    - boss_battle_result
+    post_office_events:
+    - post_office_carriage_refresh_log
+    - post_office_escort_log
+    - post_office_rob_record_log
+    ios_payment_added_field: payment_method
