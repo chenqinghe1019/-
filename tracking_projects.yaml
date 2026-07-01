@@ -7,3 +7,5 @@ tracking_projects:
     extract: "xiafangle_tracking_extract.json"
     anti_cheat_yaml: "xiafangle_anti_cheat_tracking.yaml"
     anti_cheat_sql: "sql/xiafangle_anti_cheat_report_v41.sql"
+  - project: "步步项目"
+    yaml: "bubu_tracking.yaml"
