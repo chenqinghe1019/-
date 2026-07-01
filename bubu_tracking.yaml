@@ -1,0 +1,9 @@
+projects:
+  - project: "步步项目"
+    table_suffix: 21
+    table_mapping:
+      user_table: "ta.v_user_21"
+      event_table: "ta.v_event_21"
+    notes:
+      - "2026-07-01 用户定义：v21 为步步项目。"
+      - "SQL 默认遵循倍特工作室 Trino/数数规范：不用 WITH，不用 USING，事件表字段加双引号。"
