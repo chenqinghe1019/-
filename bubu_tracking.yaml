@@ -1,13 +1,13 @@
 projects:
   - project: "步步项目"
-    table_suffix: 21
+    table_suffix: 22
     table_mapping:
-      user_table: "ta.v_user_21"
-      event_table: "ta.v_event_21"
+      user_table: "ta.v_user_22"
+      event_table: "ta.v_event_22"
     source_files: ["2d590674-caf6-4d02-9a41-8388c444c5e9.xlsx"]
     extracted_at: "2026-07-01"
     notes:
-      - "2026-07-01 用户定义：v21 为步步项目。"
+      - "2026-07-01 用户更正：步步项目表后缀为 v22；此前 v21/v2 均作废。"
       - "SQL 默认遵循倍特工作室 Trino/数数规范：不用 WITH，不用 USING，事件表字段加双引号。"
       - "本文件由用户上传的步步项目埋点 Excel 同步生成，包含事件属性、用户属性、公共事件属性和 iOS 支付渠道需求。"
     summary:
