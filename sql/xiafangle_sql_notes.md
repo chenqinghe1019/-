@@ -7,7 +7,7 @@
 - `pay_log.payment` 事件属性单位为分，统计金额和首日付费分层前必须 `/100` 转为元。
 - 在线时长统计方法全项目通用：使用 `ta_mg_hide` 事件的 `#duration` 字段，按秒统计；输出分钟时 `/60`。
 - 主线最大关卡 ID：使用 `battle_star` 与 `battle_result` 一起判断，`try_cast("battle_type" as double) = 1`，取两类事件中的 `max(map_id)`；不要使用 `battle_start`，该事件服务端上报有误。
-- 次日流失关卡分布口径：新增日期用 `create_role_time` 转日期并支持 `${PartDate:date}` 筛选；分层按首日 `pay_log.payment/100`；次日存在 `in_out_log` 视为留存，否则流失；最终停留关卡按首日 `battle_star` + `battle_result` 最大 `map_id`；没有主线记录时关卡 ID 记为数值 0；关卡 ID 输出为数值型，不转 varchar；最终停留关卡是否通过只看首日同关卡 `battle_result`，没有 `battle_result` 认为已通过，`battle_result=1` 认为已通过，只有 `battle_result=0` 判断未通过。
+- 次日流失关卡分布口径：新增日期用 `create_role_time` 转日期并支持 `${PartDate:date}` 筛选；分层按首日 `pay_log.payment/100`；次日存在 `in_out_log` 视为留存，否则流失；最终停留关卡按首日 `battle_star` + `battle_result` 最大 `map_id`；没有主线记录时关卡 ID 记为数值 0；关卡 ID 输出为数值型，不转 varchar；最终停留关卡是否通过只看首日同关卡 `battle_result`，没有 `battle_result` 认为已通过，`battle_result=1` 认为已通过，只有 `battle_result=0` 判断未通过；关卡分布结果每个 `map_id` 需要同时输出已通过、未通过两行，没有人数则填 0。
 - 新人特惠妖狐妲己明细分析当前口径：首日买新人特惠前 3 档中至少 2 档，且次日流失；最大主线关卡按首日 `battle_star` 统计，即 `#account_id + 创角日期` 关联。
 - `in_out_log` 当前属性为 `change_reason`、`online_time`；不要依赖 `log_type` 字段。次日登录/留存先按次日存在 `in_out_log` 事件判断，或按 `change_reason` 区分登录/登出。
 - 英雄获得事件：`role_obtain_log`，英雄字段 `role_id`，但当前实际上报为英雄名；妖狐妲己筛选写 `cast("role_id" as varchar) = '妖狐妲己'`；初始星级字段 `init_star`。
