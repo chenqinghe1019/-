@@ -4,7 +4,7 @@ sql_templates:
     - "使用前先确认当前项目，替换表后缀（41/44/46）、事件名、字段名。"
     - "日期字段以各项目实际表结构为准，写 SQL 前先查一次字段列表。"
     - "模板中 {project_id} 为占位符，需替换为实际项目 ID。"
-    - "数数动态日期参数为所有项目通用规则：${PartDate:date} / ${PartDate:date1} 本身会展开为 \"$part_date\" between 'xxxx' and 'xxxx'，不要再手写 \"$part_date\" 拼接；需要给事件表加别名时写 e.${PartDate:date}，不要写 e.\"$part_date\"${PartDate:date}。"
+    - "数数动态日期参数为所有项目通用规则：${PartDate:date} / ${PartDate:date1} 本身会展开为 \"$part_date\" between 'xxxx' and 'xxxx'，不要再手写 \"$part_date\" 拼接。严禁写法：WHERE \"$part_date\"${PartDate:date}、WHERE u.\"$part_date\"${PartDate:date}，会被展开成 \"$part_date\"\"$part_date\" 或 u.\"$part_date\"\"$part_date\" 导致字段无法解析。正确写法：当前子查询作用域保留名为 \"$part_date\" 的字段，然后直接写 WHERE ${PartDate:date}；如确实需要给事件表别名且平台参数支持别名前缀，再写 e.${PartDate:date}，不要写 e.\"$part_date\"${PartDate:date}。"
     - "数数动态日期参数使用错误警示：${PartDate:date1} / ${PartDate:date2} 会展开为对应的 \"$part_date\" between ... 条件；使用它的当前子查询作用域里必须存在名为 \"$part_date\" 的字段。如果当前层已经把日期别名改成 \"新增日期\" 等中文名，再写 WHERE ${PartDate:date1} 会报 Column '$part_date' cannot be resolved。正确做法是内部保留 \"$part_date\" 字段，筛选后最外层再改名展示。"
 
   templates:
@@ -182,7 +182,7 @@ sql_templates:
           ad_location_scene,
           sum(case when action_id = 1 then 1 else 0 end) AS show_cnt,
           sum(case when action_id = 2 then 1 else 0 end) AS click_cnt,
-          round(sum(case when action_id = 2 then 1 else 0 end) * 1.0
+          round(sum(case when action_id = 2 then 1 else 0) * 1.0
             / nullif(sum(case when action_id = 1 then 0 end), 0), 4) AS ctr
         FROM ta.v_event_{project_id}
         WHERE #event_name = 'ad_button'
