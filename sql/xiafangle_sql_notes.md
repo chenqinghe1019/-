@@ -6,7 +6,8 @@
 - 首日付费分层必须限定创角当天/active_days=0 的 `pay_log`，不要用查询范围累计付费代替。
 - `pay_log.payment` 事件属性单位为分，统计金额和首日付费分层前必须 `/100` 转为元。
 - 在线时长统计方法全项目通用：使用 `ta_mg_hide` 事件的 `#duration` 字段，按秒统计；输出分钟时 `/60`。
-- 主线最大关卡 ID：使用 `battle_star` 事件，`try_cast("battle_type" as double) = 1`，取 `max(map_id)`；不要使用 `battle_start`，该事件服务端上报有误；如未特别说明，最大主线关卡按全生命周期统计，不限制首日。
+- 主线最大关卡 ID：使用 `battle_star` 事件，`try_cast("battle_type" as double) = 1`，取 `max(map_id)`；不要使用 `battle_start`，该事件服务端上报有误。
+- 新人特惠妖狐妲己明细分析当前口径：首日买新人特惠前 3 档中至少 2 档，且次日流失；最大主线关卡按首日 `battle_star` 统计，即 `#account_id + 创角日期` 关联。
 - `in_out_log` 当前属性为 `change_reason`、`online_time`；不要依赖 `log_type` 字段。次日登录/留存先按次日存在 `in_out_log` 事件判断，或按 `change_reason` 区分登录/登出。
 - 英雄获得事件：`role_obtain_log`，英雄字段 `role_id`，但当前实际上报为英雄名；妖狐妲己筛选写 `cast("role_id" as varchar) = '妖狐妲己'`；初始星级字段 `init_star`。
 - 英雄升星事件：`role_upstar_log`，英雄字段 `role_id`，但当前实际上报为英雄名；妖狐妲己筛选写 `cast("role_id" as varchar) = '妖狐妲己'`；新星级字段 `nstar`，原星级字段 `ostar`。
