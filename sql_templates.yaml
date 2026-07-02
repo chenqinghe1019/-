@@ -4,6 +4,9 @@ sql_templates:
     - "使用前先确认当前项目，替换表后缀（41/44/46）、事件名、字段名。"
     - "日期字段以各项目实际表结构为准，写 SQL 前先查一次字段列表。"
     - "模板中 {project_id} 为占位符，需替换为实际项目 ID。"
+    - "用户 SQL 代码风格：优先输出最终完整 SQL；TrinoSQL；不用 WITH/CTE；不要用 USING；不要写过度嵌套、重复造同一批用户的长 SQL；优先按‘先固定目标人群/新增人群 -> 汇总行为事实 -> LEFT JOIN 汇总结果 -> 最外层聚合展示’的结构组织。"
+    - "用户 SQL 代码风格：如果筛选项是新增日期，只在新增用户子查询中生成并保留名为 \"$part_date\" 的字段，然后用 WHERE ${PartDate:date} 筛选新增人群；事件表不要直接套新增日期参数，首日事件通过 e.\"$part_date\" = u.\"$part_date\" 关联限定。"
+    - "用户 SQL 代码风格：字段命名保持中文展示列，必要排序字段可放内层，最外层不要输出多余辅助字段；数字指标按需求 round，默认不自动转百分比；关卡、付费分层等维度用清晰 CASE，避免难读的复杂表达式。"
     - "数数动态日期参数为所有项目通用规则：${PartDate:date} / ${PartDate:date1} 本身会展开为 \"$part_date\" between 'xxxx' and 'xxxx'，不要再手写 \"$part_date\" 拼接。严禁写法：WHERE \"$part_date\"${PartDate:date}、WHERE u.\"$part_date\"${PartDate:date}，会被展开成 \"$part_date\"\"$part_date\" 或 u.\"$part_date\"\"$part_date\" 导致字段无法解析。正确写法：当前子查询作用域保留名为 \"$part_date\" 的字段，然后直接写 WHERE ${PartDate:date}；如确实需要给事件表别名且平台参数支持别名前缀，再写 e.${PartDate:date}，不要写 e.\"$part_date\"${PartDate:date}。"
     - "数数动态日期参数使用错误警示：${PartDate:date1} / ${PartDate:date2} 会展开为对应的 \"$part_date\" between ... 条件；使用它的当前子查询作用域里必须存在名为 \"$part_date\" 的字段。如果当前层已经把日期别名改成 \"新增日期\" 等中文名，再写 WHERE ${PartDate:date1} 会报 Column '$part_date' cannot be resolved。正确做法是内部保留 \"$part_date\" 字段，筛选后最外层再改名展示。"
 
