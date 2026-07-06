@@ -107,6 +107,25 @@ coalesce(try_cast("pay_result" as double),1) = 1
 
 - 不要把首日付费误写成 `total_payment`，除非用户明确指定。
 
+## 下方了抽卡 recruit_log 口径
+
+- 事件：`recruit_log`。
+- 抽卡类型：`gacha_type = 2` 为高级招募，`gacha_type = 3` 为种族招募。
+- 抽卡次数不要按日志条数统计。
+- `award_ting` 在 Trino 中是 `array(row(star double, num double, id varchar, "type" double))`，不是 JSON 字符串，不能 `cast(award_ting as varchar)` 后 `json_parse`。
+- 抽卡次数按 `award_ting` 数组长度统计：
+
+```sql
+coalesce(cardinality(e."award_ting"),0)
+```
+
+- 拆分高级招募、种族招募时使用：
+
+```sql
+sum(case when e."$part_event" = 'recruit_log' and try_cast(e."gacha_type" as double) = 2 then coalesce(cardinality(e."award_ting"),0) else 0 end) high_gacha_times,
+sum(case when e."$part_event" = 'recruit_log' and try_cast(e."gacha_type" as double) = 3 then coalesce(cardinality(e."award_ting"),0) else 0 end) race_gacha_times
+```
+
 ## 下方了首日主线关卡停留口径
 
 最终停留主线关卡 ID：
