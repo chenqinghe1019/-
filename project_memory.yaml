@@ -1,0 +1,14 @@
+project_memory:
+  project_name: "倍特工作室"
+  github_source_of_truth:
+    repository: "chenqinghe1019/-"
+    rule: "涉及项目配置、埋点字段、SQL口径、表后缀、看板规则、字段确认时，优先读取 GitHub 仓库中的知识库文件；不要先按字段名或历史印象猜。"
+  chat_continuity:
+    rule: "同一项目的新对话可能不会完整继承上一段对话的全部细节；因此可复用口径、字段、SQL规范、用户偏好需要沉淀到 GitHub 知识库。"
+  user_preferences:
+    - "SQL 需求默认直接给最终完整 SQL，不要只给替换片段，除非用户明确只要片段。"
+    - "涉及下方了 / 步步 / v41 / v22 / 埋点字段 / item_log / money_log / battle_result / battle_star 等项目口径，先查 GitHub 配置，再结合当前上传文件和上下文修改。"
+    - "字段不确定时必须说明不确定，并先查配置或让用户确认，不能直接编字段。"
+    - "用户希望项目记忆点和口径调整同步到 GitHub，便于切换新对话后继续使用。"
+  latest_confirmed_notes:
+    - "money_log 和 item_log 使用同样的字段名口径；钻石、能量饮料等 money_log 余额也按 item_id / item_result 取，不使用 money_id / money_result。"
