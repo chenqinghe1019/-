@@ -24,6 +24,7 @@ projects:
   - 英雄升星事件为 role_upstar_log，英雄字段 role_id，新星级字段 nstar；英雄获得事件为 role_obtain_log，初始星级字段 init_star。
   - 新人特惠前3档可按 pay_log.product_type=新人特惠 且 product_id in (1,2,3) 判断。
   - change_power_log.change_reason=5635 表示升星、5636 表示升阶；num 为本次战力变化量。
+  - pay_log 中代币支付可能出现 payment=0；统计商品名义金额时关联 ta_dim.dim_41_0_vprop_sql_1429，关联键为 concat(product_type, cast(cast(product_id as bigint) as varchar), product_name)，金额取 #vp@product_concat@payment。
   source_workbook_sheets:
   - name: 接入必知
     range: A1:K40
