@@ -9,3 +9,5 @@ tracking_projects:
     anti_cheat_sql: "sql/xiafangle_anti_cheat_report_v41.sql"
   - project: "步步项目"
     yaml: "bubu_tracking.yaml"
+  - project: "暴弹飞射"
+    yaml: "baodanfeshe_tracking.yaml"
