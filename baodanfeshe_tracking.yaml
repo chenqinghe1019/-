@@ -1,0 +1,32 @@
+projects:
+  - project: "暴弹飞射"
+    project_code: "baodanfeshe"
+    table_suffix: 42
+    thinkingdata:
+      user_table: "ta.v_user_42"
+      event_table: "ta.v_event_42"
+      domain_release_filter: "\"domain\" = 'release'"
+      create_role_time_type: "double"
+      create_role_time_unit: "unix_seconds"
+      create_role_time_sql: "from_unixtime(TRY_CAST(\"create_role_time\" AS double))"
+      primary_account_id: "#account_id"
+      media_field: "ad_platform"
+      region_field: "region_id"
+      payment_unit: "cent"
+    updated_at: "2026-07-15"
+    notes:
+      - "2026-07-15 根据实际 SQL 与 Trino 报错建立项目；固定使用 ta.v_user_42 / ta.v_event_42。"
+      - "v42 的 create_role_time 为 double 类型 Unix 秒级时间戳，不能直接使用 date(create_role_time) 或 date_format(create_role_time, ...)，必须先用 from_unixtime 转为 timestamp。"
+      - "正式服统一筛选 domain='release'；媒体 ad_platform 仅从用户表读取，空值归为自然量。"
+      - "pay_log.payment 单位为分，统计金额及首日付费分层前除以 100 转为元。"
+      - "数数动态日期参数必须作为完整 WHERE 条件单独使用，例如 WHERE ${PartDate:date2}；不能与表别名拼接。"
+      - "SQL 默认遵循倍特工作室规范：TrinoSQL、不用 WITH/CTE、不用 USING、每次输出最终完整 SQL。"
+    known_events:
+      - "ta_app_start | App启动 | 用于活跃判断"
+      - "ta_app_end | App关闭 | 用于活跃判断"
+      - "active_log | 激活/活跃日志 | 用于活跃判断"
+      - "log_in_out | 登录登出 | 用于活跃判断"
+      - "pay_log | 付费日志 | payment单位为分"
+      - "battle_star | 战斗开始 | 公共属性power可用于战力"
+      - "battle_result | 战斗结算 | 公共属性power可用于战力"
+      - "change_power_log | 战力变化 | 当前SQL使用公共属性power"
