@@ -15,6 +15,8 @@
 - `fangkuai_tracking.yaml`：方块也疯狂 埋点结构（事件、参数、用户属性、公共属性）
 - `xiafangle_tracking.yaml`：下方了 埋点结构
 - `xiafangle_anti_cheat_tracking.yaml`：下方了 外挂治理埋点与规则口径（表后缀 41）
+- `bubu_tracking.yaml`：步步项目 埋点结构与项目口径（表后缀 22）
+- `baodanfeshe_tracking.yaml`：暴弹飞射 项目表、时间字段、付费与动态日期口径（表后缀 42）
 
 ### SQL 口径
 - `sql/xiafangle_anti_cheat_report_v41.sql`：下方了 外挂异常玩家名单统计 SQL，按角色ID、区服、异常类型聚合，输出 VIP、累充、战力、赛季、渠道等字段。
