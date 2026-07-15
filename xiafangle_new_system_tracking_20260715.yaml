@@ -1,0 +1,96 @@
+project: 下方了
+project_code: xiafangle
+project_id: 41
+created_at: '2026-07-15'
+status: proposed
+source_design_docs:
+  - 孟婆煮汤策划案.docx
+  - 公会对决策划案.docx
+  - 宝石系统策划案.docx
+  - 诡市寻宝策划案.docx
+baseline:
+  tracking_spec: xiafangle_tracking.yaml
+  event_table: ta.v_event_41
+  user_table: ta.v_user_41
+  domain_release_filter: '"domain" = ''release'''
+design_rules:
+  - 服务端核心事件以结算完成为上报时机，客户端仅承担页面曝光与页签漏斗。
+  - 活动事件统一携带 activity_id、activity_round、activity_day。
+  - 一轮或一次投掷使用 round_uid / roll_uid，保证可关联与幂等。
+  - 资源消耗、奖励和返还使用结构化 array<object>；空数组传 []，不得拼接字符串。
+  - 概率行为必须成功失败均上报；比例按 0-1 原值记录。
+  - 专属行为日志与 item_log、money_log、change_power_log 双写并使用固定 change_reason 对账。
+systems:
+  - system: 孟婆煮汤
+    events:
+      - mengpo_page_log
+      - mengpo_boil_log
+      - mengpo_collect_log
+      - mengpo_repair_log
+      - mengpo_idle_collect_log
+      - mengpo_reward_log
+      - mengpo_rank_settle_log
+    key_analysis:
+      - 煮汤次数、点数分布与爆锅率
+      - 修复使用率与道具消耗
+      - 单轮最高点数、极品次数、大奖保底与排行
+  - system: 公会对决
+    events:
+      - guild_duel_page_log
+      - guild_duel_match_log
+      - guild_duel_merit_log
+      - guild_duel_book_log
+      - guild_duel_reward_log
+      - guild_duel_settle_log
+    key_analysis:
+      - 参与资格、轮空与匹配强弱
+      - 任务功绩、功绩薄加成与研究加成
+      - 每日/最终胜负、对决积分与隐藏分
+  - system: 宝石系统
+    events:
+      - gem_log
+      - gem_equip_log
+      - gem_upgrade_log
+      - gem_advance_log
+      - gem_inherit_log
+      - gem_reset_log
+    key_analysis:
+      - 宝石产销、随机阶级属性与数值品质
+      - 镶嵌、等级交换、强化消耗与返还
+      - 升阶真实成功率、失败损耗、继承与战力收益
+  - system: 诡市寻宝
+    events:
+      - guishi_page_log
+      - guishi_dice_log
+      - guishi_grid_log
+      - guishi_shop_buy_log
+      - guishi_reward_log
+      - guishi_clear_log
+    key_analysis:
+      - 骰子产销、点数分布、圈数与移动步数
+      - 格位经验、升品、英雄事件与奖励
+      - 商店消费、奖励领取、剩余资源折算
+reuse_existing_events:
+  - pay_log
+  - item_log
+  - money_log
+  - mission_finish_log
+  - mission_reward_log
+  - shop_buy_log
+  - change_power_log
+  - mail_log
+open_questions:
+  - 孟婆煮汤品质规则同时写有 13-21 稀有与 21-24 极品，21点归属需策划确认。
+  - 诡市银骰子规则正文为排除3点后从剩余点随机，界面文案写在排除点数里随机，需策划确认。
+  - 需分配宝石系统 change_reason、change_power_log.change_reason 以及各活动 task_type/target_type 枚举。
+deliverable:
+  name: 下方了_新系统埋点需求_v1.xlsx
+  sheets:
+    - 需求总览
+    - 复用现有埋点
+    - 孟婆煮汤
+    - 公会对决
+    - 宝石系统
+    - 诡市寻宝
+    - 统一结构与枚举
+    - 验收清单
