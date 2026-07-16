@@ -1,32 +1,1953 @@
 projects:
-  - project: "暴弹飞射"
-    project_code: "baodanfeshe"
-    table_suffix: 42
-    thinkingdata:
-      user_table: "ta.v_user_42"
-      event_table: "ta.v_event_42"
-      domain_release_filter: "\"domain\" = 'release'"
-      create_role_time_type: "double"
-      create_role_time_unit: "unix_seconds"
-      create_role_time_sql: "from_unixtime(TRY_CAST(\"create_role_time\" AS double))"
-      primary_account_id: "#account_id"
-      media_field: "ad_platform"
-      region_field: "region_id"
-      payment_unit: "cent"
-    updated_at: "2026-07-15"
-    notes:
-      - "2026-07-15 根据实际 SQL 与 Trino 报错建立项目；固定使用 ta.v_user_42 / ta.v_event_42。"
-      - "v42 的 create_role_time 为 double 类型 Unix 秒级时间戳，不能直接使用 date(create_role_time) 或 date_format(create_role_time, ...)，必须先用 from_unixtime 转为 timestamp。"
-      - "正式服统一筛选 domain='release'；媒体 ad_platform 仅从用户表读取，空值归为自然量。"
-      - "pay_log.payment 单位为分，统计金额及首日付费分层前除以 100 转为元。"
-      - "数数动态日期参数必须作为完整 WHERE 条件单独使用，例如 WHERE ${PartDate:date2}；不能与表别名拼接。"
-      - "SQL 默认遵循倍特工作室规范：TrinoSQL、不用 WITH/CTE、不用 USING、每次输出最终完整 SQL。"
-    known_events:
-      - "ta_app_start | App启动 | 用于活跃判断"
-      - "ta_app_end | App关闭 | 用于活跃判断"
-      - "active_log | 激活/活跃日志 | 用于活跃判断"
-      - "log_in_out | 登录登出 | 用于活跃判断"
-      - "pay_log | 付费日志 | payment单位为分"
-      - "battle_star | 战斗开始 | 公共属性power可用于战力"
-      - "battle_result | 战斗结算 | 公共属性power可用于战力"
-      - "change_power_log | 战力变化 | 当前SQL使用公共属性power"
+- project: 暴弹飞射
+  project_code: baodanfeshe
+  table_suffix: 42
+  source_document:
+    file: 暴弹飞射-埋点说明文档.xlsx
+    imported_at: '2026-07-16'
+    sheets:
+      events: 事件属性!A1:J335
+      user_properties: 用户属性!A1:I46
+      common_event_properties: 公共事件属性!A1:E18
+      ios_payment: 发行ios支付渠道需求!A1:J20
+  thinkingdata:
+    user_table: ta.v_user_42
+    event_table: ta.v_event_42
+    domain_release_filter: '"domain" = ''release'''
+    primary_account_id: '#account_id'
+    media_field: ad_platform
+    region_field: region_id
+    payment_unit: cent
+    create_role_time_spec_type: timestamp
+    create_role_time_observed_warehouse_type: double
+    create_role_time_observed_unit: unix_seconds
+    create_role_time_legacy_sql: from_unixtime(TRY_CAST("create_role_time" AS double))
+  updated_at: '2026-07-16'
+  notes:
+  - 最新版埋点文档定义登录/登出事件为 in_out_log；不要与旧 SQL 中的 log_in_out 混用。
+  - 埋点方案把 create_role_time 定义为 timestamp；历史 v42 查询曾实际观测为 double Unix 秒。写 SQL 前应确认当前字段类型，历史数据使用兼容转换。
+  - 公共属性 clan_uid 在用户属性表定义为 double，在公共事件属性表定义为 varchar，接入与查询需先确认线上最终类型。
+  - 未在原表填写属性类型的字段保留为 unspecified，不能自行推断后写入生产口径。
+  - 原始 Excel 仅作为来源，不提交到仓库。
+  summary:
+    event_count: 65
+    event_property_count: 332
+    user_property_count: 42
+    common_event_property_count: 16
+  ios_payment_extension:
+    user_property:
+      name: wx_scene
+      display_name: 微小场景来源
+      type: varchar
+      update_method: user_setOnce
+    pay_log_property:
+      name: payment_method
+      display_name: 付费方式
+      type: varchar
+  common_event_properties:
+  - name: '#user_id'
+    display_name: 用户在系统中的唯一用户标识
+    type: bigint
+  - name: '#distinct_id'
+    display_name: 访客ID
+    type: varchar
+    description: 同设备ID
+    integration: 前端上传：ta_visitor
+  - name: '#account_id'
+    display_name: 角色ID
+    type: varchar
+    integration: 数数前缀+rid
+  - name: nb_open_id
+    display_name: 聚合openID
+    type: varchar
+    description: 星云聚合openid【项目唯一标识】
+    integration: 前端上传：nbOpenId
+  - name: open_id
+    display_name: 微信open_id
+    type: varchar
+    description: 微信小游戏|抖音小游戏登录验证成功时记录
+    integration: 前端上传：ta_open_id
+  - name: channel_id
+    display_name: 渠道ID
+    type: varchar
+    description: 星云channel_id
+    integration: 前端上传：ta_channel_id
+  - name: system
+    display_name: 操作系统
+    type: varchar
+    integration: 前端上传：ta_os
+  - name: create_role_time
+    display_name: 创角时间
+    type: timestamp
+    integration: role.tmsCreate
+  - name: server_open_time
+    display_name: 开服时间
+    type: timestamp
+    integration: role.tmsOpen
+  - name: total_payment
+    display_name: 历史累计充值金额
+    type: double
+    description: 历史累充金额（含代金券）：真实付费(排除买代金券)+代金券消费
+    integration: role.money
+  - name: total_payment_rmb
+    display_name: 历史累计充值金额（RMB）
+    type: double
+    description: 历史累充金额（纯RMB）：真实付费
+    integration: role.moneyRmb
+  - name: domain
+    display_name: 测试服或正式服
+    type: varchar
+    description: dev代表测试服，release代表正式服
+    integration: role.taDomain
+  - name: region_id
+    display_name: 区服ID
+    type: varchar
+    description: 区服ID
+    integration: zone-sid
+  - name: clan_uid
+    display_name: 部落ID
+    type: varchar
+    description: 玩家部落id
+    integration: role.legionId
+  - name: power
+    display_name: 战力
+    type: double
+    description: 发生行为时的战力
+    integration: role.battle
+  - name: season
+    display_name: 赛季
+    type: double
+    integration: seasonInfo.id
+  user_properties:
+  - name: '#user_id'
+    display_name: 用户在系统中的唯一用户标识
+    type: bigint
+    source: 数数预设字段
+    update_method: user_setOnce
+    tag: 基本信息类
+  - name: '#distinct_id'
+    display_name: 访客ID
+    type: varchar
+    source: 数数预设字段
+    update_method: user_setOnce
+    description: 首次打开app，激活SDK，客户端记录设备ID
+    tag: 基本信息类
+    note: 前端上传：ta_visitor
+  - name: '#account_id'
+    display_name: 账号ID（角色id）
+    type: varchar
+    source: 服务端
+    update_method: user_setOnce
+    description: 创建角色时记录
+    tag: 基本信息类
+    note: 数数前缀+rid
+  - name: '#active_time'
+    display_name: 激活时间
+    type: timestamp
+    source: 数数预设字段
+    update_method: user_setOnce
+    description: 激活时
+    tag: 时间类
+  - name: '#reg_time'
+    display_name: 注册时间
+    type: timestamp
+    source: 数数预设字段
+    update_method: user_setOnce
+    description: 创建角色时记录
+    tag: 时间类
+  - name: open_id
+    display_name: 渠道账号id
+    type: varchar
+    source: 服务端
+    update_method: user_setOnce
+    description: 创建角色时记录
+    tag: 基本信息类
+    note: 前端上传：ta_open_id
+  - name: nb_open_id
+    display_name: 聚合openID
+    type: varchar
+    source: 服务端
+    update_method: user_setOnce
+    description: 星云聚合openid【项目唯一标识】。创建角色时记录
+    tag: 基本信息类
+    note: 前端上传：nbOpenId
+  - name: channel_id
+    display_name: 渠道ID
+    type: varchar
+    source: 服务端
+    update_method: user_setOnce
+    description: 创建角色时记录
+    tag: 基本信息类
+    note: 前端上传：ta_channel_id
+  - name: code_id
+    display_name: 包体ID
+    type: varchar
+    source: 服务端
+    update_method: user_setOnce
+    description: 创建角色时记录
+    tag: 基本信息类
+  - name: region_id
+    display_name: 服务器id
+    type: varchar
+    source: 服务端
+    update_method: user_setOnce
+    description: 创建角色时记录
+    tag: 基本信息类
+    note: zone-sid
+  - name: server_open_time
+    display_name: 开服时间
+    type: timestamp
+    source: 服务端
+    update_method: user_setOnce
+    description: 开服时
+    tag: 基本信息类
+  - name: clan_uid
+    display_name: 部落ID
+    type: double
+    source: 服务端
+    update_method: user_set
+    description: 每次登出时
+    tag: 基本信息类
+    note: role.legionId
+  - name: domain
+    display_name: 环境
+    type: varchar
+    source: 服务端
+    update_method: user_setOnce
+    description: dev开发；release正式
+    tag: 基本信息类
+  - name: system
+    display_name: 应用（ios/安卓）
+    type: varchar
+    source: 服务端
+    update_method: user_setOnce
+    description: 创建角色时记录
+    tag: 基本信息类
+    note: 前端上传：ta_os
+  - name: create_role_time
+    display_name: 创角时间
+    type: timestamp
+    source: 服务端
+    update_method: user_setOnce
+    description: 创建角色时记录
+    tag: 基本信息类
+  - name: first_payment_time
+    display_name: 首次付费时间
+    type: timestamp
+    source: 服务端
+    update_method: user_setOnce
+    description: 首次付费时
+    tag: 基本信息类
+  - name: latest_login_time
+    display_name: 最后登录时间
+    type: timestamp
+    source: 服务端
+    update_method: user_set
+    description: 每次登出时
+    tag: 时间类
+  - name: latest_online_time
+    display_name: 最后登出时间
+    type: timestamp
+    source: 服务端
+    update_method: user_set
+    description: 每次登出时
+    tag: 时间类
+  - name: nick_name
+    display_name: 角色名称
+    type: varchar
+    source: 服务端
+    update_method: user_set
+    description: 每次登出时
+    tag: 基本信息类
+  - name: gold
+    display_name: 金币
+    type: double
+    source: 服务端
+    update_method: user_set
+    description: 每次登出时
+    tag: 进度类
+  - name: fighting_power
+    display_name: 战力
+    type: double
+    source: 服务端
+    update_method: user_set
+    description: 每次登出时
+    tag: 进度类
+  - name: total_payment
+    display_name: 历史累计充值金额
+    type: double
+    source: 服务端
+    update_method: user_set
+    description: 每次登出时
+    tag: 进度类
+  - name: total_payment_rmb
+    display_name: 历史累计充值金额（*纯RMB）
+    type: double
+    source: 服务端
+    update_method: user_set
+    description: 每次登出时
+    tag: 进度类
+  - name: gravity_client_id
+    display_name: 用户 client_id
+    type: unspecified
+    source: 引力引擎
+    update_method: user_set
+    tag: 基本信息类
+  - name: ad_wx_channel
+    display_name: 渠道
+    type: unspecified
+    source: 引力引擎
+    update_method: user_set
+    tag: 基本信息类
+  - name: ad_channel
+    display_name: 广告渠道
+    type: unspecified
+    source: 引力引擎
+    update_method: user_set
+    tag: 基本信息类
+  - name: ad_openid
+    display_name: 微信/抖音 open_id
+    type: unspecified
+    source: 引力引擎
+    update_method: user_set
+    tag: 基本信息类
+  - name: ad_campaign_id
+    display_name: 广告计划 ID
+    type: unspecified
+    source: 引力引擎
+    update_method: user_set
+    tag: 基本信息类
+  - name: ad_campaign_name
+    display_name: 广告计划名称
+    type: unspecified
+    source: 引力引擎
+    update_method: user_set
+    tag: 基本信息类
+  - name: ad_id
+    display_name: 广告id
+    type: unspecified
+    source: 引力引擎
+    update_method: user_set
+    tag: 基本信息类
+  - name: ad_name
+    display_name: 广告名称
+    type: unspecified
+    source: 引力引擎
+    update_method: user_set
+    tag: 基本信息类
+  - name: ad_creative_id
+    display_name: 广告创意id
+    type: unspecified
+    source: 引力引擎
+    update_method: user_set
+    tag: 基本信息类
+  - name: ad_creative_name
+    display_name: 广告创意名称
+    type: unspecified
+    source: 引力引擎
+    update_method: user_set
+    tag: 基本信息类
+  - name: ad_project_id
+    display_name: 巨量引擎项目ID
+    type: unspecified
+    source: 引力引擎
+    update_method: user_set
+    tag: 基本信息类
+    validation_issue: 数据缺失
+  - name: ad_platform
+    display_name: 媒体平台
+    type: unspecified
+    source: 引力引擎
+    update_method: user_set
+    tag: 基本信息类
+  - name: ad_MID1
+    display_name: 巨量引擎图片素材id
+    type: unspecified
+    source: 引力引擎
+    update_method: user_set
+    tag: 基本信息类
+  - name: ad_MID2
+    display_name: 巨量引擎标题素材id
+    type: unspecified
+    source: 引力引擎
+    update_method: user_set
+    tag: 基本信息类
+  - name: ad_MID3
+    display_name: 巨量引擎视频素材id
+    type: unspecified
+    source: 引力引擎
+    update_method: user_set
+    tag: 基本信息类
+  - name: ad_MID4
+    display_name: 巨量引擎搭配试玩素材id
+    type: unspecified
+    source: 引力引擎
+    update_method: user_set
+    tag: 基本信息类
+  - name: ad_MID5
+    display_name: 巨量引擎落地页素材id
+    type: unspecified
+    source: 引力引擎
+    update_method: user_set
+    tag: 基本信息类
+  - name: ad_MID6
+    display_name: 巨量引擎安卓下载详情页素材id
+    type: unspecified
+    source: 引力引擎
+    update_method: user_set
+    tag: 基本信息类
+  - name: ad_adverser_id
+    display_name: 广告主账户 ID
+    type: unspecified
+    source: 引力引擎
+    update_method: user_set
+    tag: 基本信息类
+  events:
+  - event_name: active_log
+    display_name: 激活
+    source: 客户端
+    trigger: 玩家每进入一个登录节点时
+    tag: 激活
+    properties:
+    - name: '#device_id'
+      display_name: 设备ID
+      type: varchar
+    - name: '#country'
+      display_name: 国家地区
+      type: varchar
+      description: 用户所在国家或地区，根据 IP 地址生成
+    - name: '#province'
+      display_name: 省份
+      type: varchar
+      description: 用户所在省份，根据 IP 地址生成
+    - name: '#city'
+      display_name: 城市
+      type: varchar
+      description: 用户所在城市，根据 IP 地址生成
+    - name: '#fps'
+      display_name: FPS
+      type: double
+      description: 用户设备的当前图像每秒传输帧率，如 60
+    - name: '#device_model'
+      display_name: 设备型号
+      type: varchar
+      description: 用户设备的型号，如 iPhone 8 等
+    - name: '#device_type'
+      display_name: 设备类型
+      type: varchar
+      description: 用户设备的类型，如iPad,iPhone等
+    - name: '#os'
+      display_name: 操作系统
+      type: varchar
+      description: iOS 11.2.2、Android 8.0.0 等
+    - name: '#network_type'
+      display_name: 网络类型
+      type: varchar
+      description: 事件发生时的网络状态，如 WIFI、3G、4G 等
+    - name: '#app_version'
+      display_name: app版本
+      type: varchar
+      description: 您的 APP 的版本
+    - name: '#ip'
+      display_name: 客户端ip
+      type: double
+    - name: device_name
+      display_name: 设备名称
+      type: varchar
+      description: 设备具体型号
+    - name: node_id
+      display_name: 节点序号
+      type: double
+      description: '10.程序启动
+
+        20开始加载
+
+        30.结束加载
+
+        40.注册创角
+
+        50.登录
+
+        60. 进入引导战斗
+
+        99. 完成引导战斗（首次）
+
+        101 首次进入大厅（首次）'
+    - name: node_name
+      display_name: 节点页面名称
+      type: varchar
+      description: 'Launch.程序启动
+
+        BeginLoading 开始加载
+
+        EndLoading .结束加载
+
+        Register. 进入引导战斗
+
+        Login.登录
+
+        BeginGuideMap.注册创角
+
+        EndGuideMap. 完成引导战斗（首次）
+
+        EnterHome 首次进入大厅（首次）'
+  - event_name: ad_log
+    display_name: 激励广告
+    source: 客户端
+    trigger: 激励广告位状态发生变化时
+    tag: 激励广告
+    properties:
+    - name: change_reason
+      display_name: 变化原因
+      type: varchar
+      description: 点击/完成
+      note: 直接用中文或者英文，方便客服、运营查询
+    - name: location_name
+      display_name: 广告位名称
+      type: varchar
+      description: 对应微信后台广告位名称
+      note: 可看广告后才能测试
+    - name: location_id
+      display_name: 广告位id
+      type: varchar
+  - event_name: in_out_log
+    display_name: 登录登出日志
+    source: 服务端
+    trigger: 玩家登录/登出服务器时
+    tag: 登录/登出
+    properties:
+    - name: change_reason
+      display_name: 变化原因
+      type: varchar
+      description: 登录（跨天登录判定机制）；登出
+      note: 直接用中文或者英文，方便客服、运营查询
+    - name: online_time
+      display_name: 在线时长（s）
+      type: double
+      description: 登出时上报在线时长s
+    - name: is_cron
+      display_name: 是否定时任务上报
+      type: double
+  - event_name: vip_change_log
+    display_name: vip变更
+    source: 服务端
+    trigger: vip等级发生变化时
+    tag: null
+    properties:
+    - name: before
+      display_name: 变化前
+      type: double
+    - name: after
+      display_name: 变化后
+      type: double
+  - event_name: name_change_log
+    display_name: 改名
+    source: 服务端
+    trigger: 改名时
+    tag: null
+    properties:
+    - name: before_name
+      display_name: 变化前
+      type: varchar
+    - name: after_name
+      display_name: 变化后
+      type: varchar
+  - event_name: rank_log
+    display_name: 排行榜
+    source: 服务端
+    trigger: 结算时上报
+    tag: 排行榜
+    properties:
+    - name: rtype
+      display_name: 排行榜类型
+      type: double
+    - name: rname
+      display_name: 排行榜名称
+      type: varchar
+    - name: rank
+      display_name: 排名
+      type: double
+  - event_name: mail_log
+    display_name: 邮件
+    source: 服务端
+    trigger: null
+    tag: null
+    properties:
+    - name: mail_id
+      display_name: 操作id
+      type: double
+    - name: change_reason
+      display_name: 变化原因（操作类型）
+      type: varchar
+      description: 读取，领取，删除
+  - event_name: exchange_log
+    display_name: 兑换码
+    source: 服务端
+    trigger: 兑换时
+    tag: null
+    properties:
+    - name: ecode
+      display_name: 兑换码
+      type: varchar
+    - name: awards
+      display_name: 兑换奖励
+      type: Array(Object)
+      note: '[{"id":"橙色气球","num":2,"id":"蓝色气球","num":1,"id":"绿色气球","num":4}]'
+  - event_name: pay_log
+    display_name: 付费日志
+    source: 服务端
+    trigger: RMB充值付费时记录
+    tag: 付费模块
+    properties:
+    - name: change_reason
+      display_name: 变化原因
+      type: varchar
+      note: '直接用中文或者英文，方便客服、运营查询 用rmb买金券——正常充值
+
+        用金券买礼包——代金券充值'
+    - name: order_id
+      display_name: 订单号
+      type: varchar
+      description: 返回星云订单号
+    - name: system
+      display_name: 操作系统（ios/安卓）
+      type: varchar
+    - name: pay_result
+      display_name: 充值结果
+      type: double
+    - name: product_type
+      display_name: 礼包类型
+      type: varchar
+      description: 首充/日常礼包/累充返利/月卡/基金/商城
+    - name: product_id
+      display_name: 礼包id
+      type: double
+    - name: product_name
+      display_name: 礼包名称
+      type: varchar
+    - name: payment
+      display_name: 付费金额
+      type: double
+  - event_name: guide_log
+    display_name: 新手引导
+    source: 客户端
+    trigger: 新手引到触发时
+    tag: 新手引导
+    properties:
+    - name: node_id
+      display_name: 引导id
+      type: double
+      description: 我们有引导id和对应步骤id 这里处理的是 引导id*100+步骤id
+    - name: node_name
+      display_name: 引导名称
+      type: varchar
+  - event_name: battle_start
+    display_name: 战斗开始
+    source: 客户端
+    trigger: 战斗开始时
+    tag: 战斗
+    properties:
+    - name: battle_uid
+      display_name: 战斗唯一id
+      type: varchar
+      description: 为了区分是哪一场战斗
+    - name: battle_type
+      display_name: 战斗类型
+      type: double
+    - name: map_id
+      display_name: 关卡id
+      type: double
+    - name: autoBattle
+      display_name: 自动战斗状态
+      type: varchar
+      description: 开启/关闭
+    - name: battle_array
+      display_name: 我方阵容信息
+      type: Array(Object)
+      description: 记录上阵英雄以及英雄战力
+      note: '"{\"hero_name\":\"阿宝\",\"hero_level\":600,\"hero_star\":9,\"hero_id\":10015,\"hero_power\":10015}",'
+  - event_name: battle_result
+    display_name: 战斗结算
+    source: 客户端
+    trigger: 战斗结束
+    tag: 战斗
+    properties:
+    - name: battle_uid
+      display_name: 战斗唯一id
+      type: varchar
+      description: 为了区分是哪一场战斗
+    - name: battle_type
+      display_name: 战斗类型
+      type: double
+    - name: map_id
+      display_name: 关卡id
+      type: double
+    - name: battle_array
+      display_name: 我方阵容信息
+      type: Array(Object)
+      description: 记录上阵英雄以及伤害统计
+      note: '"{\"hero_name\":\"阿宝\",\"hero_level\":600,\"hero_star\":9,\"hero_id\":10015,\"hero_power\":10015,\"hero_demage\":10015}",'
+    - name: autoBattle
+      display_name: 自动战斗状态
+      type: varchar
+      description: 开启/关闭/跳关
+    - name: battle_result
+      display_name: 战斗结果
+      type: varchar
+      description: 成功/失败
+    - name: battle_time
+      display_name: 战斗时长
+      type: double
+  - event_name: auto_battle
+    display_name: 自动战斗
+    source: 客户端
+    trigger: 自动战斗切换时
+    tag: 战斗
+    properties:
+    - name: battle_uid
+      display_name: 战斗唯一id
+      type: varchar
+    - name: battle_type
+      display_name: 战斗类型
+      type: double
+    - name: map_id
+      display_name: 关卡id
+      type: double
+    - name: autoBattle
+      display_name: 自动战斗状态
+      type: varchar
+      description: 开启/关闭/跳关
+  - event_name: battle_divine
+    display_name: 战斗召唤
+    source: 客户端
+    trigger: 召唤完成时
+    tag: 战斗
+    properties:
+    - name: battle_uid
+      display_name: 战斗唯一id
+      type: varchar
+      description: 为了区分是哪一场战斗
+    - name: battle_type
+      display_name: 战斗类型
+      type: double
+    - name: map_id
+      display_name: 关卡id
+      type: double
+    - name: empty_num
+      display_name: 格子数量
+      type: unspecified
+      description: 上报数据时的格子数量
+    - name: occupy_num
+      display_name: 已占格子个数
+      type: unspecified
+      description: 含新召唤的英雄，所已经占的格子数量
+    - name: coin_cost
+      display_name: 消耗金币数量
+      type: unspecified
+    - name: coin_left
+      display_name: 剩余金币数量
+      type: unspecified
+    - name: hero_id
+      display_name: 英雄id
+      type: unspecified
+      description: 召唤出来的英雄id
+    - name: hero_name
+      display_name: 英雄名称
+      type: unspecified
+    - name: hero_uid
+      display_name: 对象唯一id
+      type: unspecified
+    - name: slot_id
+      display_name: 格子id
+      type: unspecified
+      description: 召唤出来的英雄所在位置
+  - event_name: battle_firstivine
+    display_name: 1-1首次战斗召唤
+    source: 客户端
+    trigger: 召唤完成时
+    tag: 战斗
+    properties:
+    - name: battle_uid
+      display_name: 战斗唯一id
+      type: varchar
+      description: 为了区分是哪一场战斗
+    - name: battle_type
+      display_name: 战斗类型
+      type: double
+    - name: map_id
+      display_name: 关卡id
+      type: double
+    - name: empty_num
+      display_name: 格子数量
+      type: unspecified
+      description: 上报数据时的格子数量
+    - name: occupy_num
+      display_name: 已占格子个数
+      type: unspecified
+      description: 含新召唤的英雄，所已经占的格子数量
+    - name: coin_cost
+      display_name: 消耗金币数量
+      type: unspecified
+    - name: coin_left
+      display_name: 剩余金币数量
+      type: unspecified
+    - name: hero_id
+      display_name: 英雄id
+      type: unspecified
+      description: 召唤出来的英雄id
+    - name: hero_name
+      display_name: 英雄名称
+      type: unspecified
+    - name: hero_uid
+      display_name: 对象唯一id
+      type: unspecified
+    - name: slot_id
+      display_name: 格子id
+      type: unspecified
+      description: 召唤出来的英雄所在位置
+  - event_name: battle_combine
+    display_name: 战斗合成
+    source: 客户端
+    trigger: 合成完毕时
+    tag: 战斗
+    properties:
+    - name: battle_uid
+      display_name: 战斗唯一id
+      type: varchar
+      description: 为了区分是哪一场战斗
+    - name: battle_type
+      display_name: 战斗类型
+      type: double
+    - name: map_id
+      display_name: 关卡id
+      type: double
+    - name: hero_id
+      display_name: 英雄id
+      type: unspecified
+      description: 合成的英雄id
+    - name: hero_name
+      display_name: 英雄名称
+      type: unspecified
+    - name: hero_uid
+      display_name: 对象唯一id
+      type: unspecified
+      description: 合成的这个英雄的唯一id
+    - name: slot_id
+      display_name: 格子id
+      type: unspecified
+      description: 合成后的英雄所在位置
+    - name: coin_left
+      display_name: 剩余金币数量
+      type: unspecified
+  - event_name: entry_pick
+    display_name: 强化弹出
+    source: 客户端
+    trigger: null
+    tag: 战斗
+    properties:
+    - name: battle_uid
+      display_name: 战斗唯一id
+      type: varchar
+      description: 为了区分是哪一场战斗
+    - name: battle_type
+      display_name: 战斗类型
+      type: double
+    - name: map_id
+      display_name: 关卡id
+      type: double
+    - name: all_skill
+      display_name: 候选技能池
+      type: Array(Object)
+      description: '[{"hero_id":"1","hero_name":"托尔索","skill_id":"1","skill_name":"弹簧音刺","skill_content":音刺伤害+40%，且击中墙壁反弹+1}]'
+  - event_name: entry_confirm
+    display_name: 强化选中（点击确定后）
+    source: 客户端
+    trigger: null
+    tag: 战斗
+    properties:
+    - name: battle_uid
+      display_name: 战斗唯一id
+      type: varchar
+      description: 为了区分是哪一场战斗
+    - name: battle_type
+      display_name: 战斗类型
+      type: double
+    - name: map_id
+      display_name: 关卡id
+      type: double
+    - name: sel_skill
+      display_name: 选中技能
+      type: Array(Object)
+      description: '[{"hero_id":"1","hero_name":"托尔索","skill_id":"1","skill_name":"弹簧音刺","skill_content":音刺伤害+40%，且击中墙壁反弹+1}]'
+  - event_name: rougue_skill_show
+    display_name: 肉鸽技能弹出
+    source: 客户端
+    trigger: 肉鸽技能弹出时
+    tag: 战斗
+    properties:
+    - name: battle_uid
+      display_name: 战斗唯一id
+      type: varchar
+      description: 为了区分是哪一场战斗
+    - name: battle_type
+      display_name: 战斗类型
+      type: double
+    - name: map_id
+      display_name: 关卡id
+      type: double
+    - name: skill_source
+      display_name: 掉落来源
+      type: double
+      description: 升级/精英怪
+    - name: skill_options
+      display_name: 候选技能池
+      type: Array(Object)
+      note: 废弃
+  - event_name: rougue_skill
+    display_name: 肉鸽技能选择
+    source: 客户端
+    trigger: 肉鸽技能选择时
+    tag: 战斗
+    properties:
+    - name: battle_uid
+      display_name: 战斗唯一id
+      type: varchar
+      description: 为了区分是哪一场战斗
+    - name: battle_type
+      display_name: 战斗类型
+      type: double
+    - name: map_id
+      display_name: 关卡id
+      type: double
+    - name: skill_source
+      display_name: 掉落来源
+      type: double
+      description: 升级/精英怪
+    - name: is_refresh
+      display_name: 是否刷新而来
+      type: double
+    - name: skill_options
+      display_name: 候选技能池
+      type: Array(Object)
+      description: '[{"hero_id":"1","hero_name":"托尔索","skill_id":"1","skill_name":"弹簧音刺","skill_content":音刺伤害+40%，且击中墙壁反弹+1}]'
+    - name: skill_chosen
+      display_name: 实际选择技能
+      type: Array(Object)
+    - name: sel_num
+      display_name: 选择次数
+      type: double
+  - event_name: camp_build_log
+    display_name: 营地资源建筑
+    source: 服务端
+    trigger: 营地状态变动时
+    tag: 营地
+    properties:
+    - name: change_reason_name
+      display_name: 变化原因名称
+      type: unspecified
+      description: 1，升级；2、招工 ；3，预设升级
+    - name: change_value
+      display_name: 本次变化值
+      type: unspecified
+    - name: cbtype
+      display_name: 建筑类型
+      type: varchar
+    - name: cblv
+      display_name: 建筑等级
+      type: double
+  - event_name: camp_academy_log
+    display_name: 研究院
+    source: 服务端
+    trigger: null
+    tag: 研究院
+    properties:
+    - name: aid
+      display_name: 研究天赋id
+      type: varchar
+    - name: alv
+      display_name: 天赋等级
+      type: double
+    - name: begin_time
+      display_name: 开始时间
+      type: timestamp
+    - name: finish_time
+      display_name: 完成时间
+      type: timestamp
+    - name: help_time
+      display_name: 互助加速时长
+      type: double
+    - name: goods_time
+      display_name: 道具加速时长
+      type: double
+  - event_name: camp_academy_help_log
+    display_name: 交流中心
+    source: 服务端
+    trigger: null
+    tag: 交流中心
+    properties:
+    - name: pid
+      display_name: 助力id
+      type: varchar
+    - name: aid
+      display_name: 助力天赋id
+      type: varchar
+    - name: alv
+      display_name: 助力天赋等级
+      type: double
+  - event_name: role_obtain_log
+    display_name: 英雄获得
+    source: 服务端
+    trigger: 获得英雄时
+    tag: 英雄
+    properties:
+    - name: ins_id
+      display_name: 英雄实例id
+      type: double
+      description: 英雄唯一
+    - name: role_id
+      display_name: 英雄id
+      type: double
+    - name: hero_name
+      display_name: 英雄名称
+      type: unspecified
+    - name: init_star
+      display_name: 初始星级
+      type: double
+    - name: init_quality
+      display_name: 初始品质
+      type: double
+    - name: init_lv
+      display_name: 初始等级
+      type: double
+    - name: op_type
+      display_name: 操作类型
+      type: double
+  - event_name: role_uplv_log
+    display_name: 英雄升级
+    source: 服务端
+    trigger: null
+    tag: 英雄
+    properties:
+    - name: ins_id
+      display_name: 英雄实例id
+      type: double
+    - name: role_id
+      display_name: 英雄id
+      type: double
+    - name: hero_name
+      display_name: 英雄名称
+      type: unspecified
+    - name: olv
+      display_name: 原等级
+      type: double
+    - name: nlv
+      display_name: 新等级
+      type: double
+    - name: cost_thing_list
+      display_name: 本次变化消耗资源
+      type: Array(Object)
+      description: 记录养成行为导致的资源消耗
+      note: '[{"name":"xxx","num":6},
+
+        {"name":"xxx","num":4}]'
+  - event_name: role_upadv_log
+    display_name: 英雄升阶
+    source: 服务端
+    trigger: null
+    tag: 英雄
+    properties:
+    - name: ins_id
+      display_name: 英雄实例id
+      type: double
+    - name: role_id
+      display_name: 英雄id
+      type: double
+    - name: hero_name
+      display_name: 英雄名称
+      type: unspecified
+    - name: oadvance
+      display_name: 原阶级
+      type: double
+    - name: nadvance
+      display_name: 新阶级
+      type: double
+    - name: cost_thing_list
+      display_name: 本次变化消耗资源
+      type: Array(Object)
+      description: 记录养成行为导致的资源消耗
+      note: '[{"name":"xxx","num":6},
+
+        {"name":"xxx","num":4}]'
+  - event_name: role_upstar_log
+    display_name: 英雄星级
+    source: 服务端
+    trigger: null
+    tag: 英雄
+    properties:
+    - name: ins_id
+      display_name: 英雄实例id
+      type: double
+    - name: role_id
+      display_name: 英雄id
+      type: double
+    - name: hero_name
+      display_name: 英雄名称
+      type: unspecified
+    - name: ostar
+      display_name: 原星级
+      type: double
+    - name: nstar
+      display_name: 新星级
+      type: double
+    - name: cost_thing_list
+      display_name: 本次变化消耗资源
+      type: Array(Object)
+      description: 记录养成行为导致的资源消耗
+      note: '[{"name":"xxx","star":6,"num":6},
+
+        {"name":"xxx","star":5,"num":4}]'
+  - event_name: role_upguru_log
+    display_name: 英雄大师
+    source: 服务端
+    trigger: null
+    tag: 英雄
+    properties:
+    - name: otype
+      display_name: 操作类型
+      type: double
+    - name: advance
+      display_name: 阶级
+      type: double
+  - event_name: role_equip_change_log
+    display_name: 英雄装备流水
+    source: 服务端
+    trigger: null
+    tag: 装备
+    properties:
+    - name: change_reason
+      display_name: 操作类型
+      type: double
+    - name: ins_id
+      display_name: 实例id
+      type: double
+    - name: change_ins_id
+      display_name: 变更实例id
+      type: double
+    - name: eid
+      display_name: 装备id
+      type: double
+    - name: eid_name
+      display_name: 装备名称
+      type: unspecified
+    - name: onum
+      display_name: 已有数量
+      type: double
+    - name: num
+      display_name: 变更后数量
+      type: double
+  - event_name: role_equip_forge_log
+    display_name: 装备升级（锻造）
+    source: 服务端
+    trigger: null
+    tag: 装备
+    properties:
+    - name: change_reason
+      display_name: 操作类型
+      type: double
+    - name: ins_id
+      display_name: 实例id
+      type: double
+    - name: change_ins_id
+      display_name: 源实例id
+      type: double
+    - name: eid
+      display_name: 装备id
+      type: double
+    - name: eid_name
+      display_name: 装备名称
+      type: unspecified
+    - name: exp
+      display_name: 获得经验
+      type: double
+    - name: star
+      display_name: 星级
+      type: double
+    - name: fexp
+      display_name: 锻造经验
+      type: double
+  - event_name: role_equip_upgrade_log
+    display_name: 装备升品
+    source: 服务端
+    trigger: null
+    tag: 装备
+    properties:
+    - name: change_reason
+      display_name: 操作类型
+      type: varchar
+    - name: ins_id
+      display_name: 装备实例id
+      type: double
+    - name: change_ins_id
+      display_name: 源实例id
+      type: double
+    - name: oeid
+      display_name: 原装备id
+      type: double
+    - name: oeid_name
+      display_name: null
+      type: unspecified
+    - name: neid
+      display_name: 新装备id
+      type: double
+    - name: neid_name
+      display_name: null
+      type: unspecified
+    - name: ostar
+      display_name: 原星级
+      type: double
+    - name: nstar
+      display_name: 新星级
+      type: double
+  - event_name: role_equip_upguru_log
+    display_name: 装备大师
+    source: 服务端
+    trigger: null
+    tag: null
+    properties:
+    - name: otype
+      display_name: 操作类型
+      type: double
+    - name: advance
+      display_name: 阶级
+      type: double
+  - event_name: role_art_uplv_log
+    display_name: 神器升级
+    source: 服务端
+    trigger: null
+    tag: 神器
+    properties:
+    - name: ins_id
+      display_name: 英雄实例id
+      type: double
+    - name: role_id
+      display_name: 英雄id
+      type: double
+    - name: role_name
+      display_name: 英雄名称
+      type: unspecified
+    - name: olv
+      display_name: 原等级
+      type: double
+    - name: nlv
+      display_name: 新等级
+      type: double
+  - event_name: role_art_upstar_log
+    display_name: 神器升星
+    source: 服务端
+    trigger: null
+    tag: 神器
+    properties:
+    - name: ins_id
+      display_name: 英雄实例id
+      type: double
+    - name: role_id
+      display_name: 英雄id
+      type: double
+    - name: role_name
+      display_name: 英雄名称
+      type: unspecified
+    - name: ostar
+      display_name: 原星级
+      type: double
+    - name: nstar
+      display_name: 新星级
+      type: double
+  - event_name: role_art_upguru_log
+    display_name: 神器大师
+    source: 服务端
+    trigger: null
+    tag: null
+    properties:
+    - name: otype
+      display_name: 操作类型
+      type: double
+    - name: advance
+      display_name: 阶级
+      type: double
+  - event_name: role_art_reborn_lv_log
+    display_name: 神器等级重生
+    source: 服务端
+    trigger: null
+    tag: 神器
+    properties:
+    - name: ins_id
+      display_name: 英雄实例id
+      type: double
+    - name: role_id
+      display_name: 英雄id
+      type: varchar
+    - name: role_name
+      display_name: 英雄名称
+      type: unspecified
+    - name: lv
+      display_name: 原等级
+      type: double
+  - event_name: role_art_back_star_log
+    display_name: 神器星级回退
+    source: 服务端
+    trigger: null
+    tag: 神器
+    properties:
+    - name: ins_id
+      display_name: 英雄实例id
+      type: double
+    - name: role_id
+      display_name: 英雄id
+      type: varchar
+    - name: role_name
+      display_name: 英雄名称
+      type: unspecified
+    - name: star
+      display_name: 原星级
+      type: double
+  - event_name: change_power_log
+    display_name: 战力
+    source: 服务端
+    trigger: 战力变化时
+    tag: 战力
+    properties:
+    - name: before
+      display_name: 变化前
+      type: double
+    - name: after
+      display_name: 变化后
+      type: double
+    - name: num
+      display_name: 数量
+      type: double
+    - name: result
+      display_name: 变化后结果
+      type: double
+    - name: change_reason
+      display_name: 变化原因
+      type: varchar
+  - event_name: money_log
+    display_name: 货币
+    source: 服务端
+    trigger: 发生物资变动时
+    tag: null
+    properties:
+    - name: change_type
+      display_name: 变化类型
+      type: double
+      description: 1，产出；2，消耗
+    - name: item_id
+      display_name: 道具id
+      type: double
+    - name: item_name
+      display_name: 道具名称
+      type: varchar
+    - name: item_type
+      display_name: 道具类型
+      type: varchar
+    - name: item_num
+      display_name: 道具数量
+      type: double
+    - name: item_quality
+      display_name: 道具品质
+      type: double
+    - name: item_result
+      display_name: 道具变化后结果
+      type: double
+    - name: change_reason
+      display_name: 变化原因
+      type: varchar
+      description: 产出/消耗途径，如：日常任务奖励获得/抽卡消耗
+  - event_name: voucher_log
+    display_name: 代金券
+    source: 服务端
+    trigger: 发生物资变动时
+    tag: 物资
+    properties:
+    - name: change_type
+      display_name: 变化类型
+      type: double
+      description: 1，产出；2，消耗
+    - name: item_id
+      display_name: 道具id
+      type: double
+    - name: item_name
+      display_name: 道具名称
+      type: varchar
+    - name: item_type
+      display_name: 道具类型
+      type: varchar
+    - name: item_num
+      display_name: 道具数量
+      type: double
+    - name: item_quality
+      display_name: 道具品质
+      type: double
+    - name: item_result
+      display_name: 道具变化后结果
+      type: double
+    - name: change_reason
+      display_name: 变化原因
+      type: varchar
+    - name: product_type
+      display_name: 礼包类型
+      type: varchar
+      description: 首充/日常礼包/累充返利/月卡/基金/商城
+    - name: product_id
+      display_name: 礼包id
+      type: double
+    - name: product_name
+      display_name: 礼包名称
+      type: varchar
+  - event_name: item_log
+    display_name: 背包道具
+    source: 服务端
+    trigger: 发生物资变动时
+    tag: 物资
+    properties:
+    - name: change_type
+      display_name: 变化类型
+      type: double
+      description: 1，产出；2，消耗
+    - name: item_id
+      display_name: 道具id
+      type: double
+    - name: item_name
+      display_name: 道具名称
+      type: varchar
+    - name: item_type
+      display_name: 道具类型
+      type: varchar
+    - name: item_num
+      display_name: 道具数量
+      type: double
+    - name: item_quality
+      display_name: 道具品质
+      type: double
+    - name: item_result
+      display_name: 道具变化后结果
+      type: double
+    - name: change_reason
+      display_name: 变化原因
+      type: varchar
+      description: 产出/消耗途径，如：日常任务奖励获得/抽卡消耗
+  - event_name: gift_log
+    display_name: 礼包道具
+    source: 服务端
+    trigger: 发生物资变动时
+    tag: 物资
+    properties:
+    - name: change_type
+      display_name: 变化类型
+      type: double
+      description: 1，产出；2，消耗
+    - name: item_id
+      display_name: 道具id
+      type: double
+    - name: item_name
+      display_name: 道具名称
+      type: varchar
+    - name: item_type
+      display_name: 道具类型
+      type: varchar
+    - name: item_num
+      display_name: 道具数量
+      type: double
+    - name: item_quality
+      display_name: 道具品质
+      type: double
+    - name: item_result
+      display_name: 道具变化后结果
+      type: double
+    - name: change_reason
+      display_name: 变化原因
+      type: varchar
+      description: 产出/消耗途径，如：日常任务奖励获得/抽卡消耗
+  - event_name: pieces_log
+    display_name: 碎片道具
+    source: 服务端
+    trigger: 发生物资变动时
+    tag: 物资
+    properties:
+    - name: change_type
+      display_name: 变化类型
+      type: double
+      description: 1，产出；2，消耗
+    - name: item_id
+      display_name: 道具id
+      type: double
+    - name: item_name
+      display_name: 道具名称
+      type: varchar
+    - name: item_type
+      display_name: 道具类型
+      type: varchar
+    - name: item_num
+      display_name: 道具数量
+      type: double
+    - name: item_quality
+      display_name: 道具品质
+      type: double
+    - name: item_result
+      display_name: 道具变化后结果
+      type: double
+    - name: change_reason
+      display_name: 变化原因
+      type: varchar
+      description: 产出/消耗途径，如：日常任务奖励获得/抽卡消耗
+  - event_name: recruit_log
+    display_name: 招募
+    source: 服务端
+    trigger: 抽卡结束
+    tag: 抽卡
+    properties:
+    - name: gacha_type
+      display_name: 卡池类型
+      type: varchar
+      description: 普通召唤/高级召唤/种族召唤/新英雄抽卡活动
+    - name: award_ting
+      display_name: 得到的物品/英雄
+      type: Array(Object)
+      description: 记录获得的物品id或者英雄id，数量
+  - event_name: mission_finish_log
+    display_name: 任务完成
+    source: 服务端
+    trigger: 任务完成时
+    tag: 任务
+    properties:
+    - name: task_id
+      display_name: 任务id
+      type: double
+    - name: task_type
+      display_name: 任务类型
+      type: double
+      description: 主线任务/日常任务/周常任务/成就/七日目标
+    - name: task_name
+      display_name: 任务名称
+      type: varchar
+  - event_name: mission_reward_log
+    display_name: 任务领取
+    source: 服务端
+    trigger: 任务领取时
+    tag: 任务
+    properties:
+    - name: task_id
+      display_name: 任务id
+      type: double
+    - name: task_type
+      display_name: 任务类型
+      type: double
+      description: 主线任务/日常任务/周常任务/成就/七日目标
+    - name: task_name
+      display_name: 任务名称
+      type: varchar
+    - name: award
+      display_name: 获得奖励
+      type: Array(Object)
+      note: '[{"id":"橙色气球","num":2,"id":"蓝色气球","num":1,"id":"绿色气球","num":4}]'
+  - event_name: guild_red_envelope_log
+    display_name: 公会红包
+    source: 服务端
+    trigger: null
+    tag: 公会
+    properties:
+    - name: red_id
+      display_name: 红包id
+      type: double
+    - name: send_type
+      display_name: 是否主动发送
+      type: varchar
+  - event_name: guild_bargain_log
+    display_name: 砍价夺宝
+    source: 服务端
+    trigger: null
+    tag: 公会
+    properties:
+    - name: id
+      display_name: 砍价夺宝id
+      type: double
+    - name: bargain
+      display_name: 砍价数量
+      type: double
+    - name: price
+      display_name: 剩余价格
+      type: double
+  - event_name: guild_sign_log
+    display_name: 公会签到
+    source: 服务端
+    trigger: null
+    tag: 公会
+    properties:
+    - name: sign_time
+      display_name: 签到时间
+      type: timestamp
+    - name: sign_type
+      display_name: 签到类型
+      type: varchar
+  - event_name: shop_flush_log
+    display_name: 杂货铺（刷新）
+    source: 服务端
+    trigger: null
+    tag: 杂货铺
+    properties:
+    - name: shop_id
+      display_name: 商店id
+      type: double
+    - name: num
+      display_name: 刷新消耗
+      type: double
+    - name: shop_res_id
+      display_name: 消耗货币id
+      type: double
+      description: 0，免费刷新；1，钻石刷新
+  - event_name: shop_buy_log
+    display_name: 杂货铺（购买）
+    source: 服务端
+    trigger: null
+    tag: 杂货铺
+    properties:
+    - name: shop_id
+      display_name: 商店id
+      type: double
+    - name: goods_id
+      display_name: 商品id
+      type: double
+    - name: num
+      display_name: 购买数量
+      type: double
+    - name: shop_res_id
+      display_name: 消耗货币id
+      type: double
+    - name: res_num
+      display_name: 单品所需货币数
+      type: double
+    - name: res_count
+      display_name: 累计消耗数
+      type: double
+    - name: discount
+      display_name: 折扣
+      type: double
+    - name: awards
+      display_name: 获得物品
+      type: Array(Object)
+      note: '[{"id":"橙色气球","num":2,"id":"蓝色气球","num":1,"id":"绿色气球","num":4}]'
+  - event_name: daily_sign_log
+    display_name: 每日签到
+    source: 服务端
+    trigger: 领取签到奖励后上报
+    tag: 活动
+    properties:
+    - name: sign_name
+      display_name: 签到名称
+      type: varchar
+    - name: sign_day
+      display_name: 签到天数
+      type: double
+    - name: sign_count
+      display_name: 批量领取天数
+      type: double
+    - name: awards
+      display_name: 获得奖励
+      type: Array(Object)
+  - event_name: role_ring_log
+    display_name: 戒指获得
+    source: 服务端
+    trigger: 道具资源产出/消耗
+    tag: 戒指
+    properties:
+    - name: ring_id
+      display_name: 戒指id
+      type: double
+    - name: ring_uid
+      display_name: 戒指唯一id
+      type: double
+    - name: ring_name
+      display_name: 戒指名称
+      type: varchar
+    - name: ring_num
+      display_name: 道具数量
+      type: double
+    - name: ring_quality
+      display_name: 道具品质
+      type: double
+    - name: ring_result
+      display_name: 道具变化后结果
+      type: double
+      description: 获得这一次后，玩家行为发生时一共有多少该戒指
+    - name: change_reason
+      display_name: 变化原因
+      type: varchar
+      description: 产出/消耗途径，如：日常任务奖励获得/抽卡消耗
+  - event_name: role_ring_crafting
+    display_name: 戒指合成
+    source: 服务端
+    trigger: 养成完成时
+    tag: 戒指
+    properties:
+    - name: ring_id
+      display_name: 戒指id（变化后）
+      type: double
+    - name: ring_uid
+      display_name: 戒指唯一id
+      type: double
+    - name: ring_name
+      display_name: 戒指名称（变化后）
+      type: varchar
+    - name: cost_ring
+      display_name: 消耗物品
+      type: Array(Object)
+      description: 要体现被吃掉的物品的唯一id（为了溯源）
+      note: 戒指唯一id，戒指id，戒指名称，戒指属性（词条）
+  - event_name: role_ring_salvage
+    display_name: 戒指分解
+    source: 服务端
+    trigger: 分解完成时
+    tag: 戒指
+    properties:
+    - name: ring_id
+      display_name: 戒指id（变化后）
+      type: double
+    - name: ring_uid
+      display_name: 戒指唯一id
+      type: double
+    - name: ring_name
+      display_name: 戒指名称（变化后）
+      type: varchar
+    - name: awards
+      display_name: 获得物品
+      type: Array(Object)
+  - event_name: role_ring_reforge
+    display_name: 戒指洗炼
+    source: 服务端
+    trigger: 养成完成时
+    tag: 戒指
+    properties:
+    - name: ring_id
+      display_name: 戒指id
+      type: double
+    - name: ring_uid
+      display_name: 戒指唯一id
+      type: unspecified
+    - name: ring_name
+      display_name: 戒指名称
+      type: varchar
+    - name: bef_skills
+      display_name: 词条_变化前
+      type: varchar
+    - name: after_skills
+      display_name: 词条_变化后
+      type: varchar
+    - name: cost_item
+      display_name: 消耗物品
+      type: Array(Object)
+  - event_name: role_ring_reforge_save
+    display_name: 戒指洗炼保存
+    source: 服务端
+    trigger: 养成完成时
+    tag: 戒指
+    properties:
+    - name: ring_id
+      display_name: 戒指id
+      type: double
+    - name: ring_uid
+      display_name: 戒指唯一id
+      type: unspecified
+    - name: ring_name
+      display_name: 戒指名称
+      type: varchar
+    - name: bef_skills
+      display_name: 词条_变化前
+      type: varchar
+    - name: after_skills
+      display_name: 词条_变化后
+      type: varchar
+  - event_name: role_relic_active_log
+    display_name: 圣物激活
+    source: 服务端
+    trigger: null
+    tag: 圣物
+    properties:
+    - name: relic_id
+      display_name: 圣物id
+      type: double
+    - name: relic_name
+      display_name: 圣物名称
+      type: varchar
+  - event_name: role_relic_stage_up_log
+    display_name: 圣物升阶
+    source: 服务端
+    trigger: null
+    tag: 圣物
+    properties:
+    - name: relic_id
+      display_name: 圣物id
+      type: double
+    - name: relic_name
+      display_name: 圣物名称
+      type: varchar
+    - name: stage_before
+      display_name: 阶级_变化前
+      type: double
+    - name: stage_after
+      display_name: 阶级_变化后
+      type: double
+  - event_name: role_relic_star_up_log
+    display_name: 圣物升星
+    source: 服务端
+    trigger: null
+    tag: 圣物
+    properties:
+    - name: relic_id
+      display_name: 圣物id
+      type: double
+    - name: relic_name
+      display_name: 圣物名称
+      type: varchar
+    - name: star_before
+      display_name: 星级_变化前
+      type: double
+    - name: star_after
+      display_name: 星级_变化后
+      type: double
+  - event_name: boss_battle_result
+    display_name: 部落BOSS战报
+    source: 客户端
+    trigger: 战斗结束
+    tag: 部落
+    properties:
+    - name: battle_uid
+      display_name: 战斗唯一id
+      type: varchar
+      description: 为了区分是哪一场战斗
+    - name: battle_type
+      display_name: 战斗类型
+      type: double
+      description: 部落boss
+    - name: map_id
+      display_name: BOSS_ID
+      type: double
+      description: 具体哪一只BOSS
+    - name: battle_value
+      display_name: 战斗结果
+      type: double
+      description: 单局伤害值
+    - name: battle_time
+      display_name: 战斗时间(秒)
+      type: double
+      description: 坚持时间
+    - name: rank_before_week
+      display_name: 之前排名（周）
+      type: double
+      description: 战斗前的排名（周）
+    - name: rank_after_week
+      display_name: 之后排名（周）
+      type: double
+      description: 战斗后的排名（周）
+    - name: rank_before
+      display_name: 之前排名（个人）
+      type: double
+      description: 战斗前的排名（个人）
+    - name: rank_after
+      display_name: 之后排名（个人）
+      type: double
+      description: 战斗后的排名（个人）
+    - name: battle_array
+      display_name: 英雄阵容信息
+      type: Array(Object)
+      description: 记录上阵英雄
+      note: '[{"hero_name":"托尔索","hero_level":1,"hero_hurt":1,"hero_star":10,"hero_id":5,},
+
+        [{"hero_name":"托尔索","hero_level":1,"hero_hurt":1,"hero_star":10,"hero_id":5,},
+
+        [{"hero_name":"托尔索","hero_level":1,"hero_hurt":1,"hero_star":10,"hero_id":5,},
+
+        [{"hero_name":"托尔索","hero_level":1,"hero_hurt":1,"hero_star":10,"hero_id":5,},
+
+        [{"hero_name":"托尔索","hero_level":1,"hero_hurt":1,"hero_star":10,"hero_id":5,},'
+  - event_name: lead_wand_log
+    display_name: 武器获得
+    source: 服务端
+    trigger: null
+    tag: 主角武器
+    properties:
+    - name: lead_wand_id
+      display_name: 武器id
+      type: double
+    - name: lead_wand_name
+      display_name: 武器名称
+      type: varchar
+    - name: lead_wand_num
+      display_name: 武器数量
+      type: double
+    - name: change_reason
+      display_name: 变化原因
+      type: varchar
+      description: 记录获得的原因（中文）
+  - event_name: lead_wand_active_log
+    display_name: 武器激活
+    source: 服务端
+    trigger: null
+    tag: 主角武器
+    properties:
+    - name: lead_wand_id
+      display_name: 武器id
+      type: double
+    - name: lead_wand_name
+      display_name: 武器名称
+      type: varchar
+  - event_name: lead_wand_star_up_log
+    display_name: 武器升星
+    source: 服务端
+    trigger: null
+    tag: 主角武器
+    properties:
+    - name: lead_wand_id
+      display_name: 武器id
+      type: double
+    - name: lead_wand_name
+      display_name: 武器名称
+      type: varchar
+    - name: star_before
+      display_name: 星级_变化前
+      type: double
+    - name: star_after
+      display_name: 星级_变化后
+      type: double
+  - event_name: mining_log
+    display_name: 矿脉争夺战
+    source: 服务端
+    trigger: null
+    tag: 矿脉
+    properties:
+    - name: change_reason
+      display_name: 变化原因
+      type: double
+      description: '1，占领
+
+        2，探查
+
+        3，掠夺
+
+        4，结束开采'
+    - name: key
+      display_name: 矿场id
+      type: varchar
+      description: XX矿脉X号位
+    - name: player_id
+      display_name: 归属
+      type: varchar
+      description: '上报归属者角色id
+
+        占领=占领玩家角色ID
+
+        探查=矿洞占领玩家角色ID
+
+        掠夺成功=掠夺者角色ID
+
+        结束开采=矿洞占领玩家角色ID'
+
