@@ -9,6 +9,26 @@ global_tracking_rules:
     notes:
       - 默认只设计能反映业务结果、资产变化或关键玩法结算的事件。
       - 入口、页面曝光、按钮曝光不作为常规埋点需求，避免无效数据和额外研发成本。
+  property_design:
+    default_scope: reuse_existing_first
+    reuse_priority:
+      - 语义、口径和类型一致时，直接复用已有事件属性。
+      - 不同事件中含义接近的指标，统一使用同一属性名、显示名、类型和统计口径。
+      - 没有可复用属性时，优先新增可跨事件复用的通用属性，最后才新增活动专属属性。
+    safeguards:
+      - 仅名称相似但业务口径、生命周期或属性类型不同的字段，不得强行复用。
+      - before、after、累计值和本次增量必须通过属性名明确区分。
+    preferred_existing_properties:
+      activity: [activity_id, activity_round]
+      round: [pool_round, round_uid]
+      asset: [cost_item, award, item_result]
+      draw: [gacha_num]
+      guarantee: [guarantee_before, guarantee_after]
+    shared_properties:
+      cumulative_times_after: 活动期累计操作次数；用于累计抽数、累计开启格数等同口径计数
+    notes:
+      - 设计新埋点前必须先检查项目已有事件属性，避免同义不同名。
+      - 复用属性时沿用已有的数据类型、枚举和结构；如需扩展，在备注中说明兼容口径。
 
 tracking_projects:
   - project: "方块也疯狂"
