@@ -1,3 +1,15 @@
+global_tracking_rules:
+  event_design:
+    default_scope: business_result_only
+    exclude_by_default:
+      - entry_point
+      - page_exposure
+      - button_exposure
+    exception: 仅在用户明确要求时增加入口或曝光类埋点
+    notes:
+      - 默认只设计能反映业务结果、资产变化或关键玩法结算的事件。
+      - 入口、页面曝光、按钮曝光不作为常规埋点需求，避免无效数据和额外研发成本。
+
 tracking_projects:
   - project: "方块也疯狂"
     yaml: "fangkuai_tracking.yaml"
