@@ -17,14 +17,15 @@ projects:
     primary_account_id: '#account_id'
     media_field: ad_platform
     region_field: region_id
-    payment_unit: cent
+    payment_unit: yuan
     create_role_time_spec_type: timestamp
     create_role_time_observed_warehouse_type: double
     create_role_time_observed_unit: unix_seconds
     create_role_time_legacy_sql: from_unixtime(TRY_CAST("create_role_time" AS double))
-  updated_at: '2026-07-16'
+  updated_at: '2026-07-28'
   notes:
   - 最新版埋点文档定义登录/登出事件为 in_out_log；不要与旧 SQL 中的 log_in_out 混用。
+  - pay_log.payment 的单位为元；暴弹飞射 SQL 直接使用 payment 原值，禁止除以 100。
   - 埋点方案把 create_role_time 定义为 timestamp；历史 v42 查询曾实际观测为 double Unix 秒。写 SQL 前应确认当前字段类型，历史数据使用兼容转换。
   - 公共属性 clan_uid 在用户属性表定义为 double，在公共事件属性表定义为 varchar，接入与查询需先确认线上最终类型。
   - 未在原表填写属性类型的字段保留为 unspecified，不能自行推断后写入生产口径。
