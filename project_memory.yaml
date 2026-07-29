@@ -8,8 +8,91 @@ project_memory:
     rule: "同一项目的新对话可能不会完整继承上一段对话的全部细节；因此可复用口径、字段、SQL规范、用户偏好需要沉淀到 GitHub 知识库。"
   user_preferences:
     - "SQL 需求默认直接给最终完整 SQL，不要只给替换片段，除非用户明确只要片段。"
-    - "涉及下方了 / 步步 / v41 / v22 / 埋点字段 / item_log / money_log / battle_result / battle_star 等项目口径，先查 GitHub 配置，再结合当前上传文件和上下文修改。"
+    - "涉及下方了 / 步步 / 暴弹飞射 / v41 / v22 / v42 / 埋点字段 / item_log / money_log / battle_result 等项目口径，先查 GitHub 配置，再结合当前上传文件和上下文修改。"
     - "字段不确定时必须说明不确定，并先查配置或让用户确认，不能直接编字段。"
     - "用户希望项目记忆点和口径调整同步到 GitHub，便于切换新对话后继续使用。"
+    - "回答以高效、直接为主；SQL 修改完成后直接给可执行的最终版。"
+
+  stable_sql_rules:
+    dialect: "TrinoSQL"
+    required:
+      - "不用 WITH/CTE。"
+      - "不用 USING，关联条件显式写 ON。"
+      - "默认输出最终完整 SQL；展示列优先使用中文列名。"
+      - "数数动态日期参数 ${PartDate:date} / ${PartDate:date1} 必须作为当前作用域中的完整 WHERE 条件单独使用，不能与表别名、字段名或引号拼接。"
+      - "新增日期筛选时，先在新增用户子查询中生成并保留名为 \"$part_date\" 的字段，再用动态日期参数筛选；事件表通过账号和日期关联限定首日或对应日。"
+      - "媒体平台 ad_platform 默认只从用户表取；空值展示为‘自然量’。"
+      - "默认不把小数比例自动乘以100；数值精度按需求处理，常规展示保留两位小数。"
+    role_detail_time_schema:
+      - "角色‘最后时间’取用户表 latest_online_time，不用事件表 last_event_time 替代。"
+      - "账号‘最后时间’取同一 nb_open_id 下用户表 latest_online_time 的最大值。"
+      - "角色历史累充由事件表 pay_log 汇总；角色表字段结构需要在下方了和暴弹飞射间保持对齐时，只同步列结构，不改变各项目原始口径。"
+
+  stable_project_configs:
+    xiafangle:
+      project_name: "下方了"
+      table_suffix: 41
+      user_table: "ta.v_user_41"
+      event_table: "ta.v_event_41"
+      release_filter: "\"domain\" = 'release'"
+      create_role_time: "timestamp，直接使用，不做 from_unixtime"
+      active_event: "in_out_log"
+      payment: "pay_log.payment 单位为分，金额与首日付费分层前 /100 转元"
+      first_day_payment: "只统计注册当天的 pay_log，不用查询区间累计付费代替"
+      mainline:
+        battle_type: 1
+        start_event: "battle_star"
+        result_event: "battle_result"
+        normal_pass: "battle_result=1 且 duration<>0；duration IS NULL 也按正常通关"
+        skip: "battle_result=2，或 battle_result=1 且 duration=0"
+      power_change:
+        star_up_reason: 5635
+        step_up_reason: 5636
+      notes:
+        - "固定使用 v41；v44 是弯月勇者，不能混用。"
+        - "代币支付可能 payment=0；统计商品名义金额时按 xiafangle_tracking.yaml 中维表关联口径处理。"
+
+    baodanfeshe:
+      project_name: "暴弹飞射"
+      table_suffix: 42
+      user_table: "ta.v_user_42"
+      event_table: "ta.v_event_42"
+      release_filter: "\"domain\" = 'release'"
+      create_role_time: "埋点规范为 timestamp；历史仓库字段观测为 double Unix 秒。写 SQL 前确认类型，历史数据兼容使用 from_unixtime(try_cast(... as double))"
+      active_event: "in_out_log"
+      payment: "pay_log.payment 单位为元，直接使用原值，禁止 /100"
+      mainline:
+        battle_type: 1
+        start_event: "battle_start"
+        result_event: "battle_result"
+        normal_pass: "lower(trim(cast(battle_result as varchar)))='true' 且 autobattle<>'跳关'"
+        skip: "autobattle='跳关'"
+      gameplay_21:
+        participation_event: "battle_start"
+        battle_type: 21
+        cohort_window: "注册当天算 D1，统计新增后 D1-D7"
+      notes:
+        - "登录事件不要与旧 SQL 中的 log_in_out 混用。"
+        - "旧资料中出现过 battle_star；当前通用战斗开始口径使用 battle_start，具体专题若埋点文档另有定义则先查 baodanfeshe_tracking.yaml。"
+
+    bubu:
+      project_name: "步步项目 / 一步两步"
+      table_suffix: 22
+      user_table: "ta.v_user_22"
+      event_table: "ta.v_event_22"
+      active_event: "log_in_out"
+      defaults:
+        area: "weixin"
+        merge_region_id: 1
+      notes:
+        - "v21 和 v2 均为已作废旧口径，固定使用 v22。"
+        - "战斗相关事件按 bubu_tracking.yaml 的客户端/服务端事件分别确认，不套用下方了或暴弹飞射命名。"
+
+  tracking_design_rules:
+    - "默认不上报入口、页面曝光、按钮曝光；仅在用户明确要求时增加。"
+    - "默认只设计能反映业务结果、资产变化或关键玩法结算的事件。"
+    - "新埋点优先复用已有事件和属性；语义、口径、类型一致才复用，before/after/累计值/本次增量必须明确区分。"
+    - "活动埋点尽量精简为核心服务端事件，服务端在业务结算后上报。"
+
   latest_confirmed_notes:
     - "money_log 和 item_log 使用同样的字段名口径；钻石、能量饮料等 money_log 余额也按 item_id / item_result 取，不使用 money_id / money_result。"
