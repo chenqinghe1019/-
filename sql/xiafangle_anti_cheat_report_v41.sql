@@ -214,7 +214,7 @@ FROM
             CASE
                 WHEN x.event_name = 'battle_check'
                  AND x.svr_hp_max > 0
-                 AND x.report_hp_max / x.svr_hp_max >= 5
+                 AND x.report_hp_max / x.svr_hp_max >= 2
                 THEN '城墙最大生命值异常'
             END,
 
@@ -222,7 +222,7 @@ FROM
                 WHEN x.event_name = 'battle_check'
                  AND x.svr_npc_hp_max IS NOT NULL
                  AND x.report_npc_hp_max IS NOT NULL
-                 AND x.svr_npc_hp_max * 0.75 > x.report_npc_hp_max
+                 AND x.svr_npc_hp_max * 0.9 > x.report_npc_hp_max
                 THEN '怪物生命削弱'
             END,
 
