@@ -3,7 +3,7 @@
 # 表后缀：41
 # 说明：
 # - battle_check / boss_battle_result 为外挂治理核心事件
-# - total_payment、total_payment_rmb、power、season、channel_id、region_id、create_role_time 等为公共事件属性，优先从 ta.v_event_41 取
+# - total_payment、total_payment_rmb、power、channel_id、region_id、create_role_time 等公共属性优先从 ta.v_event_41 取；battle_check 异常明细的赛季按角色ID+异常日期关联当天 in_out_log，取当天最后一条非空 season，不直接取 battle_check.season
 # - VIP等级不在用户属性中，需从 vip_change_log 事件的 after 字段取最近值
 
 project:
