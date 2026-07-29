@@ -47,7 +47,7 @@ SELECT
 FROM
 (
     SELECT
-        TRY_CAST(e."season" AS bigint) AS season_id,
+        l.season_id,
         CAST(e."#account_id" AS varchar) AS role_id,
         TRY_CAST(e."region_id" AS bigint) AS server_id,
         COALESCE(TRY_CAST(e."total_payment" AS double), 0) / 100.0 AS payment_amount,
@@ -66,6 +66,34 @@ FROM
         TRY_CAST(NULLIF(trim(CAST(e."svrHpMax" AS varchar)), '') AS double) AS svr_hp_max
 
     FROM ta.v_event_41 e
+
+    LEFT JOIN
+    (
+        SELECT
+            CAST(login_e."#account_id" AS varchar) AS role_id,
+            CAST(login_e."$part_date" AS date) AS login_date,
+
+            max_by(
+                TRY_CAST(login_e."season" AS bigint),
+                CAST(login_e."#event_time" AS timestamp)
+            ) FILTER
+            (
+                WHERE TRY_CAST(login_e."season" AS bigint) IS NOT NULL
+            ) AS season_id
+
+        FROM ta.v_event_41 login_e
+        WHERE login_e."$part_event" = 'in_out_log'
+          AND login_e.${PartDate:date}
+          AND COALESCE(CAST(login_e."domain" AS varchar), 'release') = 'release'
+          AND login_e."#account_id" IS NOT NULL
+
+        GROUP BY
+            CAST(login_e."#account_id" AS varchar),
+            CAST(login_e."$part_date" AS date)
+    ) l
+    ON CAST(e."#account_id" AS varchar) = l.role_id
+   AND CAST(e."$part_date" AS date) = l.login_date
+
     WHERE e."$part_event" = 'battle_check'
       AND e.${PartDate:date}
       AND COALESCE(CAST(e."domain" AS varchar), 'release') = 'release'
