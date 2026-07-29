@@ -65,7 +65,7 @@ events:
   battle_check:
     data_type: "服务端+客户端"
     display_name: "战斗数据校验"
-    description: "校验战斗数据"
+    description: "校验战斗数据；外挂异常筛选排除 battle_type=8"
     properties:
       battle_uid:
         display_name: "战斗唯一id"
