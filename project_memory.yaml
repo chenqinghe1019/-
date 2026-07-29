@@ -59,7 +59,12 @@ project_memory:
       event_table: "ta.v_event_42"
       release_filter: "\"domain\" = 'release'"
       create_role_time: "埋点规范为 timestamp；历史仓库字段观测为 double Unix 秒。写 SQL 前确认类型，历史数据兼容使用 from_unixtime(try_cast(... as double))"
-      active_event: "in_out_log"
+      active_event: "in_out_log，仅用于判断当天是否活跃"
+      online_duration:
+        event: "ta_app_end"
+        field: "#duration"
+        unit: "秒，统计在线分钟时除以60"
+        rule: "在线时长禁止使用 in_out_log.online_time；活跃与在线时长必须分别取事件"
       payment: "pay_log.payment 单位为元，直接使用原值，禁止 /100"
       mainline:
         battle_type: 1
