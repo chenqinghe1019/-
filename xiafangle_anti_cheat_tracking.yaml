@@ -38,7 +38,8 @@ common_event_properties:
     column: "total_payment"
     display_name: "历史累计充值金额"
     type: "double"
-    description: "含代金券"
+    unit: "分"
+    description: "含代金券；展示人民币元时必须 /100"
   total_payment_rmb:
     column: "total_payment_rmb"
     display_name: "历史累计充值金额（RMB）"
