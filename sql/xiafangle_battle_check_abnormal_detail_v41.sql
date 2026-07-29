@@ -50,7 +50,7 @@ FROM
         TRY_CAST(e."season" AS bigint) AS season_id,
         CAST(e."#account_id" AS varchar) AS role_id,
         TRY_CAST(e."region_id" AS bigint) AS server_id,
-        COALESCE(TRY_CAST(e."total_payment" AS double), 0) AS payment_amount,
+        COALESCE(TRY_CAST(e."total_payment" AS double), 0) / 100.0 AS payment_amount,
         CAST(e."#event_time" AS timestamp) AS abnormal_time,
 
         NULLIF(trim(CAST(e."battle_uid" AS varchar)), '') AS battle_uid,
