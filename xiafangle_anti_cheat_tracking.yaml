@@ -1,5 +1,5 @@
 # 下方了：外挂治理埋点整理
-# 来源：用户上传埋点文档 2026-06-23 重新读取整理
+# 来源：用户上传埋点文档；2026-07-29 按最新外挂规则图更新阈值
 # 表后缀：41
 # 说明：
 # - battle_check / boss_battle_result 为外挂治理核心事件
@@ -190,8 +190,8 @@ anti_cheat_rules:
     customer_rule:
       total_payment_gte_30000: "评估"
       total_payment_lt_30000: "直接封"
-    logic: "城墙hp（客户端）/城墙hp（服务端）>=5"
-    sql_hint: "reportHpMax / svrHpMax >= 5"
+    logic: "城墙hp（客户端）/城墙hp（服务端）>=2"
+    sql_hint: "reportHpMax / svrHpMax >= 2"
 
   npc_hp_weaken:
     report_name: "外挂治理new"
@@ -201,8 +201,8 @@ anti_cheat_rules:
     customer_rule:
       total_payment_gte_30000: "评估"
       total_payment_lt_30000: "直接封"
-    logic: "怪物生命（服务端）*0.75 > 怪物生命（客户端）"
-    sql_hint: "svrNpcHpMax * 0.75 > reportNpcHpMax"
+    logic: "怪物生命（服务端）*0.9 > 怪物生命（客户端）"
+    sql_hint: "svrNpcHpMax * 0.9 > reportNpcHpMax"
 
   refresh_card_modified:
     report_name: "外挂治理new"
