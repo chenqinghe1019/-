@@ -5,7 +5,7 @@ SELECT
     r.abnormal_type AS "异常类型",
     max_by(r.deal_rule, r.abnormal_time) AS "客服封禁规则",
     max_by(r.vip_level, r.abnormal_time) AS "VIP等级",
-    round(max_by(r.payment_amount, r.abnormal_time), 2) AS "累充金额",
+    round(max_by(r.payment_amount, r.abnormal_time) / 100.0, 2) AS "累充金额",
     max(r.abnormal_time) AS "最后异常时间",
     count(*) AS "异常次数",
     max_by(r.season, r.abnormal_time) AS "赛季",
