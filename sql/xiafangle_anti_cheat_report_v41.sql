@@ -228,7 +228,7 @@ FROM
 
             CASE
                 WHEN x.event_name = 'battle_check'
-                 AND x.refresh_card IS NOT NULL
+                 AND x.refresh_card > 2
                 THEN '对局内刷卡次数修改'
             END,
 
