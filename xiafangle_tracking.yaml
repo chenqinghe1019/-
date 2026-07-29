@@ -25,6 +25,7 @@ projects:
   - 新人特惠前3档可按 pay_log.product_type=新人特惠 且 product_id in (1,2,3) 判断。
   - change_power_log.change_reason=5635 表示升星、5636 表示升阶；num 为本次战力变化量。
   - pay_log 中代币支付可能出现 payment=0；统计商品名义金额时关联 ta_dim.dim_41_0_vprop_sql_1429，关联键为 concat(product_type, cast(cast(product_id as bigint) as varchar), product_name)，金额取 #vp@product_concat@payment。
+  - 主线关卡通关统计中，battle_result=2 或 battle_result=1 且 duration=0 视为跳关；跳关既单独计入跳关人数，也同时计入通关人数。
   source_workbook_sheets:
   - name: 接入必知
     range: A1:K40
