@@ -1,4 +1,5 @@
 SELECT
+    x.season_id AS "赛季ID",
     x.role_id AS "角色ID",
     x.server_id AS "服务器ID",
     round(x.payment_amount, 2) AS "累充金额",
@@ -18,7 +19,7 @@ SELECT
                     THEN '怪物生命削弱'
                 END,
                 CASE
-                    WHEN x.refresh_card IS NOT NULL
+                    WHEN x.refresh_card > 2
                     THEN '对局内刷卡次数修改'
                 END
             ],
@@ -46,8 +47,9 @@ SELECT
 FROM
 (
     SELECT
+        TRY_CAST(e."season" AS bigint) AS season_id,
         CAST(e."#account_id" AS varchar) AS role_id,
-        CAST(e."region_id" AS varchar) AS server_id,
+        TRY_CAST(e."region_id" AS bigint) AS server_id,
         COALESCE(TRY_CAST(e."total_payment" AS double), 0) AS payment_amount,
         CAST(e."#event_time" AS timestamp) AS abnormal_time,
 
@@ -78,7 +80,7 @@ WHERE
             x.svr_npc_hp_max > 0
         AND x.report_npc_hp_max / x.svr_npc_hp_max < 0.9
        )
-    OR x.refresh_card IS NOT NULL
+    OR x.refresh_card > 2
 
 ORDER BY
     x.abnormal_time DESC,
