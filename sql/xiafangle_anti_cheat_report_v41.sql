@@ -177,6 +177,10 @@ FROM
                 WHERE e."$part_event" IN ('battle_check', 'boss_battle_result')
                   AND e.${PartDate:date}
                   AND COALESCE(CAST(e."domain" AS varchar), 'release') = 'release'
+                  AND (
+                        e."$part_event" <> 'battle_check'
+                        OR TRY_CAST(e."battle_type" AS integer) <> 8
+                      )
             ) e
             LEFT JOIN
             (
