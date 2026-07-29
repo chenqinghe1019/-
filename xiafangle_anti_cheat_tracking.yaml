@@ -212,8 +212,8 @@ anti_cheat_rules:
     customer_rule:
       total_payment_gte_30000: "评估"
       total_payment_lt_30000: "直接封"
-    logic: "修改刷卡次数有值"
-    sql_hint: "refreshCard is not null"
+    logic: "修改刷卡次数大于2"
+    sql_hint: "refreshCard > 2"
 
   boss_damage_abnormal:
     report_name: "boss外挂单3.0"
