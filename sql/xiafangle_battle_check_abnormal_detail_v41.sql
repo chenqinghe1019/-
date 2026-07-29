@@ -72,15 +72,19 @@ FROM
 ) x
 
 WHERE
-       (
-            x.svr_hp_max > 0
-        AND x.report_hp_max / x.svr_hp_max >= 2
-       )
-    OR (
-            x.svr_npc_hp_max > 0
-        AND x.report_npc_hp_max / x.svr_npc_hp_max < 0.9
-       )
-    OR x.refresh_card > 2
+    x.battle_type <> 8
+    AND
+    (
+           (
+                x.svr_hp_max > 0
+            AND x.report_hp_max / x.svr_hp_max >= 2
+           )
+        OR (
+                x.svr_npc_hp_max > 0
+            AND x.report_npc_hp_max / x.svr_npc_hp_max < 0.9
+           )
+        OR x.refresh_card > 2
+    )
 
 ORDER BY
     x.abnormal_time DESC,
