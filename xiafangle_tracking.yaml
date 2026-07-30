@@ -26,6 +26,7 @@ projects:
   - change_power_log.change_reason=5635 表示升星、5636 表示升阶；num 为本次战力变化量。
   - pay_log 中代币支付可能出现 payment=0；统计商品名义金额时关联 ta_dim.dim_41_0_vprop_sql_1429，关联键为 concat(product_type, cast(cast(product_id as bigint) as varchar), product_name)，金额取 #vp@product_concat@payment。
   - 主线关卡通关统计中，battle_result=2 或 battle_result=1 且 duration=0 视为跳关；跳关既单独计入跳关人数，也同时计入通关人数。
+  - 主线完整通关率与跳关率按玩家、日期、关卡、battle_uid逐场统计；battle_star或battle_result任一存在即算挑战，不再只保留玩家当天最高map_id。正常通关为battle_result=1且duration为空或非0；跳关为battle_result=2或battle_result=1且duration=0；正常通关与跳关互斥，总通关包含二者。
   source_workbook_sheets:
   - name: 接入必知
     range: A1:K40
