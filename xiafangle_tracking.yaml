@@ -21,6 +21,7 @@ projects:
   - 如 SQL 口径涉及首日付费，必须限定注册当天/active_days=0 的 pay_log，不得使用查询范围累计付费代替。
   - pay_log.payment 事件属性单位为分，统计金额和首日付费分层前必须 /100 转为元。
   - in_out_log 当前属性为 change_reason、online_time；不要依赖 log_type 字段。登录/登出可按 change_reason 判断或仅按事件存在判断。
+  - 流失判断以 in_out_log 的实际登录/登出记录为准；change_power_log 可能由服务端后台重算触发，不能单独作为玩家活跃依据。流失分析中的每日战力应仅展示当日存在 in_out_log 的活跃日，避免出现已判流失但后续仍展示后台战力变化的误解。
   - 英雄升星事件为 role_upstar_log，英雄字段 role_id，新星级字段 nstar；英雄获得事件为 role_obtain_log，初始星级字段 init_star。
   - 新人特惠前3档可按 pay_log.product_type=新人特惠 且 product_id in (1,2,3) 判断。
   - change_power_log.change_reason=5635 表示升星、5636 表示升阶；num 为本次战力变化量。
