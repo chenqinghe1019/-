@@ -10,6 +10,7 @@ sql_templates:
     - "【强制】数数动态日期参数为所有项目通用规则：${PartDate:date} / ${PartDate:date1} 本身会展开为 \"$part_date\" between 'xxxx' and 'xxxx'，动态参数必须作为一个完整 WHERE 条件单独使用，不能和任何字段、表别名、引号拼接。严禁写法：WHERE \"$part_date\"${PartDate:date}、WHERE u.\"$part_date\"${PartDate:date}、WHERE b.\"$part_date\"${PartDate:date}；这类写法会被展开成 \"$part_date\"\"$part_date\" 或 b.\"$part_date\"\"$part_date\"，典型报错为 Column 'b.$part_date\"$part_date' cannot be resolved。正确写法：在需要筛选的子查询当前作用域保留名为 \"$part_date\" 的字段，然后直接写 WHERE ${PartDate:date}。如果外层表别名为 b/t，不要写 b.\"$part_date\"${PartDate:date}，而是再包一层 SELECT * FROM (...) filter_src WHERE ${PartDate:date}。"
     - "数数动态日期参数使用错误警示：${PartDate:date1} / ${PartDate:date2} 会展开为对应的 \"$part_date\" between ... 条件；使用它的当前子查询作用域里必须存在名为 \"$part_date\" 的字段。如果当前层已经把日期别名改成 \"新增日期\" 等中文名，再写 WHERE ${PartDate:date1} 会报 Column '$part_date' cannot be resolved。正确做法是内部保留 \"$part_date\" 字段，筛选后最外层再改名展示。"
     - "宽表包含同一指标的多个新增日或相对日列时，展示列默认按指标类型分组连续排列（例如第1~5日战力放一起、第1~5日主线放一起、第1~5日充值放一起），不要按第N日交叉排列；用户明确要求按日排列时除外。"
+    - "流失明细展示默认使用“第几日流失”而不是“流失天数”：距 current_date 超过1天未活跃才判定为已流失；已流失玩家按 date_diff('day', date(create_role_time), last_active_date) + 1 计算流失发生在新增第N日，未达到流失条件的玩家标记为“未流失”。"
 
   templates:
 
