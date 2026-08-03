@@ -8,6 +8,7 @@
 -- 5. 次留中24小时内/外，按注册次日第一条 in_out_log 距新人特惠购买时间是否超过24小时拆分。
 -- 6. 两类互斥且完整：次留人数 = 24小时内次留人数 + 24小时外次留人数。
 -- 7. 仅纳入新人特惠购买时间距当前时间已满48小时的完整观察样本。
+-- 8. 剔除标签分群 cohort_20260705_114557（内充用户v2），通过 ta.user_result_cluster_41.#user_id 关联用户表 #user_id。
 
 SELECT
     concat(
@@ -200,18 +201,31 @@ FROM
                 FROM
                 (
                     SELECT
-                        "#account_id",
-                        create_role_time,
+                        vu."#account_id",
+                        vu.create_role_time,
                         date_format(
-                            create_role_time,
+                            vu.create_role_time,
                             '%Y-%m-%d'
                         ) AS "$part_date"
 
-                    FROM ta.v_user_41
+                    FROM ta.v_user_41 vu
 
-                    WHERE domain = 'release'
-                      AND "#account_id" IS NOT NULL
-                      AND create_role_time IS NOT NULL
+                    LEFT JOIN
+                    (
+                        SELECT DISTINCT
+                            "#user_id"
+
+                        FROM ta.user_result_cluster_41
+
+                        WHERE cluster_name = 'cohort_20260705_114557'
+                          AND "#user_id" IS NOT NULL
+                    ) internal_user
+                      ON internal_user."#user_id" = vu."#user_id"
+
+                    WHERE vu.domain = 'release'
+                      AND vu."#account_id" IS NOT NULL
+                      AND vu.create_role_time IS NOT NULL
+                      AND internal_user."#user_id" IS NULL
                 ) x
 
                 WHERE ${PartDate:date}
