@@ -7,9 +7,9 @@
 -- 4. 次留 = 注册次日自然日存在 in_out_log。
 -- 5. 次留中24小时内/外，按注册次日第一条 in_out_log 距新人特惠购买时间是否超过24小时拆分。
 -- 6. 两类互斥且完整：次留人数 = 24小时内次留人数 + 24小时外次留人数。
--- 7. 仅纳入新人特惠购买时间距当前时间已满48小时的完整观察样本。
--- 8. 剔除 ta.user_result_cluster_41 中 cluster_name='cohort_20260705_114557' 的内充用户，按 #user_id 关联。
--- 9. 次留率及24小时内外占比均固定保留两位小数，保持0~1小数比例，不乘100。
+-- 7. 剔除内充用户分群 cohort_20260705_114557，使用 ta.user_result_cluster_41.#user_id 关联用户表 #user_id。
+-- 8. 比例字段先乘100再 round(..., 2)，输出真实百分比数值，如66.67。
+-- 9. 仅纳入新人特惠购买时间距当前时间已满48小时的完整观察样本。
 
 SELECT
     concat(
@@ -32,17 +32,15 @@ SELECT
         END
     ) AS "次留人数",
 
-    cast(
-        round(
-            count(
-                DISTINCT CASE
-                    WHEN q."次日首次活跃时间" IS NOT NULL
-                    THEN q."账号ID"
-                END
-            ) * 1.0
-            / nullif(count(DISTINCT q."账号ID"), 0),
-            2
-        ) AS decimal(10, 2)
+    round(
+        count(
+            DISTINCT CASE
+                WHEN q."次日首次活跃时间" IS NOT NULL
+                THEN q."账号ID"
+            END
+        ) * 100.0
+        / nullif(count(DISTINCT q."账号ID"), 0),
+        2
     ) AS "次留率",
 
     count(
@@ -57,30 +55,28 @@ SELECT
         END
     ) AS "次留中24小时内人数",
 
-    cast(
-        round(
+    round(
+        count(
+            DISTINCT CASE
+                WHEN q."次日首次活跃时间" IS NOT NULL
+                 AND q."次日首次活跃时间" <= date_add(
+                        'hour',
+                        24,
+                        q."新人特惠6元购买时间"
+                     )
+                THEN q."账号ID"
+            END
+        ) * 100.0
+        / nullif(
             count(
                 DISTINCT CASE
                     WHEN q."次日首次活跃时间" IS NOT NULL
-                     AND q."次日首次活跃时间" <= date_add(
-                            'hour',
-                            24,
-                            q."新人特惠6元购买时间"
-                         )
                     THEN q."账号ID"
                 END
-            ) * 1.0
-            / nullif(
-                count(
-                    DISTINCT CASE
-                        WHEN q."次日首次活跃时间" IS NOT NULL
-                        THEN q."账号ID"
-                    END
-                ),
-                0
             ),
-            2
-        ) AS decimal(10, 2)
+            0
+        ),
+        2
     ) AS "次留中24小时内占比",
 
     count(
@@ -94,29 +90,27 @@ SELECT
         END
     ) AS "次留中24小时外人数",
 
-    cast(
-        round(
+    round(
+        count(
+            DISTINCT CASE
+                WHEN q."次日首次活跃时间" > date_add(
+                        'hour',
+                        24,
+                        q."新人特惠6元购买时间"
+                     )
+                THEN q."账号ID"
+            END
+        ) * 100.0
+        / nullif(
             count(
                 DISTINCT CASE
-                    WHEN q."次日首次活跃时间" > date_add(
-                            'hour',
-                            24,
-                            q."新人特惠6元购买时间"
-                         )
+                    WHEN q."次日首次活跃时间" IS NOT NULL
                     THEN q."账号ID"
                 END
-            ) * 1.0
-            / nullif(
-                count(
-                    DISTINCT CASE
-                        WHEN q."次日首次活跃时间" IS NOT NULL
-                        THEN q."账号ID"
-                    END
-                ),
-                0
             ),
-            2
-        ) AS decimal(10, 2)
+            0
+        ),
+        2
     ) AS "次留中24小时外占比"
 
 FROM
