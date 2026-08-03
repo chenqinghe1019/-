@@ -104,6 +104,7 @@ project_memory:
       notes:
         - "处理萝卜4需求时必须先读取 luobo4_tracking.yaml，不得套用下方了、暴弹飞射或步步项目事件名。"
         - "公共属性 sever、产消事件英文名与类型、用户 ID 模式均处于待确认状态，不得自行修正或推断。"
+        - "ta.v_user_37 线上不存在 domain、create_role_time；新增日期按 ta.v_event_37 的 register 事件 $part_date 取，主线挑战按 level_start.level_id 取。"
 
   tracking_design_rules:
     - "默认不上报入口、页面曝光、按钮曝光；仅在用户明确要求时增加。"
