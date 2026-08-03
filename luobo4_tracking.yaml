@@ -29,7 +29,7 @@ projects:
       - "线上已确认 ta.v_user_37 不存在 domain、create_role_time 字段；新增日期统计使用 ta.v_event_37 的 register 事件日期（$part_date），不要套用其他项目的用户表创角字段。"
       - "用户 ID 体系页同时提供单账号单角色、单账号多角色两种模板，未标明萝卜4实际采用哪一种。"
       - "公共属性原表字段名为 sever，疑似 server 的拼写问题；在研发确认前必须按原文保留，不得静默改名。"
-      - "8 类产出与消耗事件的英文事件名及全部属性类型均未填写。"
+      - "线上已确认资产变更事件名为 asset_change；该事件是否统一覆盖 8 类产消及全部属性类型仍待确认。"
       - "level_result.carrot 与 level_result.clear 未填写显示名和属性类型。"
       - "累计充值金额用户属性未填写属性名，原表备注要求使用虚拟属性。"
 
@@ -398,9 +398,11 @@ projects:
             description: "0（未全清）1（全清）"
 
     asset_change_events:
+      event_name: "asset_change"
+      event_name_status: "线上事件名已确认"
       tag: "产出与消耗"
       trigger: "发生物资变动时"
-      status: "事件英文名及属性类型待技术确认"
+      status: "线上事件名已确认为 asset_change；统一覆盖范围及属性类型待技术确认"
       event_groups:
         - display_name: "货币"
           event_name: null
@@ -455,8 +457,8 @@ projects:
     pending_confirmations:
       - "确认项目实际采用单账号单角色还是单账号多角色。"
       - "确认 sever 是否改为 server，并确保历史与新数据字段名一致。"
-      - "为 8 类产出与消耗事件确定英文事件名。"
-      - "为产出与消耗属性补齐类型；优先评估是否能统一为一个资产变更事件并用 item_type 区分。"
+      - "确认 asset_change 是否统一覆盖 8 类产出与消耗，并确认 item_type 的区分口径。"
+      - "为产出与消耗属性补齐类型。"
       - "补齐 level_result.carrot、level_result.clear 的显示名和类型。"
       - "补齐累计充值金额虚拟属性的最终属性名和金额单位。"
       - "确认 order_init/order_finish.pay_amount 的金额单位。"
