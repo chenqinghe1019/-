@@ -1,12 +1,13 @@
--- 下方了：新人特惠6元（免广告）且未买月卡玩家的购买后24小时留存
+-- 下方了：新人特惠6元（免广告）且未买月卡玩家的自然日次留及24小时拆解
 -- 项目：ta.v_user_41 / ta.v_event_41
 -- 口径：
 -- 1. 新人特惠6元 = pay_log.product_type = '新人特惠' AND product_id = 1。
 -- 2. 首日付费金额 = 注册自然日全部 pay_log.payment / 100，不限制 pay_result。
 -- 3. 未买月卡 = 注册时间至新人特惠购买后48小时内，product_type/product_name 均不包含“月卡”。
--- 4. 购买后24小时留存 = 购买后第24至48小时存在 in_out_log。
--- 5. 购买后24小时流失 = 购买后第24至48小时不存在 in_out_log。
--- 6. 仅纳入购买时间距当前时间已满48小时的完整观察样本。
+-- 4. 次留 = 注册次日自然日存在 in_out_log。
+-- 5. 次留中24小时内/外，按注册次日第一条 in_out_log 距新人特惠购买时间是否超过24小时拆分。
+-- 6. 两类互斥且完整：次留人数 = 24小时内次留人数 + 24小时外次留人数。
+-- 7. 仅纳入新人特惠购买时间距当前时间已满48小时的完整观察样本。
 
 SELECT
     concat(
@@ -24,71 +25,91 @@ SELECT
 
     count(
         DISTINCT CASE
-            WHEN q."购买后0至24小时有活跃" = 1
+            WHEN q."次日首次活跃时间" IS NOT NULL
             THEN q."账号ID"
         END
-    ) AS "购买后0至24小时活跃人数",
+    ) AS "次留人数",
 
     round(
         count(
             DISTINCT CASE
-                WHEN q."购买后0至24小时有活跃" = 1
+                WHEN q."次日首次活跃时间" IS NOT NULL
                 THEN q."账号ID"
             END
         ) * 1.0
         / nullif(count(DISTINCT q."账号ID"), 0),
         4
-    ) AS "购买后0至24小时活跃率",
+    ) AS "次留率",
 
     count(
         DISTINCT CASE
-            WHEN q."购买后24至48小时有活跃" = 1
+            WHEN q."次日首次活跃时间" IS NOT NULL
+             AND q."次日首次活跃时间" <= date_add(
+                    'hour',
+                    24,
+                    q."新人特惠6元购买时间"
+                 )
             THEN q."账号ID"
         END
-    ) AS "购买后24至48小时留存人数",
+    ) AS "次留中24小时内人数",
 
     round(
         count(
             DISTINCT CASE
-                WHEN q."购买后24至48小时有活跃" = 1
+                WHEN q."次日首次活跃时间" IS NOT NULL
+                 AND q."次日首次活跃时间" <= date_add(
+                        'hour',
+                        24,
+                        q."新人特惠6元购买时间"
+                     )
                 THEN q."账号ID"
             END
         ) * 1.0
-        / nullif(count(DISTINCT q."账号ID"), 0),
-        4
-    ) AS "购买后24小时留存率",
-
-    count(
-        DISTINCT CASE
-            WHEN q."购买后24至48小时有活跃" = 0
-            THEN q."账号ID"
-        END
-    ) AS "购买后24小时流失人数",
-
-    round(
-        count(
-            DISTINCT CASE
-                WHEN q."购买后24至48小时有活跃" = 0
-                THEN q."账号ID"
-            END
-        ) * 1.0
-        / nullif(count(DISTINCT q."账号ID"), 0),
-        4
-    ) AS "购买后24小时流失率",
-
-    round(
-        avg(
-            CASE
-                WHEN q."购买后0至24小时最后活跃时间" IS NOT NULL
-                THEN date_diff(
-                    'second',
-                    q."新人特惠6元购买时间",
-                    q."购买后0至24小时最后活跃时间"
-                ) / 3600.0
-            END
+        / nullif(
+            count(
+                DISTINCT CASE
+                    WHEN q."次日首次活跃时间" IS NOT NULL
+                    THEN q."账号ID"
+                END
+            ),
+            0
         ),
-        2
-    ) AS "购买后首24小时最后活跃距购买小时"
+        4
+    ) AS "次留中24小时内占比",
+
+    count(
+        DISTINCT CASE
+            WHEN q."次日首次活跃时间" > date_add(
+                    'hour',
+                    24,
+                    q."新人特惠6元购买时间"
+                 )
+            THEN q."账号ID"
+        END
+    ) AS "次留中24小时外人数",
+
+    round(
+        count(
+            DISTINCT CASE
+                WHEN q."次日首次活跃时间" > date_add(
+                        'hour',
+                        24,
+                        q."新人特惠6元购买时间"
+                     )
+                THEN q."账号ID"
+            END
+        ) * 1.0
+        / nullif(
+            count(
+                DISTINCT CASE
+                    WHEN q."次日首次活跃时间" IS NOT NULL
+                    THEN q."账号ID"
+                END
+            ),
+            0
+        ),
+        4
+    ) AS "次留中24小时外占比"
 
 FROM
 (
@@ -96,9 +117,7 @@ FROM
         s."账号ID",
         s."新增日期",
         s."新人特惠6元购买时间",
-        s."购买后0至24小时有活跃",
-        s."购买后24至48小时有活跃",
-        s."购买后0至24小时最后活跃时间",
+        s."次日首次活跃时间",
 
         CASE
             WHEN s."首日付费金额" = 0 THEN 'a_R0_免费'
@@ -134,50 +153,17 @@ FROM
                 END
             ) AS "观察期内是否购买月卡",
 
-            max(
+            min(
                 CASE
                     WHEN e."$part_event" = 'in_out_log'
-                     AND e."#event_time" > t."新人特惠6元购买时间"
-                     AND e."#event_time" <= date_add(
-                            'hour',
-                            24,
-                            t."新人特惠6元购买时间"
-                         )
-                    THEN 1
-                    ELSE 0
-                END
-            ) AS "购买后0至24小时有活跃",
-
-            max(
-                CASE
-                    WHEN e."$part_event" = 'in_out_log'
-                     AND e."#event_time" > date_add(
-                            'hour',
-                            24,
-                            t."新人特惠6元购买时间"
-                         )
-                     AND e."#event_time" <= date_add(
-                            'hour',
-                            48,
-                            t."新人特惠6元购买时间"
-                         )
-                    THEN 1
-                    ELSE 0
-                END
-            ) AS "购买后24至48小时有活跃",
-
-            max(
-                CASE
-                    WHEN e."$part_event" = 'in_out_log'
-                     AND e."#event_time" > t."新人特惠6元购买时间"
-                     AND e."#event_time" <= date_add(
-                            'hour',
-                            24,
-                            t."新人特惠6元购买时间"
+                     AND date(e."$part_date") = date_add(
+                            'day',
+                            1,
+                            t."新增日期"
                          )
                     THEN e."#event_time"
                 END
-            ) AS "购买后0至24小时最后活跃时间"
+            ) AS "次日首次活跃时间"
 
         FROM
         (
@@ -210,17 +196,24 @@ FROM
                     x."#account_id" AS "账号ID",
                     x.create_role_time AS "新增时间",
                     date(x.create_role_time) AS "新增日期"
+
                 FROM
                 (
                     SELECT
                         "#account_id",
                         create_role_time,
-                        date_format(create_role_time, '%Y-%m-%d') AS "$part_date"
+                        date_format(
+                            create_role_time,
+                            '%Y-%m-%d'
+                        ) AS "$part_date"
+
                     FROM ta.v_user_41
+
                     WHERE domain = 'release'
                       AND "#account_id" IS NOT NULL
                       AND create_role_time IS NOT NULL
                 ) x
+
                 WHERE ${PartDate:date}
             ) u
 
@@ -228,7 +221,9 @@ FROM
               ON p."#account_id" = u."账号ID"
              AND p.domain = 'release'
              AND p."$part_event" = 'pay_log'
-             AND p."$part_date" = cast(u."新增日期" AS varchar)
+             AND p."$part_date" = cast(
+                    u."新增日期" AS varchar
+                 )
 
             GROUP BY
                 u."账号ID",
@@ -247,21 +242,25 @@ FROM
         LEFT JOIN ta.v_event_41 e
           ON e."#account_id" = t."账号ID"
          AND e.domain = 'release'
-         AND e."$part_event" IN ('in_out_log', 'pay_log')
+         AND e."$part_event" IN (
+                'in_out_log',
+                'pay_log'
+             )
          AND e."#event_time" >= t."新增时间"
          AND e."#event_time" <= date_add(
                 'hour',
                 48,
                 t."新人特惠6元购买时间"
              )
-         AND cast(e."$part_date" AS date) BETWEEN t."新增日期"
-                                             AND date(
-                                                    date_add(
-                                                        'hour',
-                                                        48,
-                                                        t."新人特惠6元购买时间"
-                                                    )
-                                                 )
+         AND cast(e."$part_date" AS date)
+                BETWEEN t."新增日期"
+                    AND date(
+                        date_add(
+                            'hour',
+                            48,
+                            t."新人特惠6元购买时间"
+                        )
+                    )
 
         WHERE t."新人特惠6元购买时间" <= date_add(
                 'hour',
