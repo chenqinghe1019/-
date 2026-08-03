@@ -2,6 +2,9 @@ projects:
   - project: "萝卜4小游戏"
     project_code: "luobo4"
     project_type: "小游戏"
+    table_suffix: 37
+    user_table: "ta.v_user_37"
+    event_table: "ta.v_event_37"
     source_document:
       file: "10a37de7-2e7a-4fde-838c-2c78911e7524.xlsx"
       imported_at: "2026-08-03"
@@ -22,7 +25,7 @@ projects:
       unnamed_virtual_user_property_count: 1
 
     notes:
-      - "当前文件未给出数数项目表后缀、用户表、事件表或正式环境过滤条件，写 SQL 前必须另行确认。"
+      - "数数项目表后缀已确认为 37：用户表 ta.v_user_37，事件表 ta.v_event_37；正式环境过滤条件仍待确认。"
       - "用户 ID 体系页同时提供单账号单角色、单账号多角色两种模板，未标明萝卜4实际采用哪一种。"
       - "公共属性原表字段名为 sever，疑似 server 的拼写问题；在研发确认前必须按原文保留，不得静默改名。"
       - "8 类产出与消耗事件的英文事件名及全部属性类型均未填写。"
