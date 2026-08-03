@@ -8,7 +8,7 @@ project_memory:
     rule: "同一项目的新对话可能不会完整继承上一段对话的全部细节；因此可复用口径、字段、SQL规范、用户偏好需要沉淀到 GitHub 知识库。"
   user_preferences:
     - "SQL 需求默认直接给最终完整 SQL，不要只给替换片段，除非用户明确只要片段。"
-    - "涉及下方了 / 步步 / 暴弹飞射 / v41 / v22 / v42 / 埋点字段 / item_log / money_log / battle_result 等项目口径，先查 GitHub 配置，再结合当前上传文件和上下文修改。"
+    - "涉及下方了 / 步步 / 暴弹飞射 / 萝卜4小游戏 / v41 / v22 / v42 / 埋点字段 / item_log / money_log / battle_result 等项目口径，先查 GitHub 配置，再结合当前上传文件和上下文修改。"
     - "字段不确定时必须说明不确定，并先查配置或让用户确认，不能直接编字段。"
     - "用户希望项目记忆点和口径调整同步到 GitHub，便于切换新对话后继续使用。"
     - "回答以高效、直接为主；SQL 修改完成后直接给可执行的最终版。"
@@ -92,6 +92,15 @@ project_memory:
       notes:
         - "v21 和 v2 均为已作废旧口径，固定使用 v22。"
         - "战斗相关事件按 bubu_tracking.yaml 的客户端/服务端事件分别确认，不套用下方了或暴弹飞射命名。"
+
+    luobo4:
+      project_name: "萝卜4小游戏"
+      tracking_yaml: "luobo4_tracking.yaml"
+      project_type: "小游戏"
+      status: "初版埋点，数数表后缀和线上表名尚未确认"
+      notes:
+        - "处理萝卜4需求时必须先读取 luobo4_tracking.yaml，不得套用下方了、暴弹飞射或步步项目事件名。"
+        - "公共属性 sever、产消事件英文名与类型、用户 ID 模式均处于待确认状态，不得自行修正或推断。"
 
   tracking_design_rules:
     - "默认不上报入口、页面曝光、按钮曝光；仅在用户明确要求时增加。"
