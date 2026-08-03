@@ -8,7 +8,7 @@
 -- 5. 次留中24小时内/外，按注册次日第一条 in_out_log 距新人特惠购买时间是否超过24小时拆分。
 -- 6. 两类互斥且完整：次留人数 = 24小时内次留人数 + 24小时外次留人数。
 -- 7. 剔除内充用户分群 cohort_20260705_114557，使用 ta.user_result_cluster_41.#user_id 关联用户表 #user_id。
--- 8. 比例字段先乘100再 round(..., 2)，输出真实百分比数值，如66.67。
+-- 8. 比例字段在除法前将分子乘1.00，避免Trino整数除法，再 round(..., 2) 保留两位小数；结果为0至1的小数比例。
 -- 9. 仅纳入新人特惠购买时间距当前时间已满48小时的完整观察样本。
 
 SELECT
@@ -38,7 +38,7 @@ SELECT
                 WHEN q."次日首次活跃时间" IS NOT NULL
                 THEN q."账号ID"
             END
-        ) * 100.0
+        ) * 1.00
         / nullif(count(DISTINCT q."账号ID"), 0),
         2
     ) AS "次留率",
@@ -66,7 +66,7 @@ SELECT
                      )
                 THEN q."账号ID"
             END
-        ) * 100.0
+        ) * 1.00
         / nullif(
             count(
                 DISTINCT CASE
@@ -100,7 +100,7 @@ SELECT
                      )
                 THEN q."账号ID"
             END
-        ) * 100.0
+        ) * 1.00
         / nullif(
             count(
                 DISTINCT CASE
