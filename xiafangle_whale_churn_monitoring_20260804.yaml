@@ -17,13 +17,13 @@ filters:
     conversion: total_payment / 100.0
     dynamic_parameter: '${Number:number1}'
     note: 使用数数“数字表达式”动态参数，可配置区间、大于或大于等于阈值
-  last_active_date:
-    dynamic_parameter: '${PartDate:date1}'
-    note: 日期参数筛选玩家真实全历史最后活跃日期，不直接截断历史事件明细
+  date_filter:
+    enabled: false
+    note: 2026-08-04按用户要求取消日期筛选，仅保留角色历史累充金额筛选
 time_axis:
   anchor: last_active_date
   last_active_source: in_out_log
-  anchor_rule: 先按角色全历史in_out_log取max($part_date)，再对结果应用日期筛选
+  anchor_rule: 按角色全历史in_out_log取max($part_date)，不应用日期筛选
   join_rule: 大超R角色与最后活跃锚点使用inner join，不保留没有锚点的空行
   daily_activity_columns:
     - 最后活跃日
