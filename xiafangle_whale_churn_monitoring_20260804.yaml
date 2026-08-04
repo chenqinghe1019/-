@@ -1,0 +1,64 @@
+project: 下方了
+project_code: xiafangle
+project_id: 41
+created_at: '2026-08-04'
+status: implemented
+purpose: 大超R角色流失监控预警基础宽表
+tables:
+  user_table: ta.v_user_41
+  event_table: ta.v_event_41
+filters:
+  domain: release
+  role_historical_payment:
+    source: ta.v_user_41.total_payment
+    unit_in_source: 分
+    display_unit: 元
+    conversion: total_payment / 100.0
+    dynamic_parameter: '${Number:number1}'
+    note: 使用数数“数字表达式”动态参数，可配置区间、大于或大于等于阈值
+  analysis_date:
+    dynamic_parameter: '${PartDate:date1}'
+time_axis:
+  anchor: last_active_date
+  last_active_source: in_out_log
+  daily_activity_columns:
+    - 最后活跃日
+    - 最后活跃日前1日
+    - 最后活跃日前2日
+  reason: 用于观察玩家流失前3个自然日的玩法参与度变化
+online_time:
+  event: in_out_log
+  field: online_time
+  source_unit: 秒
+  display_unit: 分钟
+  aggregation: 玩家自然日求和后除以60
+  deprecated_source: ta_mg_hide.#duration
+activity_metrics:
+  - event: boss_battle_report
+    display_name: 部落BOSS参与次数
+    daily_count_rule: count(distinct battle_uid)
+    trigger: 战斗结束
+  - event: pvp_log
+    display_name: PVP参与次数
+    daily_count_rule: count(distinct battle_uid)
+    note: 当前统计全部pvp_log；事件同时可能被常规PVP和劫镖PVP复用
+  - event: mining_log
+    display_name: 矿脉争夺参与次数
+    daily_count_rule: count(event rows)
+    trigger: 矿脉战斗结束
+  - event: post_office_escort_log
+    display_name: 诡都邮局押镖参与次数
+    daily_count_rule: count(distinct escort_uid)
+    note: 事件在押镖开始和领奖均可能上报，按escort_uid去重，避免同日重复
+power_display:
+  event: change_power_log
+  field: after
+  rule: 仅当同一自然日存在in_out_log时展示当日最高战力
+  reason: 后台战力重算不能单独作为玩家活跃依据
+warning_design:
+  current_stage: 仅输出预警评估所需基础指标
+  deferred:
+    - 风险分数
+    - 高中低预警阈值
+    - 玩法参与下降权重
+  next_step: 基于真实结果对已流失与未流失大超R玩家做对照评估后确定
