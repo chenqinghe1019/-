@@ -1,0 +1,148 @@
+project: 下方了
+project_code: xiafangle
+project_id: 41
+created_at: '2026-08-04'
+status: proposed
+source_design_docs:
+  - 612529ce-3b76-4432-b85c-2fa86513d575.docx # 诡橱秘宝（钥匙开箱）
+  - c44a99ad-5a02-444f-9f39-9a03a49363e0.docx # 2048活动
+  - ec276b3f-a9a8-4892-b39b-aa0f7c72b788.docx # 海鲜换礼（原策划案标题待修正）
+deliverable: 下方了_三活动埋点需求_20260804_v1.xlsx
+baseline:
+  tracking_spec: xiafangle_tracking.yaml
+  shared_system_spec: xiafangle_new_system_tracking_20260715.yaml
+  event_table: ta.v_event_41
+  user_table: ta.v_user_41
+design_rules:
+  - 仅采集业务结果、资产变化和关键玩法结算；不采集入口、页面、页签、按钮及红点曝光。
+  - 服务端在扣除、发奖、清理或排名冻结成功后上报。
+  - 开箱1至20个按请求批次上报1条；海鲜按领取或清除批次上报；2048不逐滑动上报。
+  - 专属事件与item_log、money_log双写并冻结change_reason；付费礼包复用pay_log。
+  - 优先复用activity_id、activity_round、activity_day、round_uid、cost_item、award、item_result、change_reason、cumulative_times_after。
+  - open_uid、round_uid、settle_uid必须支持幂等，弱网重试时保持稳定。
+new_events:
+  - event: guichu_chest_open_log
+    name: 诡橱秘宝开箱结果
+    side: 服务端
+    trigger: 每次确认开启1至20个宝箱，钥匙扣除及全部奖励结算成功后上报1条
+    required_fields:
+      - activity_id
+      - activity_round
+      - activity_day
+      - open_uid
+      - open_num
+      - cost_item
+      - open_results
+      - cumulative_times_after
+      - item_result
+      - activity_currency_result
+    structures:
+      open_results:
+        fields: [open_index, activity_currency_num, asset_type, item_id, item_name, num]
+        rules:
+          - 按结算顺序逐箱记录，数组长度必须等于open_num。
+          - 固定活动货币记录每箱实际随机数量，随机奖励不合并同类项。
+  - event: merge2048_round_log
+    name: 2048棋盘轮次结算
+    side: 服务端
+    trigger: 任一倍率棋盘因失败后重新开始、每日重置或活动结束而清空或重建时上报1条
+    required_fields:
+      - activity_id
+      - activity_round
+      - activity_day
+      - round_uid
+      - board_multiplier
+      - end_reason
+      - is_failed_before_reset
+      - move_times
+      - merge_times
+      - stamina_cost
+      - round_score
+      - first_merge_bonus_score
+      - normal_merge_score
+      - max_piece_level
+      - fail_trigger_times
+      - rearrange_times
+      - eliminate_times
+      - single_best_score_after
+      - daily_total_score_after
+    enums:
+      board_multiplier: [1, 4]
+      end_reason: [restart_after_fail, daily_reset, activity_end]
+    rules:
+      - 两种倍率棋盘分别维护round_uid，切换倍率不结算。
+      - 无位移操作不计move_times且不扣体力。
+      - 取消失败弹窗或使用道具继续时不结束轮次。
+  - event: merge2048_daily_settle_log
+    name: 2048每日排行结算
+    side: 服务端
+    trigger: 单局日榜与累计日榜名次冻结、奖励邮件生成成功后，每个当日得分大于0的玩家上报1条
+    required_fields:
+      - activity_id
+      - activity_round
+      - activity_day
+      - settle_uid
+      - single_best_score
+      - single_rank
+      - cumulative_score
+      - cumulative_rank
+      - single_award
+      - cumulative_award
+  - event: seafood_idle_settle_log
+    name: 海鲜挂机掉落结算
+    side: 服务端
+    trigger: 玩家领取挂机海鲜、跨天清除未领取海鲜或活动结束清理挂机海鲜时上报1条
+    required_fields:
+      - activity_id
+      - activity_round
+      - activity_day
+      - settle_uid
+      - change_reason
+      - idle_seconds
+      - seafood_results
+      - daily_total_drop_after
+      - daily_total_drop_limit
+      - pending_num_after
+    enums:
+      change_reason: [claim, daily_clear, activity_end]
+    structures:
+      seafood_results:
+        fields:
+          - item_id
+          - item_name
+          - generated_num
+          - claim_num
+          - clear_num
+          - item_result
+          - daily_item_drop_after
+          - activity_item_drop_after
+          - activity_item_drop_limit
+        rules:
+          - 8种海鲜分别记录，未发生的claim_num或clear_num传0。
+          - claim_num和clear_num不得同时大于0。
+          - daily_total_drop_limit记录实际生效配置，当前策划案为80。
+reuse_existing_events:
+  - event: item_log
+    use: 活动资产真实产消及余额
+  - event: money_log
+    use: 活动货币、钻石及体力真实产消
+  - event: pay_log
+    use: 三活动付费礼包；下方了payment单位为分
+  - event: activity_shop_buy_log
+    use: 诡橱商店、海鲜组合兑换、活动免费礼包
+    activity_type: [guichu_chest, seafood_exchange, merge_2048]
+  - event: mission_finish_log
+    use: 诡橱常规任务及达标任务完成
+  - event: mission_reward_log
+    use: 诡橱常规任务及达标任务领奖
+  - event: rank_log
+    use: 2048双日榜过程排名；最终排名以merge2048_daily_settle_log为准
+  - event: mail_log
+    use: 2048双榜奖励邮件、海鲜到期转钻石通知
+open_questions:
+  - 海鲜策划案标题仍写“诡橱秘宝系统”，需确认最终活动名和activity_type。
+  - 2048棋盘每日24点重置，但邮件逻辑写每日12点发奖，需确认排名截止和发奖时间。
+  - 2048需确认22点后能否继续当前未失败棋盘，以及失败后用道具恢复是否算新局。
+  - 诡橱多开宝箱暂按每箱独立随机固定货币和随机道具设计，需策划确认。
+  - 海鲜单品活动上限暂按已生成累计，跨天清除不返还上限，需策划确认。
+  - 海鲜活动结束转钻石的比例和取整规则需策划确认。
