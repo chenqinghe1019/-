@@ -31,6 +31,7 @@
 ### 工作流规范（`*_workflow.yaml`）
 记录操作流程、完成标准、注意事项。
 - `ta_dashboard_report_workflow.yaml`：数数看板 / 报表编辑、保存、验收流程
+- `applogger_baoweiluobo4_workflow.yaml`：保卫萝卜4 AppLogger 三端趋势分析定位、指标、导出与汇总口径
 
 ### SQL 模板（`sql_templates.yaml`）
 可复用的查询模板和口径说明，按项目或主题组织。
