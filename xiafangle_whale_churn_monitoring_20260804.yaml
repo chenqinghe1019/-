@@ -101,3 +101,90 @@ warning_design:
     - 高中低预警阈值
     - 玩法参与下降权重
   next_step: 基于修正后结果，对已流失与未流失大超R玩家做行为下降对照评估
+
+risk_analysis_20260804:
+  source_rows: 300
+  analyzed_at: '2026-08-04'
+  outcome_definition:
+    active: 流失天数=0
+    churned: 流失天数>=7
+    gray_zone: 流失天数1至6日，仅用于实际预警，不参与训练
+  training_cohort:
+    last_active_date_from: '2026-07-01'
+    require_role_age_days: '>=4'
+    rows: 157
+    active_rows: 103
+    churned_rows: 54
+    note: 只用近期同口径样本，降低旧服、版本和玩法上线批次偏差
+  feature_window:
+    rule: 风险评分仅使用最后活跃日前1日至前3日的完整自然日行为
+    exclude_d0_reason: 当前活跃玩家最后活跃日可能是未结束自然日
+  scoring:
+    method: 10项指标按近期样本分位数反向得分，再按单指标AUC强度加权；所有指标保持数值越低风险越高的单调方向
+    cross_validated_auc: 0.8257
+    low_to_medium_score: 33.07
+    medium_to_high_score: 55.79
+    validation:
+      high_risk_7d_churn_rate: 0.6415
+      medium_risk_7d_churn_rate: 0.3077
+      low_risk_7d_churn_rate: 0.0769
+    composite_override:
+      inactive_7d_or_more: 高风险
+      inactive_1_to_6d: 至少中风险
+  score_features:
+    - metric: 近2日PVP平均次数
+      weight: 0.1223
+      recent_auc: 0.8092
+      watch_threshold: '<=6'
+    - metric: 近3日合作试炼平均次数
+      weight: 0.1218
+      recent_auc: 0.8080
+      watch_threshold: '<=0.67'
+    - metric: 近2日平均玩法覆盖数
+      weight: 0.1184
+      recent_auc: 0.7993
+      watch_threshold: '<=3'
+    - metric: 主线近3日推进
+      weight: 0.1057
+      recent_auc: 0.7673
+      watch_threshold: '<=11'
+    - metric: 近3日平均在线分钟
+      weight: 0.1050
+      recent_auc: 0.7655
+      watch_threshold: '<=67.89'
+    - metric: 海岛近3日推进
+      weight: 0.1018
+      recent_auc: 0.7600
+      watch_threshold: '<=4'
+    - metric: 近3日充值天数
+      weight: 0.0916
+      recent_auc: 0.7317
+      watch_threshold: '<=1'
+    - metric: 战力近3日增长率
+      weight: 0.0847
+      recent_auc: 0.7141
+      watch_threshold: '<=0.09'
+    - metric: 近2日押镖平均次数
+      weight: 0.0772
+      recent_auc: 0.6951
+      watch_threshold: '<=0'
+    - metric: 近2日BOSS平均次数
+      weight: 0.0716
+      recent_auc: 0.6810
+      watch_threshold: '<=1'
+  excluded_from_score:
+    - metric: 矿脉争夺
+      reason: 前2日有参与记录覆盖率仅15%，且可能受玩法上线或停报影响
+    - metric: 天赋石存量
+      reason: 本次CSV整列为空且已从监控SQL移除
+    - metric: 角色年龄、历史累充、绝对战力与绝对进度
+      reason: 易反映批次或阶段差异，仅作辅助
+    - metric: 流失天数、最后活跃日期
+      reason: 结果字段，禁止用于行为风险评分
+  limited_history:
+    count: 17
+    rule: 角色年龄不足4日标记待观察，D1至D3特征按近期中位水平处理，避免把创角前日期当作未参与
+  current_snapshot:
+    active_players: 109
+    active_high_behavior_risk: 17
+  interpretation: 当前为相关性预警，不代表因果；后续需用每日玩家快照和未来7日结果继续回测
