@@ -1,0 +1,63 @@
+project:
+  name: "保卫萝卜4"
+  system: "AppLogger（天梯游戏统计）"
+  module: "趋势分析"
+
+platforms:
+  - label: "安卓"
+    app_name: "保卫萝卜4 (安卓版)"
+    page_id: "61c94f91be4ac8fe3886a3d7da56d896"
+    trend_url: "https://dev.applogger.cn/#key-indicators:61c94f91be4ac8fe3886a3d7da56d896"
+  - label: "iOS"
+    app_name: "保卫萝卜4 (苹果版)"
+    page_id: "aff87ff1cb9d27c6d4f65d4b7013afd4"
+    trend_url: "https://dev.applogger.cn/#key-indicators:aff87ff1cb9d27c6d4f65d4b7013afd4"
+  - label: "鸿蒙"
+    app_name: "保卫萝卜4（鸿蒙）"
+    page_id: "c42a78f61784e4ad137a1a4876c153ef"
+    trend_url: "https://dev.applogger.cn/#key-indicators:c42a78f61784e4ad137a1a4876c153ef"
+
+trend_metrics:
+  basic:
+    - "新增用户"
+    - "活跃用户"
+    - "启动次数"
+    - "安装用户"
+    - "升级用户"
+    - "次均时长"
+    - "人均时长"
+  revenue:
+    - "收入"
+    - "当天付费"
+    - "新增付费"
+    - "日活跃付费"
+
+export_workflow:
+  - "进入对应平台项目的趋势分析。"
+  - "使用自定义日期选择目标起止自然日。"
+  - "基本趋势和收入趋势均切换到右侧表格视图读取逐日数据。"
+  - "三个平台统一使用安卓、iOS、鸿蒙标签。"
+  - "输出汇总、安卓、iOS、鸿蒙四个展示页，并保留逐日明细页。"
+
+aggregation_rules:
+  additive_metrics:
+    - "新增用户"
+    - "活跃用户"
+    - "启动次数"
+    - "安装用户"
+    - "升级用户"
+    - "收入"
+    - "当天付费"
+    - "新增付费"
+    - "日活跃付费"
+  summary: "汇总值按日期对安卓、iOS、鸿蒙三端求和。"
+  session_average: "次均时长统一换算为分钟；汇总次均时长 = 三端总启动时长 / 三端启动次数。"
+  user_average: "人均时长统一换算为分钟；汇总人均时长 = 三端总用户时长 / 三端活跃用户。"
+
+date_rules:
+  - "日期范围不得超过页面允许的最新日期。"
+  - "用户年份与页面可选年份冲突时，先按页面可选范围核对并明确披露实际执行年份。"
+
+security:
+  - "不保存账号、密码、登录 token 或导出的业务明细。"
+  - "GitHub 仅记录项目定位、指标和汇总口径。"
