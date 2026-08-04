@@ -91,8 +91,9 @@ resource_balance:
     energy_drink: 3
     advanced_fortune: 1000006
     iron: 1000103
+  excluded_item_ids:
     talent_stone: 24
-  data_quality_warning: 天赋石item_id=24仍需用新导出结果验证
+  exclusion_note: 2026-08-04按用户要求从大超R流失监控SQL中移除天赋石存量
 warning_design:
   current_stage: 基础SQL数据完整性已修正，等待新导出结果
   deferred:
