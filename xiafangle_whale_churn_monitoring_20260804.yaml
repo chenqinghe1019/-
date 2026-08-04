@@ -2,7 +2,8 @@ project: 下方了
 project_code: xiafangle
 project_id: 41
 created_at: '2026-08-04'
-status: implemented
+updated_at: '2026-08-04'
+status: needs_revision
 purpose: 大超R角色流失监控预警基础宽表
 tables:
   user_table: ta.v_user_41
@@ -25,14 +26,18 @@ time_axis:
     - 最后活跃日
     - 最后活跃日前1日
     - 最后活跃日前2日
-  reason: 用于观察玩家流失前3个自然日的玩法参与度变化
+  confirmed_issue: 当前SQL把分析日期参数同时用于最后活跃日查找；日期范围内没有in_out_log的历史大R会得到空最后活跃日期，全部相对日指标随后被补成0
+  revision_requirement: 最后活跃锚点与指标明细回溯范围必须分离，且指标范围至少覆盖锚点日前3日
 online_time:
-  event: in_out_log
-  field: online_time
+  event: ta_mg_hide
+  field: '#duration'
   source_unit: 秒
   display_unit: 分钟
-  aggregation: 玩家自然日求和后除以60
-  deprecated_source: ta_mg_hide.#duration
+  aggregation: 玩家自然日有效时长求和后除以60
+  valid_duration_rule: try_cast("#duration" as double) > 0 and try_cast("#duration" as double) < 86400
+  activity_event: in_out_log
+  deprecated_source: in_out_log.online_time
+  correction_reason: in_out_log.online_time按日累加会产生超过1440分钟的明显异常值；2026-08-04导出样本中145名有活跃锚点玩家有45名最后活跃日超过1440分钟
 activity_metrics:
   - event: boss_battle_report
     display_name: 部落BOSS参与次数
@@ -46,6 +51,7 @@ activity_metrics:
     display_name: 矿脉争夺参与次数
     daily_count_rule: count(event rows)
     trigger: 矿脉战斗结束
+    data_quality_warning: 2026-08-04导出样本中2026-08-01有75人发生，2026-08-02与2026-08-03均为0，需核查事件停报或更名
   - event: post_office_escort_log
     display_name: 诡都邮局押镖参与次数
     daily_count_rule: count(distinct escort_uid)
@@ -53,12 +59,16 @@ activity_metrics:
 power_display:
   event: change_power_log
   field: after
-  rule: 仅当同一自然日存在in_out_log时展示当日最高战力
-  reason: 后台战力重算不能单独作为玩家活跃依据
+  current_rule: 仅当同一自然日存在in_out_log时展示当日最高战力
+  limitation: 当日无change_power_log时会被补成0，不能代表玩家当日实际战力
+resource_balance:
+  current_rule: 仅在分析日期范围内对item_log和money_log取max_by(item_result,event_time)
+  confirmed_issue: 日期范围内无资源变动会被补成0，0值不能区分真实0与无数据
+  data_quality_warning: 2026-08-04导出样本中天赋石300人全部为0，需核查item_id=24及上报字段
 warning_design:
-  current_stage: 仅输出预警评估所需基础指标
+  current_stage: 基础SQL需要先修复数据完整性，再设计风险分数
   deferred:
     - 风险分数
     - 高中低预警阈值
     - 玩法参与下降权重
-  next_step: 基于真实结果对已流失与未流失大超R玩家做对照评估后确定
+  next_step: 修复最后活跃锚点、在线时长、矿脉事件和资源存量后，基于真实结果对已流失与未流失大超R玩家做对照评估
