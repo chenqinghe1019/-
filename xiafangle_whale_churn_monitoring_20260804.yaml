@@ -3,7 +3,7 @@ project_code: xiafangle
 project_id: 41
 created_at: '2026-08-04'
 updated_at: '2026-08-04'
-status: needs_revision
+status: revised
 purpose: 大超R角色流失监控预警基础宽表
 tables:
   user_table: ta.v_user_41
@@ -17,17 +17,24 @@ filters:
     conversion: total_payment / 100.0
     dynamic_parameter: '${Number:number1}'
     note: 使用数数“数字表达式”动态参数，可配置区间、大于或大于等于阈值
-  analysis_date:
+  last_active_date:
     dynamic_parameter: '${PartDate:date1}'
+    note: 日期参数筛选玩家真实全历史最后活跃日期，不直接截断历史事件明细
 time_axis:
   anchor: last_active_date
   last_active_source: in_out_log
+  anchor_rule: 先按角色全历史in_out_log取max($part_date)，再对结果应用日期筛选
+  join_rule: 大超R角色与最后活跃锚点使用inner join，不保留没有锚点的空行
   daily_activity_columns:
     - 最后活跃日
     - 最后活跃日前1日
     - 最后活跃日前2日
-  confirmed_issue: 当前SQL把分析日期参数同时用于最后活跃日查找；日期范围内没有in_out_log的历史大R会得到空最后活跃日期，全部相对日指标随后被补成0
-  revision_requirement: 最后活跃锚点与指标明细回溯范围必须分离，且指标范围至少覆盖锚点日前3日
+  state_columns:
+    - 最后活跃日
+    - 最后活跃日前1日
+    - 最后活跃日前2日
+    - 最后活跃日前3日
+  metric_history_rule: 行为和状态明细独立扫描至玩家最后活跃日，避免被日期参数截断
 online_time:
   event: ta_mg_hide
   field: '#duration'
@@ -37,7 +44,6 @@ online_time:
   valid_duration_rule: try_cast("#duration" as double) > 0 and try_cast("#duration" as double) < 86400
   activity_event: in_out_log
   deprecated_source: in_out_log.online_time
-  correction_reason: in_out_log.online_time按日累加会产生超过1440分钟的明显异常值；2026-08-04导出样本中145名有活跃锚点玩家有45名最后活跃日超过1440分钟
 activity_metrics:
   - event: boss_battle_report
     display_name: 部落BOSS参与次数
@@ -55,20 +61,42 @@ activity_metrics:
   - event: post_office_escort_log
     display_name: 诡都邮局押镖参与次数
     daily_count_rule: count(distinct escort_uid)
-    note: 事件在押镖开始和领奖均可能上报，按escort_uid去重，避免同日重复
-power_display:
-  event: change_power_log
-  field: after
-  current_rule: 仅当同一自然日存在in_out_log时展示当日最高战力
-  limitation: 当日无change_power_log时会被补成0，不能代表玩家当日实际战力
+    note: 事件在押镖开始和领奖均可能上报，按escort_uid去重
+state_metrics:
+  mainline:
+    events:
+      - battle_star
+      - battle_result
+    battle_type: 1
+    rule: 截至目标自然日的历史最大map_id
+  island:
+    events:
+      - battle_star
+      - battle_result
+    battle_type: 3
+    rule: 截至目标自然日的历史最大map_id
+  power:
+    event: change_power_log
+    field: after
+    rule: max_by(after, "#event_time")，取截至目标自然日的最后已知战力
+    null_rule: 全历史无记录时保留null，不伪造为0
 resource_balance:
-  current_rule: 仅在分析日期范围内对item_log和money_log取max_by(item_result,event_time)
-  confirmed_issue: 日期范围内无资源变动会被补成0，0值不能区分真实0与无数据
-  data_quality_warning: 2026-08-04导出样本中天赋石300人全部为0，需核查item_id=24及上报字段
+  events:
+    - money_log
+    - item_log
+  rule: max_by(item_result, "#event_time")，取截至最后活跃日的最后已知存量
+  null_rule: 全历史无对应资源记录时保留null，不伪造为0
+  item_ids:
+    diamond: 1
+    energy_drink: 3
+    advanced_fortune: 1000006
+    iron: 1000103
+    talent_stone: 24
+  data_quality_warning: 天赋石item_id=24仍需用新导出结果验证
 warning_design:
-  current_stage: 基础SQL需要先修复数据完整性，再设计风险分数
+  current_stage: 基础SQL数据完整性已修正，等待新导出结果
   deferred:
     - 风险分数
     - 高中低预警阈值
     - 玩法参与下降权重
-  next_step: 修复最后活跃锚点、在线时长、矿脉事件和资源存量后，基于真实结果对已流失与未流失大超R玩家做对照评估
+  next_step: 基于修正后结果，对已流失与未流失大超R玩家做行为下降对照评估
