@@ -105,90 +105,93 @@ warning_design:
     - 主要风险原因
   next_step: 按日保存预警快照，并使用未来7日实际留存结果持续回测阈值
 
+
 risk_analysis_20260804:
   source_rows: 300
   analyzed_at: '2026-08-04'
+  revision: 流失天数>=1重新分析版
   outcome_definition:
     active: 流失天数=0
-    churned: 流失天数>=7
-    gray_zone: 流失天数1至6日，仅用于实际预警，不参与训练
+    churned: 流失天数>=1
+    gray_zone: none
+    operational_note: 已流失玩家不再进入高中低风险预警，直接显示“已流失”
   training_cohort:
     last_active_date_from: '2026-07-01'
     require_role_age_days: '>=4'
-    rows: 157
+    rows: 192
     active_rows: 103
-    churned_rows: 54
+    churned_rows: 89
     note: 只用近期同口径样本，降低旧服、版本和玩法上线批次偏差
   feature_window:
-    rule: 风险评分仅使用最后活跃日前1日至前3日的完整自然日行为
-    exclude_d0_reason: 当前活跃玩家最后活跃日可能是未结束自然日
+    rule: 风险评分仅使用最后活跃日前1日至前3日的完整自然日行为；成长指标使用最后活跃日相对前3日的变化
+    exclude_d0_behavior_reason: 当前活跃玩家最后活跃日可能是未结束自然日
   scoring:
-    analysis_method: 10项指标按近期样本分位数反向得分并按单指标AUC强度加权
-    analysis_cross_validated_auc: 0.8257
-    sql_operational_method: 采用固定观察阈值；指标命中时计入该指标完整权重分，未命中计0分，10项权重合计100分
-    fixed_threshold_reason: 避免看板调整历史累充筛选后，分位数和玩家风险等级随筛选人群漂移
-    low_to_medium_score: 33.07
-    medium_to_high_score: 55.79
-    same_sample_backtest:
-      note: 固定规则在2026-07-01起157名近期完整窗口玩家上的同样本回测，非交叉验证
-      auc: 0.8600
+    operational_method: 10项指标使用固定阈值；命中风险条件时累加固定分值，权重合计100分
+    fixed_threshold_reason: 避免看板调整历史累充筛选后，玩家分数随筛选人群漂移
+    cross_validated_auc: 0.8168
+    logistic_benchmark_cross_validated_auc: 0.7961
+    low_to_medium_score: 23.67
+    medium_to_high_score: 71.81
+    cross_validated_tier_result:
       high_risk:
-        rows: 55
-        churned_rows: 40
-        7d_churn_rate: 0.7273
+        rows: 64
+        churned_rows: 48
+        churn_rate: 0.7500
       medium_risk:
-        rows: 18
-        churned_rows: 5
-        7d_churn_rate: 0.2778
+        rows: 64
+        churned_rows: 33
+        churn_rate: 0.5156
       low_risk:
-        rows: 84
-        churned_rows: 9
-        7d_churn_rate: 0.1071
-    composite_override:
-      inactive_7d_or_more: 高风险
-      inactive_1_to_6d: 至少中风险
-      role_age_under_4d: 待观察
+        rows: 64
+        churned_rows: 8
+        churn_rate: 0.1250
+    display_rule:
+      churn_days_ge_1: 已流失
+      churn_days_eq_0_and_role_age_under_4d: 待观察
+      churn_days_eq_0_and_score_ge_71_81: 高风险
+      churn_days_eq_0_and_score_ge_23_67_lt_71_81: 中风险
+      churn_days_eq_0_and_score_lt_23_67: 低风险
   score_features:
-    - metric: 近2日PVP平均次数
-      weight: 0.1223
-      recent_auc: 0.8092
-      watch_threshold: '<=6'
-    - metric: 近3日合作试炼平均次数
-      weight: 0.1218
-      recent_auc: 0.8080
-      watch_threshold: '<=0.67'
     - metric: 近2日平均玩法覆盖数
-      weight: 0.1184
-      recent_auc: 0.7993
+      weight: 0.125028
+      recent_auc: 0.803862
       watch_threshold: '<=3'
-    - metric: 主线近3日推进
-      weight: 0.1057
-      recent_auc: 0.7673
-      watch_threshold: '<=11'
+    - metric: 近2日PVP平均次数
+      weight: 0.124355
+      recent_auc: 0.802225
+      watch_threshold: '<=8.5'
+    - metric: 近3日合作试炼平均次数
+      weight: 0.114278
+      recent_auc: 0.777735
+      watch_threshold: '<=0.67'
     - metric: 近3日平均在线分钟
-      weight: 0.1050
-      recent_auc: 0.7655
+      weight: 0.103640
+      recent_auc: 0.751882
       watch_threshold: '<=67.89'
     - metric: 海岛近3日推进
-      weight: 0.1018
-      recent_auc: 0.7600
+      weight: 0.097513
+      recent_auc: 0.739351
       watch_threshold: '<=4'
-    - metric: 近3日充值天数
-      weight: 0.0916
-      recent_auc: 0.7317
-      watch_threshold: '<=1'
-    - metric: 战力近3日增长率
-      weight: 0.0847
-      recent_auc: 0.7141
-      watch_threshold: '<=0.09'
+    - metric: 主线近3日推进
+      weight: 0.094641
+      recent_auc: 0.730010
+      watch_threshold: '<=11'
     - metric: 近2日押镖平均次数
-      weight: 0.0772
-      recent_auc: 0.6951
-      watch_threshold: '<=0'
+      weight: 0.093361
+      recent_auc: 0.726901
+      watch_threshold: '<=4.5'
     - metric: 近2日BOSS平均次数
-      weight: 0.0716
-      recent_auc: 0.6810
-      watch_threshold: '<=1'
+      weight: 0.087414
+      recent_auc: 0.712447
+      watch_threshold: '<=1.5'
+    - metric: 战力近3日增长率
+      weight: 0.080457
+      recent_auc: 0.695538
+      watch_threshold: '<=0.09'
+    - metric: 近3日充值天数
+      weight: 0.079312
+      recent_auc: 0.692757
+      watch_threshold: '<=0'
   excluded_from_score:
     - metric: 矿脉争夺
       reason: 前2日有参与记录覆盖率仅15%，且可能受玩法上线或停报影响
@@ -200,11 +203,12 @@ risk_analysis_20260804:
       reason: 结果字段，禁止用于行为风险评分
   limited_history:
     count: 17
-    rule: 角色年龄不足4日的行为风险等级标记为待观察，不用创角前日期的0值进行评分
+    rule: 角色年龄不足4日的活跃玩家标记为待观察，不用创角前日期的0值进行评分
   current_snapshot:
     active_players: 109
-    fixed_rule_active_high_behavior_risk: 15
-    fixed_rule_active_medium_behavior_risk: 13
-    fixed_rule_active_low_behavior_risk: 75
+    churned_players: 191
+    active_high_risk: 14
+    active_medium_risk: 28
+    active_low_risk: 61
     active_limited_history_watch: 6
-  interpretation: 当前为相关性预警，不代表因果；后续需用每日玩家快照和未来7日结果继续回测
+  interpretation: 当前为相关性预警，不代表因果；后续应按日保存快照，并用次日是否回流持续校准阈值
