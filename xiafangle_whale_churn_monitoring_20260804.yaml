@@ -2,7 +2,7 @@ project: 下方了
 project_code: xiafangle
 project_id: 41
 created_at: '2026-08-04'
-updated_at: '2026-08-04'
+updated_at: '2026-08-05'
 status: revised
 purpose: 大超R角色流失监控预警基础宽表
 tables:
@@ -103,6 +103,13 @@ warning_design:
     - 当前状态
     - 评分适用性
     - 主要风险原因
+  leading_judgement_fields:
+    - 综合预警等级
+    - 行为风险等级
+    - 当前状态
+    - 评分适用性
+    - 主要风险原因
+  output_order_rule: 判断结果类字段统一置于玩家及指标明细字段之前
   next_step: 按日保存预警快照，并使用未来7日实际留存结果持续回测阈值
 
 
