@@ -20,4 +20,5 @@
 - LTV1-LTV14 口径：LTV1 为创角当天累计充值 / 新增人数；LTVn 为创角日起第 0 天至第 n-1 天累计充值 / 新增人数。LTVn 倍率统一定义为 `LTVn / LTV1`，LTV1 倍率为 1；若 LTV1 为 0，则倍率返回空值。未满对应观察天数的新增日期，LTV及倍率返回空值，避免展示不完整累计值。
 - LTV 媒体维度：媒体取用户表 `ad_platform`，空值或空字符串归为“自然量”；每个新增日期同时输出媒体明细和“汇总”行。
 - ROI 广告成本事件 `roi_ad_platform` 为当日分区上报历史业务日期快照：成本子查询的 `date("$part_date")` 上限必须包含当天，即 `<= date_add('day', 0, date(now()))`，再使用 `ge_date` 作为成本业务日期与新增日期关联；不能将成本分区截止到昨天。`ge_app_id` 实际可能为科学计数法字符串（如 `2.9756138E7`），必须先 `try_cast(trim(cast(ge_app_id AS varchar)) AS double)`，再 `cast(... AS bigint)`，禁止直接转 bigint。
+- ROI 媒体维度：收入侧取用户表 `ad_platform`（同一 `player_identity` 取最早创角角色的媒体，空值/空字符串统一为 `natural`），并按 `active_channel + 新增日期 + ad_platform` 聚合；成本侧取 `roi_ad_platform.ge_ad_platform`（空值/空字符串同样统一为 `natural`），按 `APPID + ge_date + ge_ad_platform` 的最新快照汇总；最终必须按 `APPID + 新增日期/ge_date + 媒体平台` 三键关联，禁止只增加媒体展示列而不拆分收入、成本及连接键。
 - SQL 规范：不用 WITH，不用 USING，JOIN 显式写 `ON`，排版模仿用户紧凑风格。
