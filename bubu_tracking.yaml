@@ -10,6 +10,7 @@ projects:
       - "2026-07-01 用户更正：步步项目表后缀为 v22；此前 v21/v2 均作废。"
       - "SQL 默认遵循倍特工作室 Trino/数数规范：不用 WITH，不用 USING，事件表字段加双引号。"
       - "本文件由用户上传的步步项目埋点 Excel 同步生成，包含事件属性、用户属性、公共事件属性和 iOS 支付渠道需求。"
+      - "2026-08-05 查询运行确认：ta.v_user_22 的 create_role_time 为 timestamp(3)，可直接 date()/CAST(timestamp)；latest_online_time 在当前查询环境中为 double Unix 时间戳，需先 from_unixtime()，不能与 create_role_time 共用数值阈值判断。"
     summary:
       event_count: 60
       event_property_count: 337
