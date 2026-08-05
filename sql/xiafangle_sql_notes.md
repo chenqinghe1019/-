@@ -4,6 +4,7 @@
 - `create_role_time` 为 timestamp，创角日期可写：`cast(date("create_role_time") as varchar) "$part_date"`。
 - 数数日期筛选规则：不要写 `"$part_date"${PartDate:date}`，也不要写 `u."$part_date"${PartDate:date}`；如果筛选子查询别名字段，写 `u.${PartDate:date}`；如果直接筛选当前查询的 `$part_date`，写 `${PartDate:date}`。
 - 首日付费分层必须限定创角当天/active_days=0 的 `pay_log`，不要用查询范围累计付费代替。
+- 以 `nb_open_id` 为主体统计首日时：新增日期取同一 `nb_open_id` 在全量 `ta.v_user_41` 中最早 `create_role_time` 的自然日；媒体取该最早角色的 `ad_platform`；首日付费按事件表 `nb_open_id` 关联，统计该自然日下所有角色的 `pay_log`；`${PartDate:date}` 必须在求出 `nb_open_id` 全局首日后再筛选，不能先筛角色日期再取最小值。
 - `pay_log.payment` 事件属性单位为分，统计金额和首日付费分层前必须 `/100` 转为元。
 - 在线时长统计方法全项目通用：使用 `ta_mg_hide` 事件的 `#duration` 字段，按秒统计；输出分钟时 `/60`。
 - 主线最大关卡 ID：使用 `battle_star` 与 `battle_result` 一起判断，`try_cast("battle_type" as double) = 1`，取两类事件中的 `max(map_id)`；不要使用 `battle_start`，该事件服务端上报有误。
