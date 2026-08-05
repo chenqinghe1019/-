@@ -13,7 +13,7 @@ projects:
   source_files:
   - uploaded_name: 81d08515-bed9-41df-b053-0343d87fbb11.xlsx
     local_sandbox_path: /mnt/data/81d08515-bed9-41df-b053-0343d87fbb11.xlsx
-  updated_at: '2026-07-02'
+  updated_at: '2026-08-05'
   notes:
   - 本文件由用户上传的最新版《下方了》埋点方案 Excel 更新。
   - 下方了项目固定使用 ta.v_user_41 / ta.v_event_41；不要误用 v44，v44 为弯月勇者。
@@ -33,6 +33,7 @@ projects:
   - ROI 广告汇总事件固定从 ta.v_event_41 的 roi_ad_platform 读取；已确认 APPID 25048291 对应抖音小游戏、active_channel=3056214，APPID 29756138 对应微信小游戏、active_channel=3056211；官方 Android active_channel=3056210 的真实 APPID 待确认，未确认前不得猜测。
   - 媒体平台 ad_platform 以及 ROI 字段 ge_ad_platform 为 NULL 或空字符串时统一归为 natural，输出、分组、筛选和关联必须使用相同归一化口径。
   - 按新增后第N日累计付费或 ROI 时，累计天数必须按 pay_log 的 pay_days 计算，不能使用登录事件的 login_days 代替。
+  - 通用活动排行榜最终日榜统一使用 activity_rank_log：每天排名冻结后，每名上榜玩家按活动、期次和榜单类型上报1条；rank_log仅用于小时级或过程排名。旧拼写acitivity_rank_log作废，不得继续使用。
   source_workbook_sheets:
   - name: 接入必知
     range: A1:K40
@@ -61,7 +62,7 @@ projects:
   - name: 发行ios支付渠道需求
     range: A1:J20
   summary:
-    event_count: 83
+    event_count: 84
     user_property_count: 43
     common_event_property_count: 16
   common_event_properties:
@@ -135,7 +136,8 @@ projects:
   - online_log | 服务器在线人数采集 | 服务端 |  | 1分钟上报一条在线人数 | online_count,channel_id
   - vip_change_log | vip变更 | 服务端 |  | vip等级发生变化时 | before,after
   - name_change_log | 改名 | 服务端 |  | 改名时 | before_name,after_name
-  - rank_log | 排行榜 | 服务端 |  | 每小时更新一次 | rtype,rname,rank
+  - rank_log | 排行榜 | 服务端 |  | 每小时更新一次（过程排名） | rtype,rname,rank
+  - activity_rank_log | 活动排行榜 | 服务端 | 排行榜 | 每日最终名次冻结后，每名上榜玩家上报1条 | activity_id,activity_name,activity_round,rnum,rtype,rname,rank
   - mail_log | 邮件 | 服务端 |  |  | mail_id,mail_content,change_reason
   - exchange_log | 兑换码 | 服务端 |  | 兑换时 | ecode,erewards
   - pay_log | 付费日志 | 服务端 | 付费模块 | RMB充值付费时记录 | change_reason,order_id,system,pay_result,product_type,product_id,product_name,payment,payment_method
