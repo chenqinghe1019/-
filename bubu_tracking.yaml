@@ -4,6 +4,7 @@ projects:
     table_mapping:
       user_table: "ta.v_user_22"
       event_table: "ta.v_event_22"
+      user_label_table: "ta.user_result_cluster_22"
     source_files: ["2d590674-caf6-4d02-9a41-8388c444c5e9.xlsx"]
     extracted_at: "2026-07-01"
     notes:
@@ -11,7 +12,7 @@ projects:
       - "SQL 默认遵循倍特工作室 Trino/数数规范：不用 WITH，不用 USING，事件表字段加双引号。"
       - "本文件由用户上传的步步项目埋点 Excel 同步生成，包含事件属性、用户属性、公共事件属性和 iOS 支付渠道需求。"
       - "2026-08-05 连续运行报错最终确认：ta.v_user_22 的 create_role_time 为 double Unix 秒，必须先 from_unixtime() 再用于 date()；latest_online_time 为 timestamp(3)，直接使用。两者类型不同，严禁 double 直接 CAST timestamp，也严禁 timestamp 与 Unix 数值阈值比较。"
-      - "2026-08-05 用户新增优化标签：原始端包 first_channel_id 取自 ta.user_result_cluster_22；以 #varchar_id = #account_id 关联。大R转端查询优先使用该标签，避免在全量 log_in_out 上执行 first_value 窗口。空登录 channel_id 仍按微小渠道 2 处理。"
+      - "2026-08-05 first_channel_id 标签来源：ta.user_result_cluster_22；cluster_name='first_channel_id'，#varchar_id 对应 #account_id，实际标签值取 tag_value。first_channel_id 不是该表物理列。大R转端查询优先使用该标签，避免在全量 log_in_out 上执行 first_value 窗口。空登录 channel_id 仍按微小渠道 2 处理。"
     summary:
       event_count: 60
       event_property_count: 337
