@@ -8,7 +8,7 @@ source_design_docs:
   - 612529ce-3b76-4432-b85c-2fa86513d575.docx # 诡橱秘宝（钥匙开箱）
   - c44a99ad-5a02-444f-9f39-9a03a49363e0.docx # 2048活动
   - ec276b3f-a9a8-4892-b39b-aa0f7c72b788.docx # 海鲜换礼（原策划案标题待修正）
-deliverable: 下方了_三活动埋点需求_20260804_v1.xlsx
+deliverable: 下方了_三活动埋点需求_20260805_v2.xlsx
 baseline:
   tracking_spec: xiafangle_tracking.yaml
   shared_system_spec: xiafangle_new_system_tracking_20260715.yaml
@@ -133,6 +133,7 @@ reuse_existing_events:
 open_questions:
   - 海鲜策划案标题仍写“诡橱秘宝系统”，需确认最终活动名和activity_type。
   - 2048棋盘每日24点重置，但邮件逻辑写每日12点发奖，需确认排名截止和发奖时间。
+  - activity_rank_log中2048单局日榜与累计日榜的rtype数值枚举需在联调前冻结。
   - 2048需确认22点后能否继续当前未失败棋盘，以及失败后用道具恢复是否算新局。
   - 诡橱多开宝箱暂按每箱独立随机固定货币和随机道具设计，需策划确认。
   - 海鲜单品活动上限暂按已生成累计，跨天清除不返还上限，需策划确认。
