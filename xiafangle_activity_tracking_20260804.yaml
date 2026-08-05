@@ -2,6 +2,7 @@ project: 下方了
 project_code: xiafangle
 project_id: 41
 created_at: '2026-08-04'
+updated_at: '2026-08-05'
 status: proposed
 source_design_docs:
   - 612529ce-3b76-4432-b85c-2fa86513d575.docx # 诡橱秘宝（钥匙开箱）
@@ -16,6 +17,7 @@ baseline:
 design_rules:
   - 仅采集业务结果、资产变化和关键玩法结算；不采集入口、页面、页签、按钮及红点曝光。
   - 服务端在扣除、发奖、清理或排名冻结成功后上报。
+  - 活动每日最终排名统一复用activity_rank_log；rank_log仅保留小时级或过程排名，不为单个活动新增专属日榜结算事件。
   - 开箱1至20个按请求批次上报1条；海鲜按领取或清除批次上报；2048不逐滑动上报。
   - 专属事件与item_log、money_log双写并冻结change_reason；付费礼包复用pay_log。
   - 优先复用activity_id、activity_round、activity_day、round_uid、cost_item、award、item_result、change_reason、cumulative_times_after。
@@ -73,21 +75,6 @@ new_events:
       - 两种倍率棋盘分别维护round_uid，切换倍率不结算。
       - 无位移操作不计move_times且不扣体力。
       - 取消失败弹窗或使用道具继续时不结束轮次。
-  - event: merge2048_daily_settle_log
-    name: 2048每日排行结算
-    side: 服务端
-    trigger: 单局日榜与累计日榜名次冻结、奖励邮件生成成功后，每个当日得分大于0的玩家上报1条
-    required_fields:
-      - activity_id
-      - activity_round
-      - activity_day
-      - settle_uid
-      - single_best_score
-      - single_rank
-      - cumulative_score
-      - cumulative_rank
-      - single_award
-      - cumulative_award
   - event: seafood_idle_settle_log
     name: 海鲜挂机掉落结算
     side: 服务端
@@ -136,7 +123,11 @@ reuse_existing_events:
   - event: mission_reward_log
     use: 诡橱常规任务及达标任务领奖
   - event: rank_log
-    use: 2048双日榜过程排名；最终排名以merge2048_daily_settle_log为准
+    use: 2048双日榜小时级或过程排名（如业务仍需）
+  - event: activity_rank_log
+    use: 2048单局日榜、累计日榜每日冻结后的最终值与最终排名
+    rtype_rule: 单局日榜与累计日榜使用不同数值枚举
+    rnum_rule: 单局日榜传当日单局最高分；累计日榜传当日冻结时累计总分
   - event: mail_log
     use: 2048双榜奖励邮件、海鲜到期转钻石通知
 open_questions:
@@ -146,3 +137,7 @@ open_questions:
   - 诡橱多开宝箱暂按每箱独立随机固定货币和随机道具设计，需策划确认。
   - 海鲜单品活动上限暂按已生成累计，跨天清除不返还上限，需策划确认。
   - 海鲜活动结束转钻石的比例和取整规则需策划确认。
+
+decisions:
+  - date: '2026-08-05'
+    decision: 删除merge2048_daily_settle_log，2048每日最终排行改为复用通用activity_rank_log；奖励邮件仍复用mail_log。
