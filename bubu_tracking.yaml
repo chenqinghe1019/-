@@ -13,6 +13,7 @@ projects:
       - "本文件由用户上传的步步项目埋点 Excel 同步生成，包含事件属性、用户属性、公共事件属性和 iOS 支付渠道需求。"
       - "2026-08-05 连续运行报错最终确认：ta.v_user_22 的 create_role_time 为 double Unix 秒，必须先 from_unixtime() 再用于 date()；latest_online_time 为 timestamp(3)，直接使用。两者类型不同，严禁 double 直接 CAST timestamp，也严禁 timestamp 与 Unix 数值阈值比较。"
       - "2026-08-05 first_channel_id 标签来源：ta.user_result_cluster_22；cluster_name='first_channel_id'，#varchar_id 对应 #account_id，实际标签值取 tag_value。first_channel_id 不是该表物理列。大R转端查询优先使用该标签，避免在全量 log_in_out 上执行 first_value 窗口。空登录 channel_id 仍按微小渠道 2 处理。"
+      - "2026-08-05 大R转端分析更新：转端必须按业务端比较，不按原始 channel_id 比较；同一业务端内多个 channel_id 互相变化不算转端。业务端映射：2=微小；3041912/3041911/3041910/5/3=微小微端；1=抖小；3047812=抖小微端；3047810=快小；3048010/3048013/3048014/3048018/3048019/3048020=手游安卓；3048011=手游IOS；3048817=闲鱼；3048816=荣耀；3048815=京东；3048814=小米；3048813=美团；3048812=VIVO；3048811=OPPO；3048810=华为；100=支付宝；其他ID按其他渠道(ID)分别处理。首次转端时间取首次登录业务端不同于 first_channel_id 所属业务端的时间，并输出首次转入端及原始端→首次转入端备注；最终仅保留首次转端时间非空用户。原始端、当前端历史付费及近30天当前端付费均按业务端合并其全部 channel_id 后统计。"
     summary:
       event_count: 60
       event_property_count: 337
