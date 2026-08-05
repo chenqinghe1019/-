@@ -1,0 +1,61 @@
+project: 下方了
+project_code: xiafangle
+project_id: 41
+status: baseline
+updated_at: '2026-08-05'
+event:
+  name: activity_rank_log
+  deprecated_names:
+    - acitivity_rank_log
+  chinese_name: 活动排行榜
+  side: 服务端
+  module: 排行榜
+  update_frequency: 每天更新一次
+  trigger: 每日榜单最终值与最终名次冻结后，每名上榜玩家上报1条
+  purpose: 通用于2048、探宝及后续活动的每日最终排行榜，不为单个活动重复新增专属日榜事件
+fields:
+  - name: activity_id
+    chinese_name: 玩法配置ID
+    type: double
+    required: true
+  - name: activity_name
+    chinese_name: 活动类型名
+    type: varchar
+    required: true
+  - name: activity_round
+    chinese_name: 玩法期次
+    type: varchar
+    required: true
+    rule: 使用“刷新开始时间_区服ID”或“刷新开始时间_赛季ID”，保证同一活动不同期次可区分
+  - name: rnum
+    chinese_name: 对应排名需求的最终值
+    type: double
+    required: true
+    example: 探宝次数、2048单局最高分或累计总分
+  - name: rtype
+    chinese_name: 排行榜类型
+    type: double
+    required: true
+    rule: 同一活动存在多个榜单时使用不同数值枚举
+  - name: rname
+    chinese_name: 排行榜名称
+    type: varchar
+    required: true
+  - name: rank
+    chinese_name: 最终排名
+    type: double
+    required: true
+reporting_rules:
+  - 仅记录每日冻结后的最终值和最终排名，不记录每次排名变化。
+  - 同一玩家、自然日、activity_id、activity_round、rtype只保留1条最终记录。
+  - 排行奖励继续复用mail_log，不在本事件重复记录奖励明细。
+  - rank_log仅用于小时级或过程排名；activity_rank_log用于活动每日最终排名。
+  - 事件名统一为activity_rank_log；acitivity_rank_log为拼写错误，禁止新接入。
+2048_mapping:
+  - leaderboard: 单局日榜
+    rnum: 当日单局最高分
+    rank: 当日最终单局榜名次
+  - leaderboard: 累计日榜
+    rnum: 当日冻结时累计总分
+    rank: 当日最终累计榜名次
+  replacement: merge2048_daily_settle_log已删除，统一改用activity_rank_log
