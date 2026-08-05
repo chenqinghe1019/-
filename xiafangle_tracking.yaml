@@ -30,6 +30,9 @@ projects:
   - pay_log 中代币支付可能出现 payment=0；统计商品名义金额时关联 ta_dim.dim_41_0_vprop_sql_1429，关联键为 concat(product_type, cast(cast(product_id as bigint) as varchar), product_name)，金额取 #vp@product_concat@payment。
   - 主线关卡通关统计中，battle_result=2 或 battle_result=1 且 duration=0 视为跳关；跳关既单独计入跳关人数，也同时计入通关人数。
   - 主线完整通关率与跳关率按玩家、日期、关卡、battle_uid逐场统计；battle_star或battle_result任一存在即算挑战，不再只保留玩家当天最高map_id。正常通关为battle_result=1且duration为空或非0；跳关为battle_result=2或battle_result=1且duration=0；正常通关与跳关互斥，总通关包含二者。
+  - ROI 广告汇总事件固定从 ta.v_event_41 的 roi_ad_platform 读取；已确认 APPID 25048291 对应抖音小游戏、active_channel=3056214，APPID 29756138 对应微信小游戏、active_channel=3056211；官方 Android active_channel=3056210 的真实 APPID 待确认，未确认前不得猜测。
+  - 媒体平台 ad_platform 以及 ROI 字段 ge_ad_platform 为 NULL 或空字符串时统一归为 natural，输出、分组、筛选和关联必须使用相同归一化口径。
+  - 按新增后第N日累计付费或 ROI 时，累计天数必须按 pay_log 的 pay_days 计算，不能使用登录事件的 login_days 代替。
   source_workbook_sheets:
   - name: 接入必知
     range: A1:K40
