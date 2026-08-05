@@ -16,4 +16,6 @@
 - 统计妖狐妲己同种族 6 星英雄狗粮时：`role_upstar_log` 取 `nstar = 6` 的同火系英雄 `ins_id` 去重；当前剩余可用数可用 6 星获取去重数减去 `role_lost_log` 中同批 `ins_id` 去重数。
 - `item_log` 道具当前数量优先取同 `#account_id + item_id` 最后一条 `item_result`；如没有事件时间可降级为 `max(item_result)`。
 - 新人特惠前 3 档：`pay_log.product_type = '新人特惠'` 且 `product_id in (1,2,3)`。
+- LTV1-LTV14 口径：LTV1 为创角当天累计充值 / 新增人数；LTVn 为创角日起第 0 天至第 n-1 天累计充值 / 新增人数。LTVn 倍率统一定义为 `LTVn / LTV1`，LTV1 倍率为 1；若 LTV1 为 0，则倍率返回空值。未满对应观察天数的新增日期，LTV及倍率返回空值，避免展示不完整累计值。
+- LTV 媒体维度：媒体取用户表 `ad_platform`，空值或空字符串归为“自然量”；每个新增日期同时输出媒体明细和“汇总”行。
 - SQL 规范：不用 WITH，不用 USING，JOIN 显式写 `ON`，排版模仿用户紧凑风格。
