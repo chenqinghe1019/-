@@ -29,6 +29,7 @@ dashboard:
     original_package: "first_channel_id标签映射后的原始业务端包"
     current_package: "该角色最近一次登录channel_id映射后的业务端包"
     rule: "同一角色历史登录业务端包与原始业务端包不同，即判定为曾转端；同一业务端包内channel_id变化不算转端"
+    transfer_age_days: "创角后转端天数=date_diff('day', date(create_role_time), date(first_transfer_time))；首次转端当天为0天"
     statuses:
       - "未转端：历史登录业务端包始终等于原始业务端包"
       - "已转端-当前在新端包：曾登录其他业务端包，当前业务端包不等于原始业务端包"
@@ -58,6 +59,8 @@ dashboard:
     - "原始端包"
     - "近一次登录端包"
     - "近一次登录系统"
+    - "首次转端时间"
+    - "创角后转端天数"
     - "转端状态"
     - "历史登录端包数"
 
@@ -66,4 +69,5 @@ data_quality:
   - "nb_open_id不再用于累充、近30天充值或大R筛选"
   - "pay_log.channel_id为空时归为未知渠道，不默认归入微小"
   - "同一业务端包包含多个channel_id时，channel_id变化不算转端"
+  - "创角后转端天数按自然日差计算，未转端角色为空"
   - "近30天按current_date-29至current_date统计，共30个自然日"
