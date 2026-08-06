@@ -30,6 +30,9 @@ dashboard:
     current_package: "该角色最近一次登录channel_id映射后的业务端包"
     rule: "同一角色历史登录业务端包与原始业务端包不同，即判定为曾转端；同一业务端包内channel_id变化不算转端"
     transfer_age_days: "创角后转端天数=date_diff('day', date(create_role_time), date(first_transfer_time))；首次转端当天为0天"
+    first_transfer_target: "首次出现与原始业务端包不同的登录记录对应业务端包"
+    post_transfer_window: "从首次转端时间开始，包含首次转端时刻"
+    post_transfer_target_share: "首次转端后在首次转入端产生的角色充值金额/首次转端后的角色全部充值金额"
     statuses:
       - "未转端：历史登录业务端包始终等于原始业务端包"
       - "已转端-当前在新端包：曾登录其他业务端包，当前业务端包不等于原始业务端包"
@@ -42,6 +45,9 @@ dashboard:
     original_package_lifetime_payment: "当前#account_id在原始业务端包下的全历史成功付费"
     current_package_lifetime_payment: "当前#account_id在最近登录业务端包下的全历史成功付费"
     current_package_recent_30d_payment: "当前#account_id最近30日在最近登录业务端包下的成功付费金额、次数、付费天数"
+    post_transfer_role_payment: "当前#account_id从首次转端时间开始的全部成功付费"
+    post_transfer_target_payment: "当前#account_id从首次转端时间开始在首次转入业务端包下的成功付费"
+    post_transfer_target_payment_share: "post_transfer_target_payment/post_transfer_role_payment，保留4位小数"
   base_fields:
     - "nick_name"
     - "season"
@@ -61,6 +67,10 @@ dashboard:
     - "近一次登录系统"
     - "首次转端时间"
     - "创角后转端天数"
+    - "首次转入端"
+    - "转端后角色付费金额"
+    - "转端后对应端付费金额"
+    - "转端后对应端付费占比"
     - "转端状态"
     - "历史登录端包数"
 
@@ -70,4 +80,7 @@ data_quality:
   - "pay_log.channel_id为空时归为未知渠道，不默认归入微小"
   - "同一业务端包包含多个channel_id时，channel_id变化不算转端"
   - "创角后转端天数按自然日差计算，未转端角色为空"
+  - "转端后对应端占比分母仅包含首次转端时刻及之后的角色付费"
+  - "转端后对应端占比分子仅包含首次转入业务端包的角色付费"
+  - "首次转端后没有付费时，占比返回NULL"
   - "近30天按current_date-29至current_date统计，共30个自然日"
