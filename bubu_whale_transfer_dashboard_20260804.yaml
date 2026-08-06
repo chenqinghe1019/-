@@ -47,6 +47,13 @@ dashboard:
     current_package_recent_30d_payment: "当前#account_id最近30日在最近登录业务端包下的成功付费金额、次数、付费天数"
     transfer_package_payment: "当前#account_id全历史所有非原始业务端包的成功付费金额合计"
     transfer_payment_share: "transfer_package_payment/role_lifetime_payment，保留4位小数"
+  performance_optimization:
+    - "先按新增日期筛出目标#account_id，再关联log_in_out和pay_log，避免无关角色进入聚合"
+    - "pay_log先按#account_id和业务端包使用GROUPING SETS压缩，再与角色主表关联"
+    - "最终层不再关联支付明细，也不再对全部展示字段做大GROUP BY"
+    - "近30天日期只在支付明细层转换一次，避免最终聚合重复CAST"
+    - "10万元大R条件在支付聚合层HAVING提前过滤"
+    - "登录channel_id为空的记录不参与端包数、当前端包和首次转端判断，避免空值误判为微小"
   base_fields:
     - "nick_name"
     - "season"
