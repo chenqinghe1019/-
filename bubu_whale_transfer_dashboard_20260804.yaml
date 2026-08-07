@@ -11,6 +11,8 @@ dashboard:
   grain: "每个#account_id一行，全部充值指标统一按角色维度统计"
   population:
     user_key: "#account_id"
+    active_channel_scope: "仅统计ta.v_user_22.active_channel为微小的角色；SQL兼容值2和微小"
+    include_untransferred: true
     whale_rule: "单个角色#account_id全历史成功人民币充值累计>=100000元"
     payment_unit: "pay_log.payment为分，统计时除以100"
     successful_payment_filter:
@@ -30,12 +32,12 @@ dashboard:
     original_package: "first_channel_id标签映射后的原始业务端包"
     current_package: "该角色最近一次登录channel_id映射后的业务端包"
     rule: "同一角色历史登录业务端包与原始业务端包不同，即判定为曾转端；同一业务端包内channel_id变化不算转端"
-    transfer_age_days: "创角后转端天数=date_diff('day', date(create_role_time), date(first_transfer_time))；首次转端当天为0天"
+    transfer_age_days: "创角后转端天数=date_diff('day', date(create_role_time), date(first_transfer_time))；首次转端当天为0天，未转端为空"
     first_transfer_target: "首次出现与原始业务端包不同的登录记录对应业务端包"
     transfer_payment_scope: "角色全历史支付记录中，业务端包不等于原始业务端包的全部充值；不限制充值发生在首次转端时间之后，也不只统计首次转入端"
     transfer_payment_share: "所有非原端历史付费金额/角色历史累充金额"
     statuses:
-      - "未转端：历史登录业务端包始终等于原始业务端包"
+      - "未转端：first_transfer_time为空，历史登录业务端包始终等于原始业务端包"
       - "已转端-当前在新端包：曾登录其他业务端包，当前业务端包不等于原始业务端包"
       - "已转端-已回原端包：曾登录其他业务端包，当前业务端包等于原始业务端包"
   recent_30_days:
@@ -49,6 +51,7 @@ dashboard:
     transfer_package_payment: "当前#account_id全历史所有非原始业务端包的成功付费金额合计"
     transfer_payment_share: "transfer_package_payment/role_lifetime_payment，保留4位小数"
   performance_optimization:
+    - "在主角色、登录目标账号、支付目标账号三处均提前限制微小active_channel，减少无关角色扫描"
     - "先按新增日期筛出目标#account_id，再关联log_in_out和pay_log，避免无关角色进入聚合"
     - "pay_log先按#account_id和业务端包使用GROUPING SETS压缩，再与角色主表关联"
     - "最终层不再关联支付明细，也不再对全部展示字段做大GROUP BY"
@@ -63,6 +66,7 @@ dashboard:
     - "region_id"
     - "nb_open_id（展示字段）"
     - "角色系统（ta.v_user_22.system）"
+    - "激活渠道（仅微小）"
     - "角色累充"
     - "最后付费时间"
     - "最后登出时间"
@@ -76,20 +80,23 @@ dashboard:
     - "首次转端时间"
     - "创角后转端天数"
     - "首次转入端"
-    - "转端对应端付费金额"
+    - "转端付费金额"
     - "转端金额占比"
-    - "转端状态"
+    - "转端状态（包含未转端）"
     - "历史登录端包数"
 
 data_quality:
   - "全部金额、次数、天数、10万元大R筛选均按#account_id统计"
+  - "查询范围仅保留用户表active_channel为微小的角色"
+  - "不再使用first_transfer_time IS NOT NULL过滤，因此未转端角色保留"
+  - "仍要求first_channel_id原始端包标签存在，标签缺失角色不进入结果"
   - "nb_open_id不再用于累充、近30天充值或大R筛选"
   - "角色系统取ta.v_user_22中该#account_id按latest_online_time、create_role_time排序后的最新一条角色记录"
   - "近一次登录系统取log_in_out中该角色事件时间最新的一条记录，两者不混用"
   - "pay_log.channel_id为空时归为未知渠道，不默认归入微小"
   - "同一业务端包包含多个channel_id时，channel_id变化不算转端"
   - "创角后转端天数按自然日差计算，未转端角色为空"
-  - "转端对应端付费金额统计所有业务端包不等于原始业务端包的历史成功付费"
+  - "转端付费金额统计所有业务端包不等于原始业务端包的历史成功付费"
   - "转端金额占比分母为角色全历史成功付费金额"
   - "角色历史累充为0时占比返回NULL"
   - "近30天按current_date-29至current_date统计，共30个自然日"
