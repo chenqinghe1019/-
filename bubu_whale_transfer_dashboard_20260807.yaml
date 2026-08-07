@@ -1,0 +1,32 @@
+project:
+  name: "步步项目 / 一步两步"
+  table_suffix: 22
+  user_table: "ta.v_user_22"
+  event_table: "ta.v_event_22"
+  updated_at: "2026-08-07"
+
+dashboard:
+  name: "大R转端监控"
+  grain: "每个#account_id一行"
+  population:
+    channel_scope: "仅统计ta.v_user_22.channel_id='2'的角色，即微小激活渠道"
+    include_untransferred: true
+    whale_rule: "单个角色#account_id全历史pay_log.payment累计/100>=100000元"
+  fields:
+    activation_channel_source: "ta.v_user_22.channel_id；channel_id='2'映射为微小"
+    role_system_source: "ta.v_user_22.system"
+    latest_login_system_source: "log_in_out.system对应最近一条事件"
+  transfer:
+    original_package: "first_channel_id标签映射后的原始业务端包"
+    current_package: "最近登录channel_id映射后的业务端包"
+    include_statuses:
+      - "未转端"
+      - "已转端-当前在新端包"
+      - "已转端-已回原端包"
+    transfer_payment_share: "所有非原端历史付费金额/角色历史累充金额"
+
+data_quality:
+  - "ta.v_user_22不存在active_channel字段，不得引用active_channel"
+  - "微小激活渠道必须使用用户表channel_id='2'判断"
+  - "active_channel仅是部分其他项目或业务SQL中的字段名，不能套用到步步v22"
+  - "未转端角色通过移除first_transfer_time IS NOT NULL过滤保留"
