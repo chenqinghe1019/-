@@ -4,7 +4,7 @@ project:
   user_table: "ta.v_user_22"
   event_table: "ta.v_event_22"
   created_at: "2026-08-04"
-  updated_at: "2026-08-06"
+  updated_at: "2026-08-07"
 
 dashboard:
   name: "大R转端监控"
@@ -16,12 +16,13 @@ dashboard:
     successful_payment_filter:
       - "$part_event = 'pay_log'"
       - "domain = 'release'"
-      - "change_reason = 1"
       - "pay_result = 1"
       - "payment > 0"
   identity:
     primary_key: "#account_id"
     nb_open_id_usage: "仅作为展示和辅助识别字段，不参与充值聚合、筛选或去重"
+    role_system_source: "取ta.v_user_22.system，跟随每个#account_id选中的最新角色记录，输出为角色系统"
+    latest_login_system_source: "取log_in_out.system对应最近一次登录事件，输出为近一次登录系统"
   transfer:
     source_event: "log_in_out"
     package_field: "channel_id映射后的业务端包"
@@ -61,6 +62,7 @@ dashboard:
     - "#account_id"
     - "region_id"
     - "nb_open_id（展示字段）"
+    - "角色系统（ta.v_user_22.system）"
     - "角色累充"
     - "最后付费时间"
     - "最后登出时间"
@@ -82,6 +84,8 @@ dashboard:
 data_quality:
   - "全部金额、次数、天数、10万元大R筛选均按#account_id统计"
   - "nb_open_id不再用于累充、近30天充值或大R筛选"
+  - "角色系统取ta.v_user_22中该#account_id按latest_online_time、create_role_time排序后的最新一条角色记录"
+  - "近一次登录系统取log_in_out中该角色事件时间最新的一条记录，两者不混用"
   - "pay_log.channel_id为空时归为未知渠道，不默认归入微小"
   - "同一业务端包包含多个channel_id时，channel_id变化不算转端"
   - "创角后转端天数按自然日差计算，未转端角色为空"
