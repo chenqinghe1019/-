@@ -1,7 +1,7 @@
 -- 步步项目 v22：新增角色后7日每日神器总等级，按首日付费分层
 -- 口径：
 -- 1. 固定使用 ta.v_user_22 / ta.v_event_22；步步 v21/v2 已作废。
--- 2. 用户范围：domain='release'、area='weixin'、merge_region_id=1。
+-- 2. 用户范围：仅限制 domain='release'，不限制 area / merge_region_id。
 -- 3. ta.v_user_22.create_role_time 实际为 double Unix 秒，必须先 from_unixtime()。
 -- 4. 首日付费：创角自然日 pay_log.payment 合计 /100 转元，再按固定档位分层。
 -- 5. 步步神器养成事件使用 artifact；hero_uid 为神器实例，level 作为该次事件后的当前等级。
@@ -92,8 +92,6 @@ from
                                     from_unixtime(try_cast("create_role_time" as double)) create_role_time
                         from        ta.v_user_22
                         where       "domain" = 'release'
-                                    and "area" = 'weixin'
-                                    and try_cast("merge_region_id" as double) = 1
                                     and "#account_id" is not null
                                     and try_cast("create_role_time" as double) is not null
                     )b
