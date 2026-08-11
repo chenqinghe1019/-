@@ -1,0 +1,172 @@
+project:
+  name: '弯月勇者'
+  code: 'wanyue'
+  table_suffix: 44
+  user_table: 'ta.v_user_44'
+  event_table: 'ta.v_event_44'
+  source:
+    file: '弯月勇者-埋点说明文档 (1).xlsx'
+    imported_at: '2026-08-11'
+    raw_excel_committed: false
+    sheets:
+      events: '#事件数据!A1:K230'
+      user_properties: '#用户属性!A1:H51'
+      common_event_properties: '#公共事件属性!A1:D21'
+      user_id_system: '#用户ID体系!A1:E5'
+      anti_cheat: '外挂防治!A1:J28'
+      ios_payment: '发行ios支付渠道需求!A1:J20'
+  query_basics:
+    release_filter: '"domain" = ''release'''
+    role_id: '#account_id'
+    aggregate_open_id: 'nb_open_id'
+    media_field: 'ad_platform'
+    region_field: 'region_id'
+    create_role_time_type: 'timestamp'
+    active_event: 'in_out_log'
+    online_duration: 'in_out_log.online_time, seconds'
+    payment: 'pay_log.payment; source document does not state yuan/fen, do not assume unit'
+    battle_start_event: 'battle_star'
+    battle_result_event: 'battle_result'
+    battle_level_field: 'map_id'
+    power_field: 'fighting_power'
+  summary:
+    event_count: 45
+    event_property_count: 224
+    user_property_count: 41
+    common_event_property_count: 13
+  critical_notes:
+    - 'v44 is 弯月勇者; v46 is 方块也疯狂. Never mix them.'
+    - 'Keep source spellings battle_star and rougue_skill_show unless online schema proves otherwise.'
+    - 'region_id type conflict: user property=varchar; common event property=double. Confirm online type before SQL/casting.'
+    - 'clan_uid type conflict: user property=double; common event property=varchar. Confirm online type before SQL/casting.'
+    - 'boss_battle_result.battle_value conflict: main event sheet=double; anti-cheat sheet=varchar.'
+    - 'total_pay_amount=历史累计充值金额（纯RMB充值）; total_payment=历史累计消费（含代金券，实际消费）.'
+    - 'ThinkingData property type is fixed by first ingestion; same property name with different planned types must be resolved before implementation.'
+  common_event_properties:
+    - {name: '#user_id', display: '用户在系统中的唯一用户标识', type: 'bigint'}
+    - {name: '#distinct_id', display: '访客ID', type: 'varchar', description: '同设备ID'}
+    - {name: '#account_id', display: '角色ID', type: 'varchar'}
+    - {name: 'nb_open_id', display: '聚合openID', type: 'varchar', description: '星云聚合openid【项目唯一标识】'}
+    - {name: 'open_id', display: '微信open_id', type: 'varchar', description: '微信登录验证成功时记录'}
+    - {name: 'create_role_time', display: '创角时间', type: 'timestamp'}
+    - {name: 'server_open_time', display: '开服时间', type: 'timestamp'}
+    - {name: 'total_payment', display: '历史累计充值金额', type: 'double', description: '行为发生时历史累充金额'}
+    - {name: 'domain', display: '测试服或正式服', type: 'varchar', description: 'dev代表测试服，release代表正式服'}
+    - {name: 'region_id', display: '区服ID', type: 'double', description: '区服ID'}
+    - {name: 'clan_uid', display: '部落ID', type: 'varchar', description: '玩家部落id'}
+    - {name: 'fighting_power', display: '战力', type: 'double', description: '发生行为时的战力'}
+    - {name: 'channel_id', display: '渠道ID', type: 'double', description: '星云channel_id'}
+  user_properties:
+    - {name: '#user_id', display: '用户在系统中的唯一用户标识', type: 'bigint', update: 'user_setOnce', source: '数数预设字段'}
+    - {name: '#distinct_id', display: '访客ID', type: 'varchar', update: 'user_setOnce', source: '数数预设字段'}
+    - {name: '#account_id', display: '账号ID（角色id）', type: 'varchar', update: 'user_setOnce', source: '服务端'}
+    - {name: '#active_time', display: '激活时间', type: 'timestamp', update: 'user_setOnce', source: '数数预设字段'}
+    - {name: '#reg_time', display: '注册时间', type: 'timestamp', update: 'user_setOnce', source: '数数预设字段'}
+    - {name: 'open_id', display: '渠道账号id', type: 'varchar', update: 'user_setOnce', source: '客户端'}
+    - {name: 'nb_open_id', display: '聚合openID', type: 'varchar', update: 'user_setOnce', source: '服务端'}
+    - {name: 'channel_id', display: '渠道ID', type: 'double', update: 'user_setOnce', source: '服务端'}
+    - {name: 'code_id', display: '包体ID', type: 'varchar', update: 'user_setOnce', source: '服务端'}
+    - {name: 'region_id', display: '服务器id', type: 'varchar', update: 'user_setOnce', source: '服务端'}
+    - {name: 'wx_scene', display: '微小场景来源', type: 'varchar', update: 'user_setOnce', source: '服务端'}
+    - {name: 'server_open_time', display: '开服时间', type: 'timestamp', update: 'user_setOnce', source: '服务端'}
+    - {name: 'clan_uid', display: '部落ID', type: 'double', update: 'user_set', source: '服务端'}
+    - {name: 'domain', display: '环境', type: 'varchar', update: 'user_setOnce', source: '服务端'}
+    - {name: 'system', display: '应用（ios/安卓）', type: 'varchar', update: 'user_setOnce', source: '服务端'}
+    - {name: 'create_role_time', display: '创角时间', type: 'timestamp', update: 'user_setOnce', source: '服务端'}
+    - {name: 'latest_login_time', display: '最后登录时间', type: 'timestamp', update: 'user_set', source: '服务端'}
+    - {name: 'latest_online_time', display: '最后登出时间', type: 'timestamp', update: 'user_set', source: '服务端'}
+    - {name: 'nick_name', display: '角色名称', type: 'varchar', update: 'user_set', source: '服务端'}
+    - {name: 'fighting_power', display: '战力', type: 'double', update: 'user_set', source: '服务端'}
+    - {name: 'total_pay_amount', display: '历史累计充值金额（*纯RMB充值）', type: 'double', update: 'user_set', source: '服务端'}
+    - {name: 'total_payment', display: '历史累计消费（含代金券，实际消费）', type: 'double', update: 'user_set', source: '服务端'}
+    - {name: 'gravity_client_id', display: '用户 client_id', type: 'unspecified', update: 'user_set', source: '引力引擎'}
+    - {name: 'ad_wx_channel', display: '渠道', type: 'unspecified', update: 'user_set', source: '引力引擎'}
+    - {name: 'ad_channel', display: '广告渠道', type: 'unspecified', update: 'user_set', source: '引力引擎'}
+    - {name: 'wx_openid', display: '微信/抖音 open_id', type: 'unspecified', update: 'user_set', source: '引力引擎'}
+    - {name: 'campaign_id', display: '广告计划 ID', type: 'unspecified', update: 'user_set', source: '引力引擎'}
+    - {name: 'campaign_name', display: '广告计划名称', type: 'unspecified', update: 'user_set', source: '引力引擎'}
+    - {name: 'ad_id', display: '广告id', type: 'unspecified', update: 'user_set', source: '引力引擎'}
+    - {name: 'ad_name', display: '广告名称', type: 'unspecified', update: 'user_set', source: '引力引擎'}
+    - {name: 'creative_id', display: '广告创意id', type: 'unspecified', update: 'user_set', source: '引力引擎'}
+    - {name: 'creative_name', display: '广告创意名称', type: 'unspecified', update: 'user_set', source: '引力引擎'}
+    - {name: 'ad_project_id', display: '巨量引擎项目ID', type: 'unspecified', update: 'user_set', source: '引力引擎'}
+    - {name: 'ad_platform', display: '媒体平台', type: 'unspecified', update: 'user_set', source: '引力引擎'}
+    - {name: 'ad_MID1', display: '巨量引擎图片素材id', type: 'unspecified', update: 'user_set', source: '引力引擎'}
+    - {name: 'ad_MID2', display: '巨量引擎标题素材id', type: 'unspecified', update: 'user_set', source: '引力引擎'}
+    - {name: 'ad_MID3', display: '巨量引擎视频素材id', type: 'unspecified', update: 'user_set', source: '引力引擎'}
+    - {name: 'ad_MID4', display: '巨量引擎搭配试玩素材id', type: 'unspecified', update: 'user_set', source: '引力引擎'}
+    - {name: 'ad_MID5', display: '巨量引擎落地页素材id', type: 'unspecified', update: 'user_set', source: '引力引擎'}
+    - {name: 'ad_MID6', display: '巨量引擎安卓下载详情页素材id', type: 'unspecified', update: 'user_set', source: '引力引擎'}
+    - {name: 'advertiser_id', display: '广告主账户 ID', type: 'unspecified', update: 'user_set', source: '引力引擎'}
+  event_property_type_conflicts:
+    battle_type:
+      'double': ['battle_auto', 'boss_battle_result']
+      'varchar': ['pvp_log', 'battle_star', 'rougue_skill_show', 'rogue_skill', 'battle_result']
+    change_reason:
+      'varchar': ['ad_log', 'in_out_log', 'pay_log', 'skin', 'voucher_log', 'money_log', 'item_log', 'click', 'battle_auto', 'guild_wish_log']
+      'double': ['hero_get_log', 'equip_log', 'home', 'clan_tech_log']
+      'unspecified': ['resonance']
+    change_type:
+      'varchar': ['voucher_log']
+      'double': ['money_log', 'item_log']
+    change_value:
+      'unspecified': ['home']
+      'double': ['clan_tech_log']
+    hero_id:
+      'double': ['hero_settle_log', 'hero_unsettle_log', 'hero_get_log', 'hero_star_up_log', 'equip_put_on_log', 'equip_take_off_log']
+      'varchar': ['resonance']
+    level:
+      'double': ['resonance', 'clan_tech_log']
+      'unspecified': ['home']
+  anti_cheat_events:
+    - {name: 'battle_check', display: '战斗数据校验', data_type: '服务端+客户端', properties: ['battle_uid:varchar', 'battle_type:double', 'map_id:double', 'battle_array:Array(Object)', 'destroy_time:Array(Object)', 'duration:double', 'reportHpMax:double', 'svrHpMax:double', 'refreshCard:double', 'reportNpcHpMax:double', 'svrNpcHpMax:double']}
+    - {name: 'boss_battle_result', display: '部落战斗数据校验', data_type: '服务端+客户端', properties: ['battle_uid:varchar', 'battle_type:double', 'map_id:double', 'battle_value:varchar', 'battle_time:double', 'rank_before:double', 'rank_after:double', 'wall_array:Array(Object)', 'battle_array:Array(Object)', 'reportHpMax:double', 'svrHpMax:double', 'refreshCard:double', 'hisDamage:varchar', 'nextRankDamage:varchar', 'nextRank:double']}
+  ios_payment_extension:
+    wx_scene: 'varchar / user_setOnce / 首次注册时微小场景来源'
+    pay_log_payment_method: 'varchar / 付费方式'
+  events:
+    - {name: 'active_log', display: '激活', data_type: '客户端', priority: 'P0', tag: '激活', trigger: '玩家每进入一个登录节点时', properties: ['node_id:double', 'node_name:varchar']}
+    - {name: 'ad_log', display: '激励广告', data_type: '客户端', priority: 'P0', tag: '激励广告', trigger: '激励广告位状态发生变化时', properties: ['change_reason:varchar', 'location_name:varchar', 'location_id:varchar']}
+    - {name: 'in_out_log', display: '登录登出日志', data_type: '服务端', priority: 'P0', tag: '登录/登出', trigger: '玩家登录/登出服务器时', properties: ['change_reason:varchar', 'online_time:double']}
+    - {name: 'online_log', display: '服务器在线人数采集', data_type: '服务端', priority: 'P0', tag: '在线人数', trigger: '1分钟上报一条在线人数', properties: ['online_count:double', 'channel_id:double']}
+    - {name: 'pay_log', display: '付费日志', data_type: '服务端', priority: 'P0', tag: '付费', trigger: '玩家充值时', properties: ['change_reason:varchar', 'order_id:unspecified', 'system:varchar', 'pay_result:double', 'product_type:varchar', 'product_id:double', 'product_name:varchar', 'payment:double', 'payment_method:varchar']}
+    - {name: 'skin', display: '皮肤', data_type: '服务端', priority: '', tag: '皮肤', trigger: '皮肤变动时', properties: ['skin_id:double', 'skin_name:varchar', 'change_reason:varchar']}
+    - {name: 'guide_log', display: '新手引导', data_type: '客户端', priority: 'P0', tag: '新手引导', trigger: '新手引到触发时', properties: ['node_id:double', 'node_name:varchar']}
+    - {name: 'voucher_log', display: '代金券', data_type: '服务端', priority: 'P0', tag: '代金券', trigger: '代金券发生物资变动时', properties: ['change_type:varchar', 'item_id:double', 'item_name:varchar', 'item_type:varchar', 'item_num:double', 'item_quality:double', 'item_result:double', 'change_reason:varchar', 'product_type:varchar', 'product_id:double', 'product_name:varchar']}
+    - {name: 'money_log', display: '货币', data_type: '服务端', priority: 'P0', tag: '物资', trigger: '发生物资变动时', properties: ['change_type:double', 'item_id:double', 'item_name:varchar', 'item_type:varchar', 'item_num:double', 'item_quality:double', 'item_result:double', 'change_reason:varchar']}
+    - {name: 'item_log', display: '背包道具\n（含礼包道具、碎片道具）', data_type: '服务端', priority: 'P0', tag: '物资', trigger: '发生物资变动时', properties: ['change_type:double', 'item_id:double', 'item_name:varchar', 'item_type:varchar', 'item_num:double', 'item_quality:double', 'item_result:double', 'change_reason:varchar']}
+    - {name: 'click', display: '付费项相关界面点击', data_type: '客户端', priority: 'P1', tag: '界面点击', trigger: '界面弹出/点击时', properties: ['change_reason:varchar', 'ui_name:varchar', 'good_id:varchar']}
+    - {name: 'battle_auto', display: '自动战斗', data_type: '客户端', priority: 'P1', tag: '战斗功能', trigger: '战斗开始时判断，且该功能开启/关闭时', properties: ['change_reason:varchar', 'auto_type:varchar', 'battle_uid:varchar', 'battle_type:double', 'map_id:double', 'select_mode:double']}
+    - {name: 'pvp_log', display: 'PVP战报', data_type: '服务端', priority: 'P1', tag: '战斗', trigger: 'pvp结束时', properties: ['battle_uid:varchar', 'battle_type:varchar', 'score:varchar', 'opponent_pid:varchar', 'opponent_score:unspecified', 'my_lineup:Array(Object)', 'my_attr_bonus:Array(Object)', 'opponent_lineup:Array(Object)', 'opponent_attr_bonus:Array(Object)', 'winner_pid:varchar', 'score_delta:double']}
+    - {name: 'battle_star', display: '战斗开始', data_type: '客户端', priority: 'P0', tag: '战斗', trigger: '战斗开始', properties: ['battle_uid:varchar', 'battle_type:varchar', 'map_id:double', 'battle_array:Array(Object)']}
+    - {name: 'rougue_skill_show', display: '肉鸽技能弹出', data_type: '客户端', priority: 'P0', tag: '战斗', trigger: '肉鸽技能弹出时', properties: ['battle_uid:varchar', 'battle_type:varchar', 'map_id:double', 'battle_time:double', 'skill_source:double', 'is_refresh:double', 'skill_options:Array(Object)']}
+    - {name: 'rogue_skill', display: '肉鸽技能选择', data_type: '客户端', priority: 'P0', tag: '战斗', trigger: '肉鸽技能选择时', properties: ['battle_uid:varchar', 'battle_type:varchar', 'map_id:double', 'battle_time:double', 'skill_source:double', 'is_refresh:double', 'skill_options:Array(Object)', 'skill_chosen:Array(Object)']}
+    - {name: 'battle_result', display: '战斗结算', data_type: '客户端', priority: 'P0', tag: '战斗', trigger: '战斗结束（跳关也上报）', properties: ['battle_uid:varchar', 'battle_type:varchar', 'map_id:double', 'battle_array:Array(Object)', 'battle_result:double', 'battlepoint_id:unspecified', 'battle_time:double', 'battle_turn:double']}
+    - {name: 'gacha_log', display: '招募', data_type: '服务端', priority: 'P0', tag: '抽卡', trigger: '抽卡结束', properties: ['gacha_type:varchar', 'award_ting:Array(Object)']}
+    - {name: 'quest_log', display: '任务', data_type: '服务端', priority: 'P0', tag: '任务', trigger: '任务完成时', properties: ['task_id:double', 'task_type:double', 'task_name:varchar']}
+    - {name: 'hero_settle_log', display: '英雄上阵', data_type: '服务端', priority: 'P0', tag: '英雄', trigger: '英雄上阵时', properties: ['hero_id:double', 'hero_name:varchar', 'slot_id:double', 'star:double']}
+    - {name: 'hero_unsettle_log', display: '英雄下阵', data_type: '服务端', priority: 'P0', tag: '英雄', trigger: '英雄下阵时', properties: ['hero_id:double', 'hero_name:varchar', 'slot_id:double', 'star:double']}
+    - {name: 'hero_get_log', display: '英雄获得', data_type: '服务端', priority: 'P0', tag: '英雄', trigger: '英雄获得时', properties: ['hero_id:double', 'hero_name:varchar', 'star:double', 'hero_num:double', 'hero_quality:double', 'hero_result:double', 'change_reason:double']}
+    - {name: 'hero_star_up_log', display: '英雄升星', data_type: '服务端', priority: 'P0', tag: '英雄', trigger: '养成完成时', properties: ['hero_id:double', 'hero_name:varchar', 'star_before:double', 'star_after:double', 'cost_item:Array(Object)', 'cost_hero:Array(Object)']}
+    - {name: 'slot_uplev_log', display: '槽位升级', data_type: '服务端', priority: 'P0', tag: '槽位', trigger: '养成完成时', properties: ['slot_id:double', 'level_before:double', 'level_after:double', 'cost_item:Array(Object)']}
+    - {name: 'slot_upgrade_log', display: '槽位升阶', data_type: '服务端', priority: 'P0', tag: '槽位', trigger: '养成完成时', properties: ['slot_id:double', 'grade_before:double', 'grade_after:double', 'cost_item:Array(Object)']}
+    - {name: 'equip_put_on_log', display: '装备穿戴', data_type: '服务端', priority: 'P0', tag: '装备', trigger: '', properties: ['equip_id:double', 'equip_uid:double', 'equip_name:varchar', 'hero_id:double', 'hero_name:varchar']}
+    - {name: 'equip_take_off_log', display: '装备脱下', data_type: '服务端', priority: 'P0', tag: '装备', trigger: '', properties: ['equip_id:double', 'equip_uid:double', 'equip_name:varchar', 'hero_id:double', 'hero_name:varchar']}
+    - {name: 'equip_log', display: '装备获得', data_type: '服务端', priority: 'P0', tag: '装备', trigger: '道具资源产出/消耗', properties: ['equip_id:double', 'equip_uid:double', 'equip_name:varchar', 'equip_num:double', 'equip_quality:double', 'equip_result:double', 'change_reason:double']}
+    - {name: 'equip_forge_log', display: '装备锻造（已含升星）', data_type: '服务端', priority: 'P0', tag: '装备', trigger: '养成完成时', properties: ['equip_id:double', 'equip_uid:double', 'equip_name:varchar', 'new_equip_uid:double', 'new_equip_name:double', 'cost_equip_uid_list:Array(Object)', 'cost_item:Array(Object)']}
+    - {name: 'equip_rarity_up_log', display: '装备升星（equip_forge_log）', data_type: '服务端', priority: '', tag: '装备', trigger: '养成完成时', properties: ['equip_id:double', 'equip_uid:double', 'equip_name:varchar', 'star_before:double', 'star_after:double', 'cost_item:Array(Object)']}
+    - {name: 'exclusive_weapon_level', display: '专武升级', data_type: '服务端', priority: 'P0', tag: '专武', trigger: '养成完成时', properties: ['exclusive_weapon_id:double', 'exclusive_weapon_name:varchar', 'level_before:double', 'level_after:double', 'cost_thing:Array(Object)']}
+    - {name: 'exclusive_weapon_active_star', display: '专武激活&升星', data_type: '服务端', priority: 'P0', tag: '专武', trigger: '养成完成时', properties: ['exclusive_weapon_id:double', 'exclusive_weapon_name:varchar', 'star_before:double', 'star_after:double', 'cost_thing:Array(Object)']}
+    - {name: 'master_change', display: '精通', data_type: '服务端', priority: 'P0', tag: '精通', trigger: '养成完成时', properties: ['type:varchar', 'grade_before:double', 'grade_after:double']}
+    - {name: 'resonance', display: '共鸣', data_type: '服务端', priority: 'P0', tag: '家园', trigger: '', properties: ['change_reason:unspecified', 'altar_cell_id:varchar', 'hero_id:varchar', 'star:double', 'level:double', 'altar_level:double']}
+    - {name: 'home', display: '营地建筑', data_type: '服务端', priority: 'P0', tag: '家园', trigger: '营地状态变动时', properties: ['change_reason:double', 'change_reason_name:varchar', 'camp_id:double', 'camp_name:unspecified', 'level:unspecified', 'change_value:unspecified', 'start_time:unspecified']}
+    - {name: 'rank_reward_log', display: '排行榜', data_type: '服务端', priority: 'P0', tag: '排行榜', trigger: '', properties: ['activity_name:varchar', 'ranking_name:varchar', 'ranking:double', 'award:Array(Object)']}
+    - {name: 'role_level_log', display: '主角升级', data_type: '服务端', priority: 'P0', tag: '主角', trigger: '', properties: ['level_before:double', 'level_after:double']}
+    - {name: 'clan_tech_log', display: '公会天赋', data_type: '服务端', priority: 'P0', tag: '公会', trigger: '养成完成时', properties: ['change_reason:double', 'tech_name:varchar', 'level:double', 'change_value:double']}
+    - {name: 'boss_battle_result', display: '公会首领', data_type: '客户端', priority: 'P1', tag: '公会', trigger: '战斗结束', properties: ['battle_uid:varchar', 'battle_type:double', 'map_id:double', 'battle_value:double', 'battle_time:double', 'rank_before:double', 'rank_after:double', 'wall_array:Array(Object)', 'battle_array:Array(Object)']}
+    - {name: 'clan_log', display: '公会管理', data_type: '服务端', priority: 'P0', tag: '公会', trigger: '', properties: ['change_reason_name:varchar', 'clan_uid:varchar', 'old_object_id:varchar', 'object_id:varchar']}
+    - {name: 'guild_wish_log', display: '公会许愿', data_type: '服务端', priority: 'P0', tag: '公会', trigger: '', properties: ['change_reason:varchar', 'object_id:varchar']}
+    - {name: 'back_decoration_level_log', display: '背饰升级', data_type: '服务端', priority: 'P0', tag: '背饰', trigger: '', properties: ['level_before:double', 'level_after:double']}
+    - {name: 'back_decoration_star_log', display: '背饰升星', data_type: '服务端', priority: 'P0', tag: '背饰', trigger: '', properties: ['back_decoration_id:double', 'back_decoration_name:varchar', 'star_before:double', 'star_after:double']}
+    - {name: 'main_role_ride_level_log', display: '坐骑升级', data_type: '服务端', priority: 'P0', tag: '坐骑', trigger: '', properties: ['level_before:double', 'level_after:double']}
+    - {name: 'main_role_ride_star_log', display: '坐骑升星', data_type: '服务端', priority: 'P0', tag: '坐骑', trigger: '', properties: ['main_role_ride_id:double', 'main_role_ride_name:varchar', 'star_before:double', 'star_after:double']}
