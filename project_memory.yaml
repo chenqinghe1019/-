@@ -8,7 +8,7 @@ project_memory:
     rule: "同一项目的新对话可能不会完整继承上一段对话的全部细节；因此可复用口径、字段、SQL规范、用户偏好需要沉淀到 GitHub 知识库。"
   user_preferences:
     - "SQL 需求默认直接给最终完整 SQL，不要只给替换片段，除非用户明确只要片段。"
-    - "涉及下方了 / 步步 / 暴弹飞射 / 萝卜4小游戏 / v41 / v22 / v42 / 埋点字段 / item_log / money_log / battle_result 等项目口径，先查 GitHub 配置，再结合当前上传文件和上下文修改。"
+    - "涉及下方了 / 步步 / 暴弹飞射 / 萝卜4小游戏 / 弯月勇者 / v41 / v22 / v42 / v44 / 埋点字段 / item_log / money_log / battle_result 等项目口径，先查 GitHub 配置，再结合当前上传文件和上下文修改。"
     - "字段不确定时必须说明不确定，并先查配置或让用户确认，不能直接编字段。"
     - "用户希望项目记忆点和口径调整同步到 GitHub，便于切换新对话后继续使用。"
     - "回答以高效、直接为主；SQL 修改完成后直接给可执行的最终版。"
@@ -79,6 +79,35 @@ project_memory:
       notes:
         - "登录事件不要与旧 SQL 中的 log_in_out 混用。"
         - "旧资料中出现过 battle_star；当前通用战斗开始口径使用 battle_start，具体专题若埋点文档另有定义则先查 baodanfeshe_tracking.yaml。"
+
+    wanyue:
+      project_name: "弯月勇者"
+      tracking_yaml: "wanyue_tracking.yaml"
+      table_suffix: 44
+      user_table: "ta.v_user_44"
+      event_table: "ta.v_event_44"
+      release_filter: "\"domain\" = 'release'"
+      create_role_time: "埋点文档定义为 timestamp"
+      active_event: "in_out_log"
+      online_duration:
+        event: "in_out_log"
+        field: "online_time"
+        unit: "秒"
+      payment: "pay_log.payment；原始埋点文档未明确元/分，线上验证前禁止自行 /100 或假设单位"
+      battle:
+        start_event: "battle_star"
+        result_event: "battle_result"
+        level_field: "map_id"
+        battle_type_field: "battle_type"
+      power_field: "fighting_power"
+      notes:
+        - "固定使用 v44；v46 是方块也疯狂，不能混用。"
+        - "处理弯月勇者需求时必须先读取 wanyue_tracking.yaml。"
+        - "原表事件名 battle_star、rougue_skill_show 按原样保留，除非线上表结构确认实际名称不同。"
+        - "region_id：用户属性 varchar、公共事件属性 double；clan_uid：用户属性 double、公共事件属性 varchar；查询前确认线上最终类型。"
+        - "boss_battle_result.battle_value 在主事件表为 double、外挂防治 sheet 为 varchar；查询与验收前确认线上最终类型。"
+        - "同名属性 battle_type、change_reason、change_type、hero_id 等在原方案中存在类型冲突，数数首次入库类型会锁定，具体见 wanyue_tracking.yaml 的 event_property_type_conflicts。"
+        - "total_pay_amount 为纯RMB历史累计充值；total_payment 为含代金券的历史累计消费。"
 
     bubu:
       project_name: "步步项目 / 一步两步"
