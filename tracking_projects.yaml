@@ -46,3 +46,5 @@ tracking_projects:
     yaml: "baodanfeshe_tracking.yaml"
   - project: "萝卜4小游戏"
     yaml: "luobo4_tracking.yaml"
+  - project: "弯月勇者"
+    yaml: "wanyue_tracking.yaml"
