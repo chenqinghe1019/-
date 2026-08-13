@@ -188,6 +188,10 @@ page_analysis:
     caveat: "状态活跃用户列仅作参考，不参与失败率、通关率、完美通关率计算；所有率统一按状态启动次数计算。"
     output_layout:
       primary_sheet: "关卡概况"
+      section_layout:
+        top: "按关卡聚合，过关状态固定显示汇总。"
+        bottom: "按关卡 + 原始过关状态代码（clear、event1001等）展开明细。"
+        spacing: "上下区块之间保留空行，格式参照用户提供的Excel截图。"
       horizontal_blocks:
         - "汇总"
         - "安卓"
