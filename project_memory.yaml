@@ -1,7 +1,7 @@
 project_memory:
   project_name: "倍特工作室"
   github_source_of_truth:
-    repository: "chenqinghe1019/-"
+    repository: "chenqinghe1019/game-data-analysis"
     rule: "涉及项目配置、埋点字段、SQL口径、表后缀、看板规则、字段确认时，优先读取 GitHub 仓库中的知识库文件；不要先按字段名或历史印象猜。"
     conversation_start_rule: "后续所有‘倍特工作室’项目内的对话，无论是否切换新窗口，在处理用户需求前都必须先读取 GitHub 仓库当前配置；不得仅依赖聊天上下文、个人记忆或历史 SQL。"
   chat_continuity:
