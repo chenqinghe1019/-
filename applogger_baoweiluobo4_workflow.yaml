@@ -170,6 +170,29 @@ page_analysis:
       pass_rate: "(状态1启动次数 + 状态2启动次数) / 总启动次数。"
       perfect_rate: "状态2启动次数 / 总启动次数。"
     caveat: "状态活跃用户列仅作参考，不参与失败率、通关率、完美通关率计算；所有率统一按状态启动次数计算。"
+    output_layout:
+      primary_sheet: "关卡概况"
+      horizontal_blocks:
+        - "汇总"
+        - "安卓"
+        - "iOS"
+        - "鸿蒙"
+      columns:
+        - "关卡"
+        - "过关状态"
+        - "新增用户"
+        - "活跃用户"
+        - "启动次数"
+        - "过关次数"
+        - "失败次数"
+        - "过关率"
+      excluded_columns:
+        - "金萝卜"
+        - "金萝卜率"
+        - "中途退出"
+        - "中途退出率"
+      title_rule: "工作簿标题和表头统一使用中文；clear、event1001 等原始事件代码保留。"
+
 
 balance_analysis:
   module: "产出与消耗"
