@@ -94,3 +94,12 @@ page_analysis:
   extraction_rule:
     - "页面分析表在选择日期区间时返回区间汇总，不能直接作为逐日数据。"
     - "需要逐日结果时必须按每个自然日分别读取，再合并输出。"
+
+  interval_summary:
+    layout: "汇总、安卓、iOS、鸿蒙四个横向区块；行维度为活动页面、进入战斗、周赛、星途。"
+    DAU: "日期区间内逐日DAU求和，不做区间去重。"
+    new_users: "日期区间内逐日新增求和。"
+    active_users: "日期区间内各页面逐日活跃求和，不做区间去重。"
+    starts: "日期区间内逐日启动次数求和。"
+    participation_rate: "区间活跃合计 / 区间DAU合计，不使用逐日参与率简单平均。"
+    starts_per_active_user: "区间启动次数合计 / 区间活跃合计，不使用逐日人均次数简单平均。"
