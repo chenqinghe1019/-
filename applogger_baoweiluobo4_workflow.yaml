@@ -61,3 +61,36 @@ date_rules:
 security:
   - "不保存账号、密码、登录 token 或导出的业务明细。"
   - "GitHub 仅记录项目定位、指标和汇总口径。"
+
+page_analysis:
+  confirmed_range:
+    start_date: "2026-07-30"
+    end_date: "2026-08-12"
+  pages:
+    - code: "scene_newcooperation_home"
+      label: "活动页面"
+    - code: "scene_newcooperation_level"
+      label: "进入战斗"
+    - code: "scene_daily"
+      label: "周赛"
+    - code: "scene_starway"
+      label: "星途"
+  daily_metrics:
+    - "DAU（取对应平台趋势分析的活跃用户）"
+    - "新增"
+    - "活跃"
+    - "启动次数"
+  summary_formulas:
+    DAU: "安卓 + iOS + 鸿蒙"
+    new_users: "安卓 + iOS + 鸿蒙"
+    active_users: "安卓 + iOS + 鸿蒙"
+    starts: "安卓 + iOS + 鸿蒙"
+    participation_rate: "汇总活跃 / 汇总DAU"
+    starts_per_active_user: "汇总启动次数 / 汇总活跃"
+  output_layout:
+    vertical_sections: "活动页面、进入战斗、周赛、星途"
+    horizontal_blocks: "汇总、安卓、iOS、鸿蒙"
+    date_granularity: "自然日"
+  extraction_rule:
+    - "页面分析表在选择日期区间时返回区间汇总，不能直接作为逐日数据。"
+    - "需要逐日结果时必须按每个自然日分别读取，再合并输出。"
