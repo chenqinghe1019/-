@@ -62,6 +62,34 @@ security:
   - "不保存账号、密码、登录 token 或导出的业务明细。"
   - "GitHub 仅记录项目定位、指标和汇总口径。"
 
+trend_operations_overview:
+  confirmed_ranges:
+    S1:
+      start_date: "2026-02-12"
+      end_date: "2026-02-25"
+      inclusive_days: 14
+    S2:
+      start_date: "2026-07-30"
+      end_date: "2026-08-12"
+      inclusive_days: 14
+  extraction:
+    - "安卓、iOS、鸿蒙均从趋势分析的基本趋势和收入趋势表格读取逐日数据。"
+    - "必须保留每个平台、每个自然日的明细，再生成逐日汇总、平台汇总和运营概况。"
+  interval_aggregation:
+    active_users: "三端逐日活跃用户相加后取14天日均；不是14日去重用户。"
+    starts_per_user: "区间启动次数合计 / 区间活跃人次合计。"
+    session_duration: "小时统一换算为分钟；按启动次数加权。"
+    user_duration: "小时统一换算为分钟；按活跃用户加权。"
+    revenue: "三端逐日收入求和。"
+    daily_revenue: "区间收入 / 14。"
+    daily_payers: "区间逐日付费人数合计 / 14。"
+    daily_new_payers: "区间逐日新增付费人数合计 / 14。"
+    pay_rate: "区间付费人数合计 / 区间活跃人次合计。"
+    ARPU: "区间收入 / 区间活跃人次合计。"
+    ARPPU: "区间收入 / 区间付费人数合计。"
+  limitation:
+    participation_rate: "趋势分析缺少参与人数分子，不能独立复算参与率；保留空值并在输出中注明。"
+
 page_analysis:
   confirmed_range:
     start_date: "2026-07-30"
