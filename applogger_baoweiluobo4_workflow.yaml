@@ -72,6 +72,22 @@ trend_operations_overview:
       start_date: "2026-07-30"
       end_date: "2026-08-12"
       inclusive_days: 14
+  pre_periods:
+    S1_pre:
+      start_date: "2026-01-29"
+      end_date: "2026-02-11"
+      inclusive_days: 14
+      comparison: "与S1开启两周 2026-02-12～2026-02-25 对比。"
+    S2_pre:
+      start_date: "2026-07-16"
+      end_date: "2026-07-29"
+      inclusive_days: 14
+      comparison: "与S2开启两周 2026-07-30～2026-08-12 对比。"
+  comparison_layout:
+    - "S1开启两周 vs S2开启两周。"
+    - "S1前两个常规周 vs S1开启两周。"
+    - "S2前两个常规周 vs S2开启两周。"
+    - "差异统一为后周期减前周期；变化率以前周期为基准。"
   extraction:
     - "安卓、iOS、鸿蒙均从趋势分析的基本趋势和收入趋势表格读取逐日数据。"
     - "必须保留每个平台、每个自然日的明细，再生成逐日汇总、平台汇总和运营概况。"
