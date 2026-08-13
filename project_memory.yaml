@@ -143,3 +143,4 @@ project_memory:
 
   latest_confirmed_notes:
     - "money_log 和 item_log 使用同样的字段名口径；钻石、能量饮料等 money_log 余额也按 item_id / item_result 取，不使用 money_id / money_result。"
+    - "资源产消统计中，消耗（如 change_type=2）后续默认直接使用原始 item_num / change_value 的符号和值，不再使用 ABS/abs；获取口径保持原规则，除非专题另有说明。"
