@@ -1,0 +1,10 @@
+project: 下方了
+updated_at: '2026-08-13'
+topic: 诡宝升星计划 D5累计付费与诡邮局包裹星级
+rules:
+  - 开服当天记D1；D5截止日为 date_add('day', 4, date(server_open_time))。
+  - 开服第N天计算优先使用 ta.v_user_41.server_open_time（timestamp），不要使用 ta.v_event_41 公共属性 server_open_time；线上事件表该字段曾实际表现为 double。
+  - 统计“截至D5累计诡宝升星计划付费”时，pay_log.product_type='诡宝升星计划'，付费事件范围为D1-D5，而不是只取D5当天。
+  - 含代金券商品金额不取 pay_log.payment；关联 ta_ext.product_concat_41，关联键为 concat(product_type, cast(cast(product_id as bigint) as varchar), product_name)=product_concat，金额取 ta_ext.product_concat_41.payment。
+  - 诡邮局包裹星级取 guibao_upstar_log，guibao_name='诡邮局包裹'，统计D1-D5内 max(star_after) 作为截至D5星级；无升星记录暂按0星展示。
+  - 数数动态日期参数 ${PartDate:date} 必须作为独立WHERE条件使用，不能加表别名、字段名或引号。
