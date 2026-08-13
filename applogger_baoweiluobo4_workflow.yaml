@@ -139,3 +139,48 @@ page_analysis:
       pass_rate: "(状态1活跃用户 + 状态2活跃用户) / 总人数。"
       perfect_rate: "状态2活跃用户 / 总人数。"
     caveat: "状态活跃用户按状态页面相加，用户可能跨状态重复；属于状态人次口径，不是区间去重人数。"
+
+balance_analysis:
+  module: "产出与消耗"
+  asset: "宝石"
+  platform_scope:
+    - "安卓"
+    - "iOS"
+    - "鸿蒙"
+  periods:
+    S1:
+      start_date: "2026-02-12"
+      end_date: "2026-02-25"
+      inclusive_days: 14
+    S2:
+      start_date: "2026-07-30"
+      end_date: "2026-08-12"
+      inclusive_days: 14
+  aggregation:
+    quantity: "同一来源在安卓、iOS、鸿蒙三端数量求和。"
+    share: "同季、同类别（产出或消耗）单项数量 / 该类别纳入项目数量合计。"
+    comparison: "同时展示S1/S2数量、占比、S2-S1变化量及S2/S1-1变化率。"
+  name_mapping:
+    output:
+      pve_ticket: "宝石/产出/合作挑战票"
+      pve_pass: "宝石/产出/双帆远航通行证"
+    consumption:
+      pre_battle_coop: "宝石/消耗/战前道具合作 - 宝石"
+      shield: "宝石/消耗/商店-11"
+      wallet: "宝石/消耗/商店-12"
+      demolition_hammer: "宝石/消耗/商店-13"
+      fan_club: "宝石/消耗/商店-14"
+      first_aid_kit: "宝石/消耗/商店-15"
+      super_ice_cream: "宝石/消耗/商店-16"
+      super_bomb: "宝石/消耗/商店-17"
+      mystery_ufo: "宝石/消耗/商店-18"
+      vehicle: "宝石/消耗/商店-载具"
+      treasure_hunt:
+        - "宝石/消耗/寻宝 - 100002"
+        - "宝石/消耗/寻宝 - 100005"
+      in_battle_item: "宝石/消耗/合作 - 战中道具"
+      pass_level_purchase: "宝石/消耗/通行证等级购买"
+      coop_random_tower: "宝石/消耗/合作随机炮塔"
+      pve_ticket: "宝石/消耗/合作挑战券"
+  exclusions:
+    - "寻宝仅合并100002与100005，不纳入100004等其他编号。"
