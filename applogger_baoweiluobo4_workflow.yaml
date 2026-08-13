@@ -215,3 +215,4 @@ balance_analysis:
       pve_ticket: "宝石/消耗/合作挑战券"
   exclusions:
     - "寻宝仅合并100002与100005，不纳入100004等其他编号。"
+\n\nbalance_data_availability:\n  harmony_S1:\n    status: "no_data"\n    verification: "2026-02-12至2026-02-25无资产面板、无宝石明细。"\n    handling: "全部映射项按0纳入；禁止读取缓存表格。"\n
