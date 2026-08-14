@@ -1,5 +1,9 @@
 weekly_work_summary_notes:
   source: "用户上周工作总结"
+  formatting_preferences:
+    - "周报最上方必须先写明确的日期范围。"
+    - "日期范围格式使用 YYYY.MM.DD-YYYY.MM.DD，例如 2026.07.27-2026.08.02。"
+    - "周报最终版本保持简洁，以分点方式呈现，不写得过于复杂。"
   scope:
     - "下方了项目数据分析与运营支持"
     - "保卫萝卜4双帆远航S2赛季分析"
