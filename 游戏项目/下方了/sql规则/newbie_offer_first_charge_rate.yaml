@@ -9,21 +9,24 @@ rules:
     name: 1-3结算玩家
     definition: 新增首日触发 battle_result 且 map_id = 3 的 nb_open_id 去重人数。
   numerator:
-    name: 2-1前新人特惠6元购买玩家
-    definition: 分母玩家中，在本人首次 2-1 战斗开始之前触发 pay_log，且 product_name = '新人特惠6元' 的 nb_open_id 去重人数。
+    name: 1-3后购买新人特惠6元玩家
+    definition: 分母玩家中，新增首日购买 product_name = '新人特惠6元'，且该次购买之前最近一次主线 battle_result 的 map_id = 3 的 nb_open_id 去重人数。
     pay_event: pay_log
     product_name: 新人特惠6元
     amount_filter: payment > 0
-    order_rule: pay_log.#event_time < first_2_1_start_time
-    first_2_1_start_event: battle_star
-    first_2_1_start_map_id: 4
+    purchase_rule: 取玩家首笔 product_name = '新人特惠6元' 的购买时间
+    mainline_event: battle_result
+    mainline_filter: battle_type = 1
+    order_rule: battle_result.#event_time < newbie_offer_pay_time
+    last_level_logic: 在所有早于购买时间的主线 battle_result 中，按 #event_time 倒序取最近一条；其 map_id = 3 时计入分子
   metric:
-    name: 首充付费率
-    formula: 2-1前新人特惠6元购买玩家 / 1-3结算玩家
+    name: 新人特惠6元首充付费率
+    formula: 购买前最后主线关卡为1-3的新人特惠6元购买玩家 / 1-3结算玩家
     output_precision: 4
 
 notes:
   - 统计口径按 nb_open_id 去重，不按 account_id。
-  - 仅统计新增首日行为。
-  - 必须按 #event_time 比较购买与首次 2-1 开始的先后顺序，不能仅使用按天聚合后的付费次数判断。
-  - 若玩家首日没有进入 2-1，则不满足“2-1之前购买”的当前 SQL 口径；如后续需要将“未进入2-1但已购买”纳入，需要单独调整定义。
+  - 仅统计新增首日购买行为。
+  - 不再以“是否已经开始2-1”作为判断边界；玩家1-3结算后直接购买、尚未进入2-1，也应完整计入分子。
+  - 判断关键是购买发生时玩家最近一次已结算的主线关卡，而不是购买时间与2-1开始时间的比较。
+  - SQL 推荐使用 max_by(map_id, #event_time) 或 row_number/rank 倒序取购买前最近一次主线 battle_result。
