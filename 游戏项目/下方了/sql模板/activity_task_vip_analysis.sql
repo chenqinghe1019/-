@@ -178,23 +178,26 @@ FROM
                             0
                          ) > 0
 
-                         AND concat(
-                            coalesce(
-                                cast(
-                                    e."product_type"
-                                    AS varchar
+                         AND regexp_like(
+                            concat(
+                                coalesce(
+                                    cast(
+                                        e."product_type"
+                                        AS varchar
+                                    ),
+                                    ''
                                 ),
-                                ''
+                                '|',
+                                coalesce(
+                                    cast(
+                                        e."product_name"
+                                        AS varchar
+                                    ),
+                                    ''
+                                )
                             ),
-                            '|',
-                            coalesce(
-                                cast(
-                                    e."product_name"
-                                    AS varchar
-                                ),
-                                ''
-                            )
-                         ) ${Selector:selector1}
+                            '${Selector:selector1}'
+                         )
 
                             THEN coalesce(
                                 try_cast(
