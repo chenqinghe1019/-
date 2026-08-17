@@ -1,0 +1,29 @@
+project: 下方了
+project_id: 41
+updated_at: '2026-08-17'
+name: 新人特惠6元首充付费率
+status: active
+
+rules:
+  denominator:
+    name: 1-3结算玩家
+    definition: 新增首日触发 battle_result 且 map_id = 3 的 nb_open_id 去重人数。
+  numerator:
+    name: 2-1前新人特惠6元购买玩家
+    definition: 分母玩家中，在本人首次 2-1 战斗开始之前触发 pay_log，且 product_name = '新人特惠6元' 的 nb_open_id 去重人数。
+    pay_event: pay_log
+    product_name: 新人特惠6元
+    amount_filter: payment > 0
+    order_rule: pay_log.#event_time < first_2_1_start_time
+    first_2_1_start_event: battle_star
+    first_2_1_start_map_id: 4
+  metric:
+    name: 首充付费率
+    formula: 2-1前新人特惠6元购买玩家 / 1-3结算玩家
+    output_precision: 4
+
+notes:
+  - 统计口径按 nb_open_id 去重，不按 account_id。
+  - 仅统计新增首日行为。
+  - 必须按 #event_time 比较购买与首次 2-1 开始的先后顺序，不能仅使用按天聚合后的付费次数判断。
+  - 若玩家首日没有进入 2-1，则不满足“2-1之前购买”的当前 SQL 口径；如后续需要将“未进入2-1但已购买”纳入，需要单独调整定义。
