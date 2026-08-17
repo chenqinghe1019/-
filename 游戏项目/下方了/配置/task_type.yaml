@@ -1,0 +1,79 @@
+project: 下方了
+project_id: 41
+updated_at: '2026-08-17'
+name: 任务类型配置
+status: active
+source: 用户提供任务类型枚举
+
+field:
+  name: task_type
+  description: 任务类型ID
+  value_type: integer
+
+enum:
+  3: 成就任务
+  4: 冒险任务
+  5: 七日目标成长任务
+  6: 七日目标每日任务
+  7: 公会每日任务
+  8: 战力比拼
+  9: 月神许愿任务
+  10: 月神许愿目标
+  11: 抓小诡活动每日任务
+  12: 恐惧乐园活动每日任务
+  13: 恐惧乐园活动目标
+  14: 遗迹探秘每日任务
+  15: 剑仙降临活动任务
+  16: 组队抓诡每周任务
+  17: 组队抓诡成就任务
+  18: 诡市寻宝任务
+  19: 孟婆煮汤每日任务
+  20: 孟婆煮汤活动任务
+  21: 诡橱秘宝任务
+
+analysis_labels:
+  note: 以下为分析侧整理标签，不属于服务端原始枚举字段
+  values:
+    3: {module: 常驻, nature: 成就}
+    4: {module: 常驻, nature: 冒险}
+    5: {module: 七日目标, nature: 成长}
+    6: {module: 七日目标, nature: 每日}
+    7: {module: 公会, nature: 每日}
+    8: {module: 战力比拼, nature: 竞技}
+    9: {module: 月神许愿, nature: 活动任务}
+    10: {module: 月神许愿, nature: 活动目标}
+    11: {module: 抓小诡, nature: 每日}
+    12: {module: 恐惧乐园, nature: 每日}
+    13: {module: 恐惧乐园, nature: 活动目标}
+    14: {module: 遗迹探秘, nature: 每日}
+    15: {module: 剑仙降临, nature: 活动任务}
+    16: {module: 组队抓诡, nature: 每周}
+    17: {module: 组队抓诡, nature: 成就}
+    18: {module: 诡市寻宝, nature: 活动任务}
+    19: {module: 孟婆煮汤, nature: 每日}
+    20: {module: 孟婆煮汤, nature: 活动任务}
+    21: {module: 诡橱秘宝, nature: 活动任务}
+
+sql_case_reference: |
+  CASE
+      WHEN task_type = 3 THEN '成就任务'
+      WHEN task_type = 4 THEN '冒险任务'
+      WHEN task_type = 5 THEN '七日目标成长任务'
+      WHEN task_type = 6 THEN '七日目标每日任务'
+      WHEN task_type = 7 THEN '公会每日任务'
+      WHEN task_type = 8 THEN '战力比拼'
+      WHEN task_type = 9 THEN '月神许愿任务'
+      WHEN task_type = 10 THEN '月神许愿目标'
+      WHEN task_type = 11 THEN '抓小诡活动每日任务'
+      WHEN task_type = 12 THEN '恐惧乐园活动每日任务'
+      WHEN task_type = 13 THEN '恐惧乐园活动目标'
+      WHEN task_type = 14 THEN '遗迹探秘每日任务'
+      WHEN task_type = 15 THEN '剑仙降临活动任务'
+      WHEN task_type = 16 THEN '组队抓诡每周任务'
+      WHEN task_type = 17 THEN '组队抓诡成就任务'
+      WHEN task_type = 18 THEN '诡市寻宝任务'
+      WHEN task_type = 19 THEN '孟婆煮汤每日任务'
+      WHEN task_type = 20 THEN '孟婆煮汤活动任务'
+      WHEN task_type = 21 THEN '诡橱秘宝任务'
+      ELSE CONCAT('未知任务类型_', CAST(task_type AS varchar))
+  END
