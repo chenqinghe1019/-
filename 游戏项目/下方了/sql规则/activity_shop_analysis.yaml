@@ -1,0 +1,43 @@
+project: 下方了
+project_id: 41
+updated_at: '2026-08-17'
+name: 活动商店分析模板
+status: active
+source: 2026-07-24 活动分析SQL（File Library: 粘贴的文本 (1).txt）
+
+rules:
+  activity_window:
+    parameter: '${PartDate:date}'
+    definition: 所选区间用于活动行为统计；所选区间第一天视为活动开启日。
+  payment_segment:
+    name: 活动开启前付费分层
+    definition: 玩家截至活动开启日前的历史累计付费金额分层；活动开启日及活动期间充值不计入分层，活动期间层级固定。
+    amount_unit: 元
+    payment_source: ta.v_event_41.pay_log
+    amount_logic: 优先使用商品映射表金额，否则使用 payment / 100
+    product_filter: 不限制活动商品，统计玩家活动开启前全部历史付费
+    free_rule: 历史累计付费 <= 0 为 a_free
+    thresholds: 使用 '${Selector:selector}' 动态断点，生成 b_(0,b1]、c_(b1,b2] ... 最后一档 (blast,+)
+  activity_shop:
+    event: shop_buy_log
+    filters:
+      - '${PartDate:date}'
+      - 'shop_id ${Number:number1}'
+    dimensions:
+      - 活动开启前付费分层
+      - shop_id
+      - goods_id
+      - 商品名称
+      - 消耗资源ID
+    metrics:
+      - 购买数量
+      - 购买人数
+      - 分层内总购买人数
+      - 购买人数占比
+      - 人均购买数量
+      - 消耗资源数量
+      - 消耗资源占比
+
+notes:
+  - 数数动态日期参数必须作为完整 WHERE 条件使用，不写 e.${PartDate:date} 这类拼接形式。
+  - 活动开启前分层与活动期付费表现是两个概念；后续分析活动付费转化时不要用活动期间充值反向重分层。
