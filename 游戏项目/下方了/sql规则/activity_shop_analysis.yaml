@@ -17,7 +17,16 @@ rules:
     amount_logic: 优先使用商品映射表金额，否则使用 payment / 100
     product_filter: 不限制活动商品，统计玩家活动开启前全部历史付费
     free_rule: 历史累计付费 <= 0 为 a_free
-    thresholds: 使用 '${Selector:selector}' 动态断点，生成 b_(0,b1]、c_(b1,b2] ... 最后一档 (blast,+)
+    thresholds:
+      - a_free: 0
+      - b_(0,6]: 0 < pay <= 6
+      - c_(6,30]: 6 < pay <= 30
+      - d_(30,100]: 30 < pay <= 100
+      - e_(100,300]: 100 < pay <= 300
+      - f_(300,500]: 300 < pay <= 500
+      - g_(500,1000]: 500 < pay <= 1000
+      - h_1000+: pay > 1000
+    dynamic_selector: false
   activity_shop:
     event: shop_buy_log
     filters:
@@ -41,3 +50,4 @@ rules:
 notes:
   - 数数动态日期参数必须作为完整 WHERE 条件使用，不写 e.${PartDate:date} 这类拼接形式。
   - 活动开启前分层与活动期付费表现是两个概念；后续分析活动付费转化时不要用活动期间充值反向重分层。
+  - 活动分析模板暂时统一使用下方了常用固定付费分层，不再使用 Selector 动态断点。
