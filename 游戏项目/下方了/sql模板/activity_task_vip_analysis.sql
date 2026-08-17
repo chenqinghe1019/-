@@ -112,7 +112,7 @@ FROM
                 max(
                     CASE
                         WHEN e."$part_event" = 'mission_reward_log'
-                         AND try_cast(e."task_type" AS bigint) ${Number:number1}
+                         AND try_cast(e."task_type" AS bigint) ${Selector:selector}
                         THEN 1
                         ELSE 0
                     END
