@@ -11,13 +11,15 @@
 - 首充商品：`pay_log.product_id = 42`
 - 购买判定：`$part_event='pay_log' AND product_id=42 AND payment>0`
 - 首充购买时间：取玩家新增首日首笔 `product_id=42` 的 `#event_time`。
-- 首充分子判断：以首充购买时间为锚点，向前查找主线相关的 `battle_start` 和 `battle_result`，按 `#event_time` 取购买前最后一条关卡事件；其 `map_id=10003` 时计入分子。
-- 2-1开始和2-1结算都属于进度越过1-3的信号：只要购买前出现 `map_id=20001` 的 `battle_start` 或 `battle_result`，该玩家不计入1-3阶段首充分子。
-- 不使用 `battle_type=1` 作为主线过滤条件，避免因暴弹实际 battle_type 编码不同导致分子为0；以明确的主线 `map_id` 范围判断。
+- 首充分子判断采用直接存在/不存在逻辑，不再使用 `max_by`：
+  1. 首充购买前必须已经出现 `map_id=10003` 的 `battle_result`；
+  2. 首充购买前不能出现任何 `map_id=20001` 的 `battle_start` 或 `battle_result`。
+- 因此：1-3结算后直接购买计入；1-3结算后若已出现2-1开始或2-1结算再购买则不计入。
+- 不使用 `battle_type=1` 作为过滤条件，避免因实际编码差异导致分子丢失。
 - 首充人数：上述玩家按 `nb_open_id` 去重人数。
-- 首充付费率：`购买前最后主线开始/结算关卡为1-3的product_id=42购买人数 / 1-3结算人数`。
+- 首充付费率：`购买前已结算1-3且未开始/结算2-1的product_id=42购买人数 / 1-3结算人数`。
 - 分母1-3结算人数仍使用新增首日 `map_id=10003` 的 `battle_result` 去重玩家数。
 
 ## SQL 接入建议
 
-单独构建玩家级 `t_3`：先取每个玩家当日首笔 `product_id=42` 的购买时间，再关联购买之前的 `battle_start`/`battle_result`，仅保留主线关卡 map_id（当前漏斗至少包含 `10001,10002,10003,20001,20002,20003`，如主线范围更完整可继续补充），通过 `max_by(map_id,#event_time)` 取购买前最后一条主线关卡事件，仅保留 `map_id=10003` 的玩家。随后按新增首日与主查询关联，外层按 `nb_open_id` 去重统计人数并除以1-3结算人数。
+单独构建玩家级 `t_3`：先取每个玩家当日首笔 `product_id=42` 的购买时间；再 INNER JOIN 购买前的1-3 `battle_result` 以确认已结算1-3；再 LEFT JOIN 购买前的2-1 `battle_start`/`battle_result`，仅保留2-1匹配为空的玩家。随后按新增首日与主查询关联，外层按 `nb_open_id` 去重统计人数并除以1-3结算人数。
