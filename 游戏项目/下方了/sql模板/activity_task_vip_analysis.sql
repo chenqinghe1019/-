@@ -104,7 +104,7 @@ FROM
                 max(
                     CASE
                         WHEN e."$part_event" = 'in_out_log'
-                            THEN 1
+                        THEN 1
                         ELSE 0
                     END
                 ) AS "是否活动活跃",
@@ -113,7 +113,7 @@ FROM
                     CASE
                         WHEN e."$part_event" = 'mission_reward_log'
                          AND try_cast(e."task_type" AS bigint) ${Number:number1}
-                            THEN 1
+                        THEN 1
                         ELSE 0
                     END
                 ) AS "是否参与活动",
@@ -130,17 +130,18 @@ FROM
                                 ),
                                 '${Variable}'
                              )
-                            THEN coalesce(
-                                    try_cast(e."payment" AS double),
-                                    0
-                                 ) / 100.0000
+                        THEN coalesce(
+                                try_cast(e."payment" AS double),
+                                0
+                             ) / 100.0000
                         ELSE 0
                     END
                 ) AS "活动付费金额"
 
             FROM
             (
-                SELECT *
+                SELECT
+                    *
                 FROM ta.v_event_41
                 WHERE ${PartDate:date}
                   AND "domain" = 'release'
@@ -164,10 +165,14 @@ FROM
             CROSS JOIN
             (
                 SELECT
-                    min(cast(d."$part_date" AS date)) AS "活动开始日期"
+                    cast(
+                        min(cast(d."$part_date" AS date))
+                        AS timestamp
+                    ) AS "活动开始时间"
                 FROM
                 (
-                    SELECT "$part_date"
+                    SELECT
+                        "$part_date"
                     FROM ta.v_event_41
                     WHERE ${PartDate:date}
                 ) d
@@ -176,8 +181,7 @@ FROM
             WHERE vip_e."$part_event" = 'vip_change_log'
               AND vip_e."domain" = 'release'
               AND vip_e."#account_id" IS NOT NULL
-              AND cast(vip_e."$part_date" AS date)
-                    < activity_date."活动开始日期"
+              AND vip_e."#event_time" < activity_date."活动开始时间"
 
             GROUP BY 1
         ) v
