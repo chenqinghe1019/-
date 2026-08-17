@@ -179,22 +179,9 @@ FROM
                          ) > 0
 
                          AND regexp_like(
-                            concat(
-                                coalesce(
-                                    cast(
-                                        e."product_type"
-                                        AS varchar
-                                    ),
-                                    ''
-                                ),
-                                '|',
-                                coalesce(
-                                    cast(
-                                        e."product_name"
-                                        AS varchar
-                                    ),
-                                    ''
-                                )
+                            coalesce(
+                                product_cfg."product_type_two",
+                                ''
                             ),
                             '${Selector:selector1}'
                          )
@@ -224,6 +211,35 @@ FROM
 
                   AND "#account_id" IS NOT NULL
             ) e
+
+            LEFT JOIN
+            (
+                SELECT
+                    try_cast(
+                        "product_id"
+                        AS bigint
+                    ) AS "product_id",
+
+                    max(
+                        cast(
+                            "product_type_two"
+                            AS varchar
+                        )
+                    ) AS "product_type_two"
+
+                FROM ta_ext.product_id_41
+
+                WHERE "product_id" IS NOT NULL
+
+                GROUP BY
+                    1
+            ) product_cfg
+                ON e."$part_event" = 'pay_log'
+
+               AND try_cast(
+                    e."product_id"
+                    AS bigint
+                   ) = product_cfg."product_id"
 
             GROUP BY
                 1
