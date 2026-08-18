@@ -37,15 +37,17 @@ FROM
 
     INNER JOIN
     (
-        SELECT DISTINCT
+        SELECT
             cast(u."#account_id" AS varchar) AS "#account_id",
-            date(u."server_open_time") AS "开服日期"
+            max(date(u."server_open_time")) AS "开服日期"
 
         FROM ta.v_user_22 u
 
         WHERE u."domain" = 'release'
           AND u."#account_id" IS NOT NULL
           AND u."server_open_time" IS NOT NULL
+
+        GROUP BY 1
     ) user_base
         ON cast(a."#account_id" AS varchar)
             = user_base."#account_id"
@@ -127,15 +129,17 @@ CROSS JOIN
 
     INNER JOIN
     (
-        SELECT DISTINCT
+        SELECT
             cast(u."#account_id" AS varchar) AS "#account_id",
-            date(u."server_open_time") AS "开服日期"
+            max(date(u."server_open_time")) AS "开服日期"
 
         FROM ta.v_user_22 u
 
         WHERE u."domain" = 'release'
           AND u."#account_id" IS NOT NULL
           AND u."server_open_time" IS NOT NULL
+
+        GROUP BY 1
     ) user_base
         ON cast(e."#account_id" AS varchar)
             = user_base."#account_id"
