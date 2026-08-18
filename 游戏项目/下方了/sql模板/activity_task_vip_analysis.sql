@@ -170,13 +170,26 @@ FROM
                     CASE
                         WHEN e."$part_event" = 'pay_log'
 
-                         AND coalesce(
-                            try_cast(
-                                e."payment"
-                                AS double
-                            ),
-                            0
-                         ) > 0
+                         AND
+                         (
+                            coalesce(
+                                try_cast(
+                                    e."payment"
+                                    AS double
+                                ),
+                                0
+                            ) > 0
+
+                            OR
+
+                            coalesce(
+                                try_cast(
+                                    e."token_payment"
+                                    AS double
+                                ),
+                                0
+                            ) > 0
+                         )
 
                          AND regexp_like(
                             coalesce(
@@ -186,12 +199,23 @@ FROM
                             '${Selector:selector1}'
                          )
 
-                            THEN coalesce(
-                                try_cast(
-                                    e."payment"
-                                    AS double
-                                ),
-                                0
+                            THEN
+                            (
+                                coalesce(
+                                    try_cast(
+                                        e."payment"
+                                        AS double
+                                    ),
+                                    0
+                                )
+                                +
+                                coalesce(
+                                    try_cast(
+                                        e."token_payment"
+                                        AS double
+                                    ),
+                                    0
+                                )
                             ) / 100.0000
 
                         ELSE 0
