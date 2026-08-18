@@ -162,13 +162,13 @@ FROM
 
           AND e."$part_event" = 'pay_log'
 
-          /* 步步现有口径以pay_result=1判断成功付费 */
+          /* 只统计成功付费 */
           AND try_cast(
                 e."pay_result"
                 AS bigint
               ) = 1
 
-          /* 不使用事件payment计金额，金额完全采用上方配置表 */
+          /* 只看开服第18-23天 */
           AND cast(e."$part_date" AS date)
               BETWEEN date_add(
                     'day',
@@ -186,7 +186,6 @@ FROM
     (
         (
             d.product_id,
-            d.payment_cent,
             d.sort_no
         ),
         ()
