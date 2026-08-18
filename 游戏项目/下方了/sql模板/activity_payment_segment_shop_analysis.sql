@@ -22,10 +22,7 @@ SELECT
         2
     ) AS "人均购买次数",
 
-    round(
-        q."消耗资源数量",
-        2
-    ) AS "消耗资源数量",
+    round(q."消耗资源数量", 2) AS "消耗资源数量",
 
     round(
         q."消耗资源数量" * 1.0000
@@ -45,19 +42,10 @@ FROM
         r."分层排序",
         r."消耗资源ID",
 
-        max(
-            r."分层总人数"
-        ) AS "分层总人数",
-
-        sum(
-            r."购买数量"
-        ) AS "购买数量",
-
+        max(r."分层总人数") AS "分层总人数",
+        sum(r."购买数量") AS "购买数量",
         count(*) AS "购买人数",
-
-        sum(
-            r."消耗资源数量"
-        ) AS "消耗资源数量"
+        sum(r."消耗资源数量") AS "消耗资源数量"
 
     FROM
     (
@@ -66,27 +54,19 @@ FROM
             s."分层排序",
             s."分层总人数",
             s."#account_id",
-            cast(
-                s."res_id"
-                AS varchar
-            ) AS "消耗资源ID",
+
+            cast(s."res_id" AS varchar) AS "消耗资源ID",
 
             sum(
                 coalesce(
-                    try_cast(
-                        s."num"
-                        AS bigint
-                    ),
+                    try_cast(s."num" AS bigint),
                     0
                 )
             ) AS "购买数量",
 
             sum(
                 coalesce(
-                    try_cast(
-                        s."res_num"
-                        AS double
-                    ),
+                    try_cast(s."res_num" AS double),
                     0
                 )
             ) AS "消耗资源数量"
@@ -98,12 +78,12 @@ FROM
 
                 sum(
                     CASE
-                        WHEN t."玩家序号" = 1
-                            THEN 1
+                        WHEN t."玩家序号" = 1 THEN 1
                         ELSE 0
                     END
                 ) OVER (
-                    PARTITION BY t."活动付费分层"
+                    PARTITION BY
+                        t."活动付费分层"
                 ) AS "分层总人数"
 
             FROM
@@ -114,31 +94,22 @@ FROM
                     CASE
                         WHEN z."活动付费金额" <= 12
                             THEN 'a.(0,12]'
-
                         WHEN z."活动付费金额" <= 30
                             THEN 'b.(12,30]'
-
                         WHEN z."活动付费金额" <= 68
                             THEN 'c.(30,68]'
-
                         WHEN z."活动付费金额" <= 196
                             THEN 'd.(68,196]'
-
                         WHEN z."活动付费金额" <= 328
                             THEN 'e.(196,328]'
-
                         WHEN z."活动付费金额" <= 648
                             THEN 'f.(328,648]'
-
                         WHEN z."活动付费金额" <= 1000
                             THEN 'g.(648,1000]'
-
                         WHEN z."活动付费金额" <= 3000
                             THEN 'h.(1000,3000]'
-
                         WHEN z."活动付费金额" <= 10000
                             THEN 'i.(3000,10000]'
-
                         ELSE 'j.(10000,+)'
                     END AS "活动付费分层",
 
@@ -170,13 +141,14 @@ FROM
                         sum(
                             b."单笔活动付费金额"
                         ) OVER (
-                            PARTITION BY b."#account_id"
+                            PARTITION BY
+                                b."#account_id"
                         ) AS "活动付费金额"
 
                     FROM
                     (
                         SELECT
-                            user_cohort."#account_id",
+                            active_user."#account_id",
                             e."$part_event",
                             e."#event_time",
                             e."shop_id",
@@ -187,7 +159,6 @@ FROM
                             CASE
                                 WHEN e."$part_event" = 'pay_log'
                                  AND product_cfg."product_id" IS NOT NULL
-
                                     THEN
                                     (
                                         coalesce(
@@ -206,25 +177,20 @@ FROM
                                             0
                                         )
                                     ) / 100.0000
-
                                 ELSE 0
                             END AS "单笔活动付费金额"
 
                         FROM
                         (
-                            SELECT
-                                cast(
-                                    u."#account_id"
-                                    AS varchar
-                                ) AS "#account_id",
+                            SELECT DISTINCT
+                                cast(a."#account_id" AS varchar) AS "#account_id",
 
                                 cast(
                                     date_add(
                                         'day',
                                         activity_param."活动开始天数" - 1,
                                         date(u."server_open_time")
-                                    )
-                                    AS timestamp
+                                    ) AS timestamp
                                 ) AS "活动开始时间",
 
                                 cast(
@@ -232,31 +198,26 @@ FROM
                                         'day',
                                         activity_param."活动结束天数",
                                         date(u."server_open_time")
-                                    )
-                                    AS timestamp
+                                    ) AS timestamp
                                 ) AS "活动结束时间"
 
                             FROM
                             (
                                 SELECT
                                     "#account_id",
-                                    "server_open_time",
+                                    "#event_time"
 
-                                    cast(
-                                        date("create_role_time")
-                                        AS varchar
-                                    ) AS "$part_date"
+                                FROM ta.v_event_41
 
-                                FROM ta.v_user_41
-
-                                WHERE "domain" = 'release'
-
+                                WHERE ${PartDate:date2}
+                                  AND "domain" = 'release'
+                                  AND "$part_event" = 'in_out_log'
                                   AND "#account_id" IS NOT NULL
+                            ) a
 
-                                  AND "create_role_time" IS NOT NULL
-
-                                  AND "server_open_time" IS NOT NULL
-                            ) u
+                            INNER JOIN ta.v_user_41 u
+                                ON cast(a."#account_id" AS varchar)
+                                    = cast(u."#account_id" AS varchar)
 
                             CROSS JOIN
                             (
@@ -266,8 +227,7 @@ FROM
                                             '${Selector:selector2}',
                                             '(?i)between *([0-9]+) *and *([0-9]+)',
                                             1
-                                        )
-                                        AS bigint
+                                        ) AS bigint
                                     ) AS "活动开始天数",
 
                                     try_cast(
@@ -275,22 +235,26 @@ FROM
                                             '${Selector:selector2}',
                                             '(?i)between *([0-9]+) *and *([0-9]+)',
                                             2
-                                        )
-                                        AS bigint
+                                        ) AS bigint
                                     ) AS "活动结束天数"
                             ) activity_param
 
-                            WHERE ${PartDate:date2}
-                        ) user_cohort
+                            WHERE u."domain" = 'release'
+                              AND u."server_open_time" IS NOT NULL
+
+                              AND (
+                                    date_diff(
+                                        'day',
+                                        date(u."server_open_time"),
+                                        date(a."#event_time")
+                                    ) + 1
+                                  ) ${Selector:selector2}
+                        ) active_user
 
                         INNER JOIN
                         (
                             SELECT
-                                cast(
-                                    e0."#account_id"
-                                    AS varchar
-                                ) AS "#account_id",
-
+                                cast(e0."#account_id" AS varchar) AS "#account_id",
                                 e0."$part_event",
                                 e0."#event_time",
                                 e0."product_id",
@@ -303,91 +267,9 @@ FROM
 
                             FROM ta.v_event_41 e0
 
-                            CROSS JOIN
-                            (
-                                SELECT
-                                    cast(
-                                        min(
-                                            date_add(
-                                                'day',
-                                                activity_param0."活动开始天数" - 1,
-                                                date(u0."server_open_time")
-                                            )
-                                        )
-                                        AS varchar
-                                    ) AS "最早扫描日期",
-
-                                    cast(
-                                        max(
-                                            date_add(
-                                                'day',
-                                                activity_param0."活动结束天数" - 1,
-                                                date(u0."server_open_time")
-                                            )
-                                        )
-                                        AS varchar
-                                    ) AS "最晚扫描日期"
-
-                                FROM
-                                (
-                                    SELECT
-                                        "#account_id",
-                                        "server_open_time",
-
-                                        cast(
-                                            date("create_role_time")
-                                            AS varchar
-                                        ) AS "$part_date"
-
-                                    FROM ta.v_user_41
-
-                                    WHERE "domain" = 'release'
-
-                                      AND "#account_id" IS NOT NULL
-
-                                      AND "create_role_time" IS NOT NULL
-
-                                      AND "server_open_time" IS NOT NULL
-                                ) u0
-
-                                CROSS JOIN
-                                (
-                                    SELECT
-                                        try_cast(
-                                            regexp_extract(
-                                                '${Selector:selector2}',
-                                                '(?i)between *([0-9]+) *and *([0-9]+)',
-                                                1
-                                            )
-                                            AS bigint
-                                        ) AS "活动开始天数",
-
-                                        try_cast(
-                                            regexp_extract(
-                                                '${Selector:selector2}',
-                                                '(?i)between *([0-9]+) *and *([0-9]+)',
-                                                2
-                                            )
-                                            AS bigint
-                                        ) AS "活动结束天数"
-                                ) activity_param0
-
-                                WHERE ${PartDate:date2}
-                            ) scan_bounds
-
-                            WHERE e0."domain" = 'release'
-
+                            WHERE ${PartDate:date2}
+                              AND e0."domain" = 'release'
                               AND e0."#account_id" IS NOT NULL
-
-                              AND e0."$part_event" IN
-                              (
-                                  'pay_log',
-                                  'shop_buy_log'
-                              )
-
-                              AND e0."$part_date"
-                                  BETWEEN scan_bounds."最早扫描日期"
-                                      AND scan_bounds."最晚扫描日期"
 
                               AND
                               (
@@ -420,7 +302,6 @@ FROM
 
                                   (
                                       e0."$part_event" = 'shop_buy_log'
-
                                       AND try_cast(
                                           e0."shop_id"
                                           AS bigint
@@ -428,15 +309,11 @@ FROM
                                   )
                               )
                         ) e
-
-                            ON e."#account_id"
-                                = user_cohort."#account_id"
-
+                            ON e."#account_id" = active_user."#account_id"
                            AND e."#event_time"
-                               >= user_cohort."活动开始时间"
-
+                                >= active_user."活动开始时间"
                            AND e."#event_time"
-                               < user_cohort."活动结束时间"
+                                < active_user."活动结束时间"
 
                         LEFT JOIN
                         (
@@ -450,8 +327,7 @@ FROM
 
                             WHERE "product_id" IS NOT NULL
 
-                            GROUP BY
-                                1
+                            GROUP BY 1
 
                             HAVING regexp_like(
                                 coalesce(
@@ -466,9 +342,7 @@ FROM
                                 '${Selector:selector1}'
                             )
                         ) product_cfg
-
                             ON e."$part_event" = 'pay_log'
-
                            AND try_cast(
                                e."product_id"
                                AS bigint
@@ -484,7 +358,6 @@ FROM
         ) s
 
         WHERE s."$part_event" = 'shop_buy_log'
-
           AND s."res_id" IS NOT NULL
 
         GROUP BY
