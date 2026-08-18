@@ -239,9 +239,36 @@ FROM
                                 ) AS "活动结束天数"
                         ) activity_param
 
+                        CROSS JOIN
+                        (
+                            SELECT
+                                min(cast(d."$part_date" AS date)) AS "统计开始日期",
+                                max(cast(d."$part_date" AS date)) AS "统计结束日期"
+                            FROM
+                            (
+                                SELECT "$part_date"
+                                FROM ta.v_event_41
+                                WHERE ${PartDate:date2}
+                            ) d
+                        ) stats_period
+
                         WHERE u."domain" = 'release'
                           AND u."server_open_time" IS NOT NULL
 
+                          /* 仅保留活动完整周期全部落在统计周期内的成熟区服 */
+                          AND date_add(
+                                'day',
+                                activity_param."活动开始天数" - 1,
+                                date(u."server_open_time")
+                              ) >= stats_period."统计开始日期"
+
+                          AND date_add(
+                                'day',
+                                activity_param."活动结束天数" - 1,
+                                date(u."server_open_time")
+                              ) <= stats_period."统计结束日期"
+
+                          /* 玩家必须在真实活动周期内有活跃 */
                           AND (
                                 date_diff(
                                     'day',
