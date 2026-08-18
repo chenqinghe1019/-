@@ -1,6 +1,6 @@
 project: 下方了
 project_id: 41
-updated_at: '2026-08-17'
+updated_at: '2026-08-18'
 name: 活动商店分析模板
 status: active
 source: 2026-07-24 活动分析SQL（File Library: 粘贴的文本 (1).txt）
@@ -8,7 +8,7 @@ source: 2026-07-24 活动分析SQL（File Library: 粘贴的文本 (1).txt）
 rules:
   activity_window:
     parameter: '${PartDate:date}'
-    definition: 所选区间用于活动行为统计；所选区间第一天视为活动开启日。
+    definition: 所选区间用于旧版活动行为统计；所选区间第一天视为活动开启日。
   payment_segment:
     name: 活动开启前付费分层
     definition: 玩家截至活动开启日前的历史累计付费金额分层；活动开启日及活动期间充值不计入分层，活动期间层级固定。
@@ -47,7 +47,55 @@ rules:
       - 消耗资源数量
       - 消耗资源占比
 
+  activity_payment_segment_shop:
+    name: 活动付费分层-兑换商店购买分析
+    sql_template: 游戏项目/下方了/sql模板/activity_payment_segment_shop_analysis.sql
+    user_filter: '${PartDate:date2}'
+    activity_day_filter: '${Selector:selector2}'
+    activity_day_example: 'between 35 and 40'
+    activity_product_type_filter: '${Selector:selector1}'
+    shop_id_filter: '${Selector:selector4}'
+    shop_id_examples:
+      - '= 1001'
+      - 'in (1001,1002)'
+    activity_payment_amount: '(payment + token_payment) / 100，且 payment > 0 OR token_payment > 0'
+    payment_segment_thresholds:
+      - a_(0,12]: 0 < pay <= 12
+      - b_(12,30]: 12 < pay <= 30
+      - c_(30,68]: 30 < pay <= 68
+      - d_(68,196]: 68 < pay <= 196
+      - e_(196,328]: 196 < pay <= 328
+      - f_(328,648]: 328 < pay <= 648
+      - g_(648,1000]: 648 < pay <= 1000
+      - h_(1000,3000]: 1000 < pay <= 3000
+      - i_(3000,10000]: 3000 < pay <= 10000
+      - j_(10000,+): pay > 10000
+    shop_event: shop_buy_log
+    shop_fields:
+      shop_id: 商店ID
+      goods_id: 商品ID
+      num: 购买数量
+      res_id: 消耗资源ID
+      res_num: 本次消耗资源数量
+      res_count: 结算后资源剩余数量，不用于消耗统计
+    grouping:
+      - 活动付费分层
+      - res_id
+    metrics:
+      purchase_quantity: sum(num)
+      buyer_count: 购买该res_id的去重玩家数
+      buyer_rate_in_segment: 购买人数 / 该活动付费分层总人数
+      avg_purchase_count: 购买数量 / 购买人数
+      resource_cost: sum(res_num)
+      resource_cost_share: 同一res_id下该付费分层消耗数量 / 该res_id所有付费分层总消耗数量
+    performance:
+      - 活动付费与shop_buy_log共用一次活动窗口事件扫描。
+      - 先按目标玩家区服开服时间与selector2推导活动开始/结束时间。
+      - 使用全局最早活动开始日期与最晚活动结束日期裁剪v_event_41的$part_date。
+      - 先聚合到玩家×res_id，再做最终汇总，减少count(distinct)开销。
+
 notes:
   - 数数动态日期参数必须作为完整 WHERE 条件使用，不写 e.${PartDate:date} 这类拼接形式。
-  - 活动开启前分层与活动期付费表现是两个概念；后续分析活动付费转化时不要用活动期间充值反向重分层。
-  - 活动分析模板暂时统一使用下方了常用固定付费分层，不再使用 Selector 动态断点。
+  - 旧版“活动开启前付费分层商店分析”与新版“活动付费分层商店分析”是两套不同口径，不混用。
+  - 新版活动付费分层只包含指定activity product_type_two下活动期间累计付费金额>0的玩家。
+  - shop_buy_log字段已确认：shop_id, goods_id, num, res_id, res_num, res_count, discount, items。
