@@ -54,21 +54,17 @@ FROM
         SELECT DISTINCT
             cast(a."#account_id" AS varchar) AS "#account_id",
 
-            cast(
-                date_add(
-                    'day',
-                    17,
-                    date(u."server_open_time")
-                ) AS timestamp
-            ) AS "活动开始时间",
+            date_add(
+                'day',
+                17,
+                date(u."server_open_time")
+            ) AS "活动开始日期",
 
-            cast(
-                date_add(
-                    'day',
-                    23,
-                    date(u."server_open_time")
-                ) AS timestamp
-            ) AS "活动结束时间"
+            date_add(
+                'day',
+                22,
+                date(u."server_open_time")
+            ) AS "活动结束日期"
 
         FROM
         (
@@ -123,7 +119,7 @@ FROM
                 date(u."server_open_time")
               ) <= stats_period."统计结束日期"
 
-          /* 玩家必须在开服第18~23天内至少活跃过一次 */
+          /* 按自然日判断玩家是否在开服第18~23天内活跃 */
           AND date(a."#event_time")
               BETWEEN date_add(
                     'day',
@@ -141,7 +137,7 @@ FROM
     (
         SELECT
             cast(e."#account_id" AS varchar) AS "#account_id",
-            e."#event_time",
+            date(e."#event_time") AS "付费日期",
 
             CASE try_cast(e."product_id" AS bigint)
                 WHEN 20031 THEN 600 / 100.0000
@@ -181,9 +177,8 @@ FROM
         ON pay_event."#account_id"
             = active_user."#account_id"
 
-       AND pay_event."#event_time"
-            >= active_user."活动开始时间"
-
-       AND pay_event."#event_time"
-            < active_user."活动结束时间"
+       /* 付费也只按自然日判断开服第18~23天 */
+       AND pay_event."付费日期"
+            BETWEEN active_user."活动开始日期"
+                AND active_user."活动结束日期"
 ) q
