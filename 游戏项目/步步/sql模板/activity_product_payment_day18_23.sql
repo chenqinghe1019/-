@@ -29,17 +29,19 @@ SELECT
 FROM
 (
     SELECT
-        count(*) AS "活动活跃人数",
+        count(
+            DISTINCT active_user."#account_id"
+        ) AS "活动活跃人数",
 
-        sum(
-            CASE
-                WHEN p."活动付费金额" > 0 THEN 1
-                ELSE 0
+        count(
+            DISTINCT CASE
+                WHEN pay_event."配置金额" > 0
+                    THEN active_user."#account_id"
             END
         ) AS "活动付费人数",
 
         sum(
-            coalesce(p."活动付费金额", 0)
+            coalesce(pay_event."配置金额", 0)
         ) AS "活动付费金额"
 
     FROM
@@ -133,53 +135,50 @@ FROM
     LEFT JOIN
     (
         SELECT
-            pay_user."#account_id",
-            sum(pay_user."配置金额") AS "活动付费金额"
+            cast(e."#account_id" AS varchar) AS "#account_id",
+            e."#event_time",
 
-        FROM
-        (
-            SELECT
-                cast(e."#account_id" AS varchar) AS "#account_id",
-                e."#event_time",
+            CASE try_cast(e."product_id" AS bigint)
+                WHEN 20031 THEN 600 / 100.0000
+                WHEN 20032 THEN 1200 / 100.0000
+                WHEN 20033 THEN 3000 / 100.0000
+                WHEN 20034 THEN 12800 / 100.0000
+                WHEN 20035 THEN 32800 / 100.0000
+                WHEN 20036 THEN 64800 / 100.0000
+                ELSE 0
+            END AS "配置金额"
 
-                CASE try_cast(e."product_id" AS bigint)
-                    WHEN 20031 THEN 600 / 100.0000
-                    WHEN 20032 THEN 1200 / 100.0000
-                    WHEN 20033 THEN 3000 / 100.0000
-                    WHEN 20034 THEN 12800 / 100.0000
-                    WHEN 20035 THEN 32800 / 100.0000
-                    WHEN 20036 THEN 64800 / 100.0000
-                    ELSE 0
-                END AS "配置金额"
+        FROM ta.v_event_22 e
 
-            FROM ta.v_event_22 e
+        WHERE ${PartDate:date2}
+          AND e."domain" = 'release'
+          AND e."$part_event" = 'pay_log'
+          AND e."#account_id" IS NOT NULL
 
-            WHERE ${PartDate:date2}
-              AND e."domain" = 'release'
-              AND e."$part_event" = 'pay_log'
-              AND e."#account_id" IS NOT NULL
+          AND try_cast(
+                e."pay_result"
+                AS bigint
+              ) = 1
 
-              AND try_cast(
-                    e."pay_result"
-                    AS bigint
-                  ) = 1
+          AND try_cast(
+                e."product_id"
+                AS bigint
+              ) IN
+              (
+                  20031,
+                  20032,
+                  20033,
+                  20034,
+                  20035,
+                  20036
+              )
+    ) pay_event
+        ON pay_event."#account_id"
+            = active_user."#account_id"
 
-              AND try_cast(
-                    e."product_id"
-                    AS bigint
-                  ) IN
-                  (
-                      20031,
-                      20032,
-                      20033,
-                      20034,
-                      20035,
-                      20036
-                  )
-        ) pay_user
+       AND pay_event."#event_time"
+            >= active_user."活动开始时间"
 
-        GROUP BY
-            1
-    ) p
-        ON p."#account_id" = active_user."#account_id"
+       AND pay_event."#event_time"
+            < active_user."活动结束时间"
 ) q
