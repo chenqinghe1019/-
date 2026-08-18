@@ -1,195 +1,185 @@
 SELECT
-    row_number() OVER (
-        ORDER BY q."排序"
-    ) AS "序号",
-
-    q."付费项ID",
-    q."配置单价（元）",
-    q."购买次数",
-    q."付费人数",
+    1 AS "序号",
+    q."活动活跃人数",
+    q."活动付费人数",
 
     round(
-        q."购买次数" * 1.0000
-        / nullif(q."付费人数", 0),
-        2
-    ) AS "人均购买次数",
+        q."活动付费人数" * 1.0000
+        / nullif(q."活动活跃人数", 0),
+        4
+    ) AS "活动付费率",
 
     round(
-        q."付费金额",
+        q."活动付费金额",
         2
-    ) AS "付费金额",
-
-    CASE
-        WHEN q."排序" = 0
-            THEN 1.0000
-        ELSE round(
-            q."付费金额" * 1.0000
-            / nullif(
-                sum(
-                    CASE
-                        WHEN q."排序" > 0
-                            THEN q."付费金额"
-                        ELSE 0
-                    END
-                ) OVER (),
-                0
-            ),
-            4
-        )
-    END AS "付费金额占比",
+    ) AS "活动付费金额",
 
     round(
-        q."付费金额" * 1.0000
-        / nullif(q."付费人数", 0),
+        q."活动付费金额" * 1.0000
+        / nullif(q."活动活跃人数", 0),
         2
-    ) AS "人均付费金额"
+    ) AS "活动ARPU",
+
+    round(
+        q."活动付费金额" * 1.0000
+        / nullif(q."活动付费人数", 0),
+        2
+    ) AS "活动ARPPU"
 
 FROM
 (
     SELECT
-        CASE
-            WHEN grouping(d.product_id) = 1
-                THEN '汇总'
-            ELSE cast(d.product_id AS varchar)
-        END AS "付费项ID",
+        count(*) AS "活动活跃人数",
 
-        CASE
-            WHEN grouping(d.product_id) = 1
-                THEN NULL
-            ELSE max(d.unit_price)
-        END AS "配置单价（元）",
+        sum(
+            CASE
+                WHEN p."活动付费金额" > 0 THEN 1
+                ELSE 0
+            END
+        ) AS "活动付费人数",
 
-        CASE
-            WHEN grouping(d.product_id) = 1
-                THEN 0
-            ELSE max(d.sort_no)
-        END AS "排序",
-
-        count(*) AS "购买次数",
-
-        count(
-            DISTINCT d."#account_id"
-        ) AS "付费人数",
-
-        sum(d.unit_price) AS "付费金额"
+        sum(
+            coalesce(p."活动付费金额", 0)
+        ) AS "活动付费金额"
 
     FROM
     (
-        SELECT
-            cast(e."#account_id" AS varchar) AS "#account_id",
-            product_cfg.product_id,
-            product_cfg.payment_cent / 100.0000 AS unit_price,
-            product_cfg.sort_no
+        SELECT DISTINCT
+            cast(a."#account_id" AS varchar) AS "#account_id",
 
-        FROM ta.v_event_22 e
+            cast(
+                date_add(
+                    'day',
+                    17,
+                    date(u."server_open_time")
+                ) AS timestamp
+            ) AS "活动开始时间",
 
-        INNER JOIN
+            cast(
+                date_add(
+                    'day',
+                    23,
+                    date(u."server_open_time")
+                ) AS timestamp
+            ) AS "活动结束时间"
+
+        FROM
         (
-            SELECT DISTINCT
-                user_base."#account_id",
-                user_base.server_open_date
+            SELECT
+                "#account_id",
+                "#event_time"
+
+            FROM ta.v_event_22
+
+            WHERE ${PartDate:date2}
+              AND "domain" = 'release'
+              AND "$part_event" = 'in_out_log'
+              AND "#account_id" IS NOT NULL
+        ) a
+
+        INNER JOIN ta.v_user_22 u
+            ON cast(a."#account_id" AS varchar)
+                = cast(u."#account_id" AS varchar)
+
+        CROSS JOIN
+        (
+            SELECT
+                min(
+                    cast(d."$part_date" AS date)
+                ) AS "统计开始日期",
+
+                max(
+                    cast(d."$part_date" AS date)
+                ) AS "统计结束日期"
 
             FROM
             (
-                SELECT
-                    cast(u."#account_id" AS varchar) AS "#account_id",
-                    date(u."server_open_time") AS server_open_date
+                SELECT "$part_date"
+                FROM ta.v_event_22
+                WHERE ${PartDate:date2}
+            ) d
+        ) stats_period
 
-                FROM ta.v_user_22 u
+        WHERE u."domain" = 'release'
+          AND u."server_open_time" IS NOT NULL
 
-                WHERE u."domain" = 'release'
-                  AND u."#account_id" IS NOT NULL
-                  AND u."server_open_time" IS NOT NULL
-            ) user_base
+          /* 只保留开服第18~23天完整落在统计周期内的成熟区服 */
+          AND date_add(
+                'day',
+                17,
+                date(u."server_open_time")
+              ) >= stats_period."统计开始日期"
 
-            CROSS JOIN
-            (
-                SELECT
-                    min(
-                        cast(d."$part_date" AS date)
-                    ) AS stats_start_date,
+          AND date_add(
+                'day',
+                22,
+                date(u."server_open_time")
+              ) <= stats_period."统计结束日期"
 
-                    max(
-                        cast(d."$part_date" AS date)
-                    ) AS stats_end_date
-
-                FROM
-                (
-                    SELECT "$part_date"
-                    FROM ta.v_event_22
-                    WHERE ${PartDate:date2}
-                ) d
-            ) stats_period
-
-            /* 只保留开服18-23天完整落在统计周期内的成熟区服 */
-            WHERE date_add(
-                    'day',
-                    17,
-                    user_base.server_open_date
-                  ) >= stats_period.stats_start_date
-
-              AND date_add(
-                    'day',
-                    22,
-                    user_base.server_open_date
-                  ) <= stats_period.stats_end_date
-        ) mature_user
-            ON cast(e."#account_id" AS varchar)
-                = mature_user."#account_id"
-
-        INNER JOIN
-        (
-            VALUES
-                (20031, 600.0000, 1),
-                (20032, 1200.0000, 2),
-                (20033, 3000.0000, 3),
-                (20034, 12800.0000, 4),
-                (20035, 32800.0000, 5),
-                (20036, 64800.0000, 6)
-        ) AS product_cfg (
-            product_id,
-            payment_cent,
-            sort_no
-        )
-            ON try_cast(
-                e."product_id"
-                AS bigint
-            ) = product_cfg.product_id
-
-        WHERE ${PartDate:date2}
-
-          AND e."domain" = 'release'
-
-          AND e."$part_event" = 'pay_log'
-
-          /* 只统计成功付费 */
-          AND try_cast(
-                e."pay_result"
-                AS bigint
-              ) = 1
-
-          /* 只看开服第18-23天 */
-          AND cast(e."$part_date" AS date)
+          /* 玩家必须在开服第18~23天内至少活跃过一次 */
+          AND date(a."#event_time")
               BETWEEN date_add(
                     'day',
                     17,
-                    mature_user.server_open_date
+                    date(u."server_open_time")
               )
               AND date_add(
                     'day',
                     22,
-                    mature_user.server_open_date
+                    date(u."server_open_time")
               )
-    ) d
+    ) active_user
 
-    GROUP BY GROUPING SETS
+    LEFT JOIN
     (
-        (
-            d.product_id,
-            d.sort_no
-        ),
-        ()
-    )
-) q
+        SELECT
+            pay_user."#account_id",
+            sum(pay_user."配置金额") AS "活动付费金额"
 
-ORDER BY q."排序"
+        FROM
+        (
+            SELECT
+                cast(e."#account_id" AS varchar) AS "#account_id",
+                e."#event_time",
+
+                CASE try_cast(e."product_id" AS bigint)
+                    WHEN 20031 THEN 600 / 100.0000
+                    WHEN 20032 THEN 1200 / 100.0000
+                    WHEN 20033 THEN 3000 / 100.0000
+                    WHEN 20034 THEN 12800 / 100.0000
+                    WHEN 20035 THEN 32800 / 100.0000
+                    WHEN 20036 THEN 64800 / 100.0000
+                    ELSE 0
+                END AS "配置金额"
+
+            FROM ta.v_event_22 e
+
+            WHERE ${PartDate:date2}
+              AND e."domain" = 'release'
+              AND e."$part_event" = 'pay_log'
+              AND e."#account_id" IS NOT NULL
+
+              AND try_cast(
+                    e."pay_result"
+                    AS bigint
+                  ) = 1
+
+              AND try_cast(
+                    e."product_id"
+                    AS bigint
+                  ) IN
+                  (
+                      20031,
+                      20032,
+                      20033,
+                      20034,
+                      20035,
+                      20036
+                  )
+        ) pay_user
+
+        GROUP BY
+            1
+    ) p
+        ON p."#account_id" = active_user."#account_id"
+) q
