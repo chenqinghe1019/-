@@ -173,7 +173,7 @@ FROM
                       AND "#account_id" IS NOT NULL
                       AND "create_role_time" IS NOT NULL
                 ) u
-                WHERE ${PartDate2:date}
+                WHERE ${PartDate:date2}
             ) user_cohort
                 ON cast(e."#account_id" AS varchar) = user_cohort."#account_id"
 
