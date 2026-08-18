@@ -108,16 +108,19 @@ CROSS JOIN
             DISTINCT cast(e."#account_id" AS varchar)
         ) AS "活动付费人数",
 
-        sum(
-            CASE try_cast(e."product_id" AS bigint)
-                WHEN 20031 THEN 600 / 100.0000
-                WHEN 20032 THEN 1200 / 100.0000
-                WHEN 20033 THEN 3000 / 100.0000
-                WHEN 20034 THEN 12800 / 100.0000
-                WHEN 20035 THEN 32800 / 100.0000
-                WHEN 20036 THEN 64800 / 100.0000
-                ELSE 0
-            END
+        coalesce(
+            sum(
+                CASE try_cast(e."product_id" AS bigint)
+                    WHEN 20031 THEN 600 / 100.0000
+                    WHEN 20032 THEN 1200 / 100.0000
+                    WHEN 20033 THEN 3000 / 100.0000
+                    WHEN 20034 THEN 12800 / 100.0000
+                    WHEN 20035 THEN 32800 / 100.0000
+                    WHEN 20036 THEN 64800 / 100.0000
+                    ELSE 0
+                END
+            ),
+            0
         ) AS "活动付费金额"
 
     FROM ta.v_event_22 e
