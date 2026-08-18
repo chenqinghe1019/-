@@ -1,0 +1,11 @@
+project: 下方了
+updated_at: '2026-08-18'
+topic: 8月11日前后新增玩家 D5-D7 诡宝相关战力提升对比
+rules:
+  - 新增分组按 ta.v_user_41.create_role_time：date(create_role_time) < date '2026-08-11' 为“8月11日前新增”，否则为“8月11日及后新增”。
+  - 新增第N天按创角日计数：date_diff('day', date(create_role_time), date(event_time)) + 1，因此 D5-D7 对应差值 4-6 天。
+  - 为避免尚未走到D7的新增被错误记0，D5-D7完整比较仅纳入 date(create_role_time) <= date_add('day', -6, current_date) 的成熟新增。
+  - 分层沿用首日付费分层：a_free=0；b_(0,6]；c_(6,30]；d_(30,100]；e_(100,300]；f_(300,500]；g_(500,1000]；h_1000+；pay_log.payment 单位分，/100转元，不限制 pay_result。
+  - 诡宝相关战力提升按 change_power_log 统计，change_reason=5635 为升星、5636 为升阶，num 为本次战力变化量，仅累计正向 num。
+  - D5-D7输出同时保留全体成熟新增人均、当日活跃玩家人均、战力提升覆盖率，避免把留存变化误判为单纯养成强度变化。
+  - 新增日期筛选继续通过用户表派生 $part_date=cast(date(create_role_time) as varchar)，并使用独立条件 ${PartDate:date} 控制。
