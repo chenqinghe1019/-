@@ -7,7 +7,7 @@
 -- 4. pay_log.payment 单位为分，/100 转元；仅统计 payment>0。
 -- 5. D1=创角当天/开服当天；付费留存=D1付费用户中第N日有 log_in_out 活跃的人数 / D1付费用户数，不要求第N日再次付费，不乘100。
 -- 6. 服务器维度：按 server_open_time 日期分组，只取开服当天创建角色，不剔除滚服。
--- 7. 1-1 对应 map_id=101；通关使用 battle_result_sever 成功战报判断。
+-- 7. 1-1 对应 map_id=101；通关使用 battle_result 成功战报判断。
 -- 8. 输出“新增后第N日/开服后第N日”使用纯数字 day_no，不加 D，方便表格数值排序。
 
 /* ============================================================
@@ -49,7 +49,7 @@ LEFT JOIN
     SELECT
         cast(e."#account_id" AS varchar) "#account_id"
     FROM ta.v_event_22 e
-    WHERE e."$part_event" = 'battle_result_sever'
+    WHERE e."$part_event" = 'battle_result'
       AND e."domain" = 'release'
       AND e."#account_id" IS NOT NULL
       AND try_cast(e."map_id" AS bigint) = 101
