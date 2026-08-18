@@ -1,11 +1,12 @@
 SELECT
     1 AS "序号",
     q."活动活跃人数",
+    q."活动参与人数",
     q."活动付费人数",
 
     round(
         q."活动付费人数" * 1.0000
-        / nullif(q."活动活跃人数", 0),
+        / nullif(q."活动参与人数", 0),
         4
     ) AS "活动付费率",
 
@@ -16,7 +17,7 @@ SELECT
 
     round(
         q."活动付费金额" * 1.0000
-        / nullif(q."活动活跃人数", 0),
+        / nullif(q."活动参与人数", 0),
         2
     ) AS "活动ARPU",
 
@@ -32,6 +33,10 @@ FROM
         count(
             DISTINCT active_user."#account_id"
         ) AS "活动活跃人数",
+
+        count(
+            DISTINCT active_user."#account_id"
+        ) AS "活动参与人数",
 
         count(
             DISTINCT CASE
