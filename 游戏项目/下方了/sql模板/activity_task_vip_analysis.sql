@@ -3,7 +3,7 @@ SELECT
         ORDER BY q."分层排序"
     ) AS "序号",
 
-    q."VIP层级（活动开始前）",
+    q."VIP层级（首次参与前）",
     q."活动活跃人数",
     q."活动参与人数",
 
@@ -45,7 +45,7 @@ FROM
             WHEN grouping(p."VIP层级") = 1
                 THEN '汇总'
             ELSE p."VIP层级"
-        END AS "VIP层级（活动开始前）",
+        END AS "VIP层级（首次参与前）",
 
         CASE
             WHEN grouping(p."VIP层级") = 1
@@ -86,146 +86,169 @@ FROM
     FROM
     (
         SELECT
-            x."#account_id",
+            y."#account_id",
 
             CASE
-                WHEN coalesce(v."活动开始前VIP等级", 0) BETWEEN 0 AND 3
+                WHEN coalesce(y."VIP等级", 0) BETWEEN 0 AND 3
                     THEN 'a.V0-V3'
-                WHEN coalesce(v."活动开始前VIP等级", 0) BETWEEN 4 AND 6
+                WHEN coalesce(y."VIP等级", 0) BETWEEN 4 AND 6
                     THEN 'b.V4-V6'
-                WHEN coalesce(v."活动开始前VIP等级", 0) BETWEEN 7 AND 9
+                WHEN coalesce(y."VIP等级", 0) BETWEEN 7 AND 9
                     THEN 'c.V7-V9'
                 ELSE 'd.V10+'
             END AS "VIP层级",
 
             CASE
-                WHEN coalesce(v."活动开始前VIP等级", 0) BETWEEN 0 AND 3 THEN 1
-                WHEN coalesce(v."活动开始前VIP等级", 0) BETWEEN 4 AND 6 THEN 2
-                WHEN coalesce(v."活动开始前VIP等级", 0) BETWEEN 7 AND 9 THEN 3
+                WHEN coalesce(y."VIP等级", 0) BETWEEN 0 AND 3 THEN 1
+                WHEN coalesce(y."VIP等级", 0) BETWEEN 4 AND 6 THEN 2
+                WHEN coalesce(y."VIP等级", 0) BETWEEN 7 AND 9 THEN 3
                 ELSE 4
             END AS "分层排序",
 
-            x."是否活动活跃",
-            x."是否参与活动",
-            x."活动付费金额"
+            y."是否活动活跃",
+            y."是否参与活动",
+            y."活动付费金额"
 
         FROM
         (
             SELECT
-                cast(e."#account_id" AS varchar) AS "#account_id",
+                x."#account_id",
+                x."是否活动活跃",
+                x."是否参与活动",
+                x."活动付费金额",
 
-                max(
-                    CASE
-                        WHEN e."$part_event" = 'in_out_log'
-                            THEN 1
-                        ELSE 0
-                    END
-                ) AS "是否活动活跃",
-
-                max(
-                    CASE
-                        WHEN e."$part_event" = 'mission_reward_log'
-                         AND try_cast(e."task_type" AS bigint) ${Selector:selector}
-                            THEN 1
-                        ELSE 0
-                    END
-                ) AS "是否参与活动",
-
-                sum(
-                    CASE
-                        WHEN e."$part_event" = 'pay_log'
-                         AND (
-                            coalesce(try_cast(e."payment" AS double), 0) > 0
-                            OR coalesce(try_cast(e."token_payment" AS double), 0) > 0
-                         )
-                         AND regexp_like(
-                            coalesce(product_cfg."product_type_two", ''),
-                            '${Selector:selector1}'
-                         )
-                            THEN (
-                                coalesce(try_cast(e."payment" AS double), 0)
-                                + coalesce(try_cast(e."token_payment" AS double), 0)
-                            ) / 100.0000
-                        ELSE 0
-                    END
-                ) AS "活动付费金额"
-
-            FROM
-            (
-                SELECT *
-                FROM ta.v_event_41
-                WHERE ${PartDate:date}
-                  AND "domain" = 'release'
-                  AND "#account_id" IS NOT NULL
-            ) e
-
-            INNER JOIN
-            (
-                SELECT DISTINCT
-                    cast(u."#account_id" AS varchar) AS "#account_id"
-                FROM
-                (
-                    SELECT
-                        "#account_id",
-                        cast(date("create_role_time") AS varchar) AS "$part_date"
-                    FROM ta.v_user_41
-                    WHERE "domain" = 'release'
-                      AND "#account_id" IS NOT NULL
-                      AND "create_role_time" IS NOT NULL
-                ) u
-                WHERE ${PartDate:date2}
-            ) user_cohort
-                ON cast(e."#account_id" AS varchar) = user_cohort."#account_id"
-
-            LEFT JOIN
-            (
-                SELECT
-                    try_cast("product_id" AS bigint) AS "product_id",
-                    max(cast("product_type_two" AS varchar)) AS "product_type_two"
-                FROM ta_ext.product_id_41
-                WHERE "product_id" IS NOT NULL
-                GROUP BY 1
-            ) product_cfg
-                ON e."$part_event" = 'pay_log'
-               AND try_cast(e."product_id" AS bigint) = product_cfg."product_id"
-
-            GROUP BY 1
-        ) x
-
-        LEFT JOIN
-        (
-            SELECT
-                cast(vip_e."#account_id" AS varchar) AS "#account_id",
                 max_by(
                     try_cast(vip_e."after" AS bigint),
                     vip_e."#event_time"
-                ) AS "活动开始前VIP等级"
+                ) AS "VIP等级"
 
-            FROM ta.v_event_41 vip_e
-
-            CROSS JOIN
+            FROM
             (
                 SELECT
-                    cast(
-                        min(cast(d."$part_date" AS date))
-                        AS timestamp
-                    ) AS "活动开始时间"
+                    cast(e."#account_id" AS varchar) AS "#account_id",
+
+                    max(
+                        CASE
+                            WHEN e."$part_event" = 'in_out_log'
+                                THEN 1
+                            ELSE 0
+                        END
+                    ) AS "是否活动活跃",
+
+                    max(
+                        CASE
+                            WHEN e."$part_event" = 'mission_reward_log'
+                             AND try_cast(e."task_type" AS bigint) ${Selector:selector}
+                                THEN 1
+                            ELSE 0
+                        END
+                    ) AS "是否参与活动",
+
+                    min(
+                        CASE
+                            WHEN e."$part_event" = 'mission_reward_log'
+                             AND try_cast(e."task_type" AS bigint) ${Selector:selector}
+                                THEN e."#event_time"
+                        END
+                    ) AS "首次参与时间",
+
+                    max(activity_window."活动结束时间") AS "活动结束时间",
+
+                    sum(
+                        CASE
+                            WHEN e."$part_event" = 'pay_log'
+                             AND (
+                                coalesce(try_cast(e."payment" AS double), 0) > 0
+                                OR coalesce(try_cast(e."token_payment" AS double), 0) > 0
+                             )
+                             AND regexp_like(
+                                coalesce(product_cfg."product_type_two", ''),
+                                '${Selector:selector1}'
+                             )
+                                THEN (
+                                    coalesce(try_cast(e."payment" AS double), 0)
+                                    + coalesce(try_cast(e."token_payment" AS double), 0)
+                                ) / 100.0000
+                            ELSE 0
+                        END
+                    ) AS "活动付费金额"
+
                 FROM
                 (
-                    SELECT "$part_date"
+                    SELECT *
                     FROM ta.v_event_41
                     WHERE ${PartDate:date}
-                ) d
-            ) activity_date
+                      AND "domain" = 'release'
+                      AND "#account_id" IS NOT NULL
+                ) e
 
-            WHERE vip_e."$part_event" = 'vip_change_log'
-              AND vip_e."domain" = 'release'
-              AND vip_e."#account_id" IS NOT NULL
-              AND vip_e."#event_time" < activity_date."活动开始时间"
+                INNER JOIN
+                (
+                    SELECT DISTINCT
+                        cast(u."#account_id" AS varchar) AS "#account_id"
+                    FROM
+                    (
+                        SELECT
+                            "#account_id",
+                            cast(date("create_role_time") AS varchar) AS "$part_date"
+                        FROM ta.v_user_41
+                        WHERE "domain" = 'release'
+                          AND "#account_id" IS NOT NULL
+                          AND "create_role_time" IS NOT NULL
+                    ) u
+                    WHERE ${PartDate:date2}
+                ) user_cohort
+                    ON cast(e."#account_id" AS varchar) = user_cohort."#account_id"
 
-            GROUP BY 1
-        ) v
-            ON x."#account_id" = v."#account_id"
+                CROSS JOIN
+                (
+                    SELECT
+                        cast(
+                            date_add(
+                                'day',
+                                1,
+                                max(cast(d."$part_date" AS date))
+                            ) AS timestamp
+                        ) AS "活动结束时间"
+                    FROM
+                    (
+                        SELECT "$part_date"
+                        FROM ta.v_event_41
+                        WHERE ${PartDate:date}
+                    ) d
+                ) activity_window
+
+                LEFT JOIN
+                (
+                    SELECT
+                        try_cast("product_id" AS bigint) AS "product_id",
+                        max(cast("product_type_two" AS varchar)) AS "product_type_two"
+                    FROM ta_ext.product_id_41
+                    WHERE "product_id" IS NOT NULL
+                    GROUP BY 1
+                ) product_cfg
+                    ON e."$part_event" = 'pay_log'
+                   AND try_cast(e."product_id" AS bigint) = product_cfg."product_id"
+
+                GROUP BY 1
+            ) x
+
+            LEFT JOIN ta.v_event_41 vip_e
+                ON cast(vip_e."#account_id" AS varchar) = x."#account_id"
+               AND vip_e."$part_event" = 'vip_change_log'
+               AND vip_e."domain" = 'release'
+               AND vip_e."#account_id" IS NOT NULL
+               AND vip_e."#event_time" < coalesce(
+                    x."首次参与时间",
+                    x."活动结束时间"
+               )
+
+            GROUP BY
+                1,
+                2,
+                3,
+                4
+        ) y
     ) p
 
     GROUP BY GROUPING SETS
