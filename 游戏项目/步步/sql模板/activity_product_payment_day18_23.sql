@@ -55,13 +55,8 @@ FROM
     CROSS JOIN
     (
         SELECT
-            min(
-                cast(d."$part_date" AS date)
-            ) AS "统计开始日期",
-
-            max(
-                cast(d."$part_date" AS date)
-            ) AS "统计结束日期"
+            min(cast(d."$part_date" AS date)) AS "统计开始日期",
+            max(cast(d."$part_date" AS date)) AS "统计结束日期"
 
         FROM
         (
@@ -76,7 +71,6 @@ FROM
       AND a."$part_event" = 'log_in_out'
       AND a."#account_id" IS NOT NULL
 
-      /* 只保留开服第18~23天完整落在统计周期内的成熟区服 */
       AND date_add(
             'day',
             17,
@@ -89,7 +83,6 @@ FROM
             user_base."开服日期"
           ) <= stats_period."统计结束日期"
 
-      /* 活跃按自然日统计开服第18~23天 */
       AND date(a."#event_time")
           BETWEEN date_add(
                 'day',
@@ -147,13 +140,8 @@ CROSS JOIN
     CROSS JOIN
     (
         SELECT
-            min(
-                cast(d."$part_date" AS date)
-            ) AS "统计开始日期",
-
-            max(
-                cast(d."$part_date" AS date)
-            ) AS "统计结束日期"
+            min(cast(d."$part_date" AS date)) AS "统计开始日期",
+            max(cast(d."$part_date" AS date)) AS "统计结束日期"
 
         FROM
         (
@@ -168,15 +156,7 @@ CROSS JOIN
       AND e."$part_event" = 'pay_log'
       AND e."#account_id" IS NOT NULL
 
-      AND try_cast(
-            e."pay_result"
-            AS bigint
-          ) = 1
-
-      AND try_cast(
-            e."product_id"
-            AS bigint
-          ) IN
+      AND try_cast(e."product_id" AS bigint) IN
           (
               20031,
               20032,
@@ -186,7 +166,6 @@ CROSS JOIN
               20036
           )
 
-      /* 只保留开服第18~23天完整落在统计周期内的成熟区服 */
       AND date_add(
             'day',
             17,
@@ -199,7 +178,6 @@ CROSS JOIN
             user_base."开服日期"
           ) <= stats_period."统计结束日期"
 
-      /* 付费同样按自然日统计开服第18~23天 */
       AND date(e."#event_time")
           BETWEEN date_add(
                 'day',
