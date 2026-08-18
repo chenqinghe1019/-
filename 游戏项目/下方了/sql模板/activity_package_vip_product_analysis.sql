@@ -2,6 +2,7 @@ SELECT
     row_number() OVER (
         ORDER BY
             q."分层排序",
+            q."汇总排序",
             q."礼包类型",
             q."礼包名"
     ) AS "序号",
@@ -55,14 +56,32 @@ FROM
     SELECT
         r."VIP层级（活动开始前）",
         r."分层排序",
-        r."礼包类型",
-        r."礼包名",
+
+        CASE
+            WHEN grouping(r."礼包类型") = 1
+                THEN 'VIP汇总'
+            ELSE r."礼包类型"
+        END AS "礼包类型",
+
+        CASE
+            WHEN grouping(r."礼包名") = 1
+                THEN 'VIP汇总'
+            ELSE r."礼包名"
+        END AS "礼包名",
+
+        CASE
+            WHEN grouping(r."礼包类型") = 1
+                THEN 0
+            ELSE 1
+        END AS "汇总排序",
 
         max(
             r."层内活动活跃人数"
         ) AS "活动活跃人数",
 
-        count(*) AS "付费人数",
+        count(
+            DISTINCT r."#account_id"
+        ) AS "付费人数",
 
         sum(
             r."购买次数"
@@ -543,14 +562,23 @@ FROM
     WHERE r."礼包类型" IS NOT NULL
       AND r."购买次数" > 0
 
-    GROUP BY
-        1,
-        2,
-        3,
-        4
+    GROUP BY GROUPING SETS
+    (
+        (
+            r."VIP层级（活动开始前）",
+            r."分层排序"
+        ),
+        (
+            r."VIP层级（活动开始前）",
+            r."分层排序",
+            r."礼包类型",
+            r."礼包名"
+        )
+    )
 ) q
 
 ORDER BY
     q."分层排序",
+    q."汇总排序",
     q."礼包类型",
     q."礼包名"
