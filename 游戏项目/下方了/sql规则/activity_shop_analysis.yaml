@@ -7,8 +7,13 @@ source: 2026-07-24 活动分析SQL（File Library: 粘贴的文本 (1).txt）
 
 rules:
   activity_window:
-    parameter: '${PartDate:date}'
-    definition: 所选区间用于旧版活动行为统计；所选区间第一天视为活动开启日。
+    old_parameter: '${PartDate:date}'
+    active_period_parameter: '${PartDate:date2}'
+    activity_day_filter: '${Selector:selector2}'
+    definition: 新版活动分析统一按自然日活跃周期筛选，不再按玩家创角日期筛选。玩家需在${PartDate:date2}内存在in_out_log，且该活跃日对应开服天数满足${Selector:selector2}，才进入分析人群。
+    behavior_scope: 任务参与、活动礼包付费、兑换商店购买等活动行为均限制在${PartDate:date2}自然日范围内，同时必须处于玩家所在区服的活动开服天数窗口。
+    vip_cutoff: VIP分层仍取玩家所在区服真实活动开始时间之前的历史最大vip_change_log.after，不以活跃周期第一天作为VIP截止点。
+
   payment_segment:
     name: 活动开启前付费分层
     definition: 玩家截至活动开启日前的历史累计付费金额分层；活动开启日及活动期间充值不计入分层，活动期间层级固定。
@@ -27,13 +32,15 @@ rules:
       - g_(500,1000]: 500 < pay <= 1000
       - h_1000+: pay > 1000
     dynamic_selector: false
+
   activity_shop:
     event: shop_buy_log
     filters:
-      - '${PartDate:date}'
-      - 'shop_id ${Number:number1}'
+      - '${PartDate:date2}'
+      - '${Selector:selector2}'
+      - 'shop_id ${Selector:selector4}'
     dimensions:
-      - 活动开启前付费分层
+      - 活动付费分层或活动开始前VIP分层
       - shop_id
       - goods_id
       - 商品名称
@@ -50,7 +57,8 @@ rules:
   activity_payment_segment_shop:
     name: 活动付费分层-兑换商店购买分析
     sql_template: 游戏项目/下方了/sql模板/activity_payment_segment_shop_analysis.sql
-    user_filter: '${PartDate:date2}'
+    active_period_filter: '${PartDate:date2}'
+    active_period_definition: 取该自然日区间内有in_out_log且开服天数满足selector2的玩家；不再使用create_role_time筛选玩家。
     activity_day_filter: '${Selector:selector2}'
     activity_day_example: 'between 35 and 40'
     activity_product_type_filter: '${Selector:selector1}'
@@ -89,13 +97,15 @@ rules:
       resource_cost: sum(res_num)
       resource_cost_share: 同一res_id下该付费分层消耗数量 / 该res_id所有付费分层总消耗数量
     performance:
-      - 活动付费与shop_buy_log共用一次活动窗口事件扫描。
-      - 先按目标玩家区服开服时间与selector2推导活动开始/结束时间。
-      - 使用全局最早活动开始日期与最晚活动结束日期裁剪v_event_41的$part_date。
-      - 先聚合到玩家×res_id，再做最终汇总，减少count(distinct)开销。
+      - 先使用${PartDate:date2}的in_out_log选出活动期活跃玩家，再关联用户表取得server_open_time。
+      - 活跃日对应开服天数必须满足${Selector:selector2}。
+      - 活动付费、任务、礼包购买、shop_buy_log等行为再次使用${PartDate:date2}做事件分区裁剪。
+      - 活动行为还需限制在按server_open_time推导的真实活动开始/结束时间内。
+      - 商店分析先聚合到玩家×res_id，再做最终汇总，减少count(distinct)开销。
 
 notes:
-  - 数数动态日期参数必须作为完整 WHERE 条件使用，不写 e.${PartDate:date} 这类拼接形式。
+  - 数数动态日期参数必须作为完整 WHERE 条件使用，不写 e.${PartDate:date2} 这类拼接形式。
+  - ${PartDate:date2}自2026-08-18起统一表示活动自然日活跃周期，不再表示玩家创角日期。
   - 旧版“活动开启前付费分层商店分析”与新版“活动付费分层商店分析”是两套不同口径，不混用。
-  - 新版活动付费分层只包含指定activity product_type_two下活动期间累计付费金额>0的玩家。
+  - 新版活动付费分层只包含指定activity product_type_two下活动期间累计付费金额>0的活跃玩家。
   - shop_buy_log字段已确认：shop_id, goods_id, num, res_id, res_num, res_count, discount, items。
