@@ -93,15 +93,7 @@ FROM
             (
                 SELECT
                     cast(u."#account_id" AS varchar) AS "#account_id",
-
-                    date(
-                        from_unixtime(
-                            try_cast(
-                                u."server_open_time"
-                                AS double
-                            )
-                        )
-                    ) AS server_open_date
+                    date(u."server_open_time") AS server_open_date
 
                 FROM ta.v_user_22 u
 
