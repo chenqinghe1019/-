@@ -6,7 +6,7 @@
 -- 3. create_role_time 为 Unix 秒，使用 from_unixtime(try_cast(... as double))。
 -- 4. pay_log.payment 单位为分，/100 转元；仅统计 payment>0。
 -- 5. D1=创角当天/开服当天；付费留存=D1付费用户中第N日有 log_in_out 活跃的人数 / D1付费用户数，不要求第N日再次付费，不乘100。
--- 6. 服务器维度：按 server_open_time 日期分组，只取开服当天创建角色，不剔除滚服。
+-- 6. 服务器维度：按 server_open_time 日期 + region_id 分组，只取开服当天创建角色，不剔除滚服；不同服务器不再按同一开服日期合并。
 -- 7. 1-1 对应 map_id=101；通关使用 battle_result 成功战报判断。
 -- 8. 输出“新增后第N日/开服后第N日”使用纯数字 day_no，不加 D，方便表格数值排序。
 
@@ -162,13 +162,7 @@ FROM
         GROUP BY 1,2
     ) p
         ON u."#account_id" = p."#account_id"
-       AND p."$part_date" = cast(
-            date_add(
-                'day',
-                d.day_no - 1,
-                cast(u."新增日期" AS date)
-            ) AS varchar
-       )
+       AND p."$part_date" = cast(date_add('day',d.day_no - 1,cast(u."新增日期" AS date)) AS varchar)
     LEFT JOIN
     (
         SELECT
@@ -198,13 +192,7 @@ FROM
         GROUP BY 1,2
     ) a
         ON u."#account_id" = a."#account_id"
-       AND a."$part_date" = cast(
-            date_add(
-                'day',
-                d.day_no - 1,
-                cast(u."新增日期" AS date)
-            ) AS varchar
-       )
+       AND a."$part_date" = cast(date_add('day',d.day_no - 1,cast(u."新增日期" AS date)) AS varchar)
 ) q
 GROUP BY q."新增日期", q.day_no
 ORDER BY q."新增日期", q.day_no;
@@ -212,11 +200,12 @@ ORDER BY q."新增日期", q.day_no;
 
 /* ============================================================
    3. 2026-07-01~2026-08-15 服务器维度后续N日付费和付费留存
-   日期=开服日期；开服当天创建的渠道100角色；不剔除滚服
+   日期=开服日期；按 region_id 区分服务器；开服当天创建的渠道100角色；不剔除滚服
    付费留存：开服D1付费用户在第N日有 log_in_out 即算留存
    ============================================================ */
 SELECT
     q."开服日期" "日期",
+    q."region_id" "服务器ID",
     q.day_no "开服后第N日",
     count(DISTINCT q."#account_id") "新增角色数",
     round(sum(q.daily_pay),2) "后续每日总付费",
@@ -240,6 +229,7 @@ FROM
 (
     SELECT
         u."开服日期",
+        u."region_id",
         u."#account_id",
         d.day_no,
         coalesce(p.daily_pay,0) daily_pay,
@@ -249,11 +239,13 @@ FROM
     (
         SELECT DISTINCT
             cast(date(u."server_open_time") AS varchar) "开服日期",
+            cast(u."region_id" AS varchar) "region_id",
             cast(u."#account_id" AS varchar) "#account_id"
         FROM ta.v_user_22 u
         WHERE u."domain" = 'release'
           AND u."#account_id" IS NOT NULL
           AND u."server_open_time" IS NOT NULL
+          AND u."region_id" IS NOT NULL
           AND try_cast(u."create_role_time" AS double) IS NOT NULL
           AND cast(u."channel_id" AS varchar) = '100'
           AND date(u."server_open_time") BETWEEN date '2026-07-01' AND date '2026-08-15'
@@ -280,13 +272,7 @@ FROM
         GROUP BY 1,2
     ) p
         ON u."#account_id" = p."#account_id"
-       AND p."$part_date" = cast(
-            date_add(
-                'day',
-                d.day_no - 1,
-                cast(u."开服日期" AS date)
-            ) AS varchar
-       )
+       AND p."$part_date" = cast(date_add('day',d.day_no - 1,cast(u."开服日期" AS date)) AS varchar)
     LEFT JOIN
     (
         SELECT
@@ -316,13 +302,7 @@ FROM
         GROUP BY 1,2
     ) a
         ON u."#account_id" = a."#account_id"
-       AND a."$part_date" = cast(
-            date_add(
-                'day',
-                d.day_no - 1,
-                cast(u."开服日期" AS date)
-            ) AS varchar
-       )
+       AND a."$part_date" = cast(date_add('day',d.day_no - 1,cast(u."开服日期" AS date)) AS varchar)
 ) q
-GROUP BY q."开服日期", q.day_no
-ORDER BY q."开服日期", q.day_no;
+GROUP BY q."开服日期", q."region_id", q.day_no
+ORDER BY q."开服日期", q."region_id", q.day_no;
