@@ -1,0 +1,46 @@
+project: 下方了
+version: 1
+updated_at: 2026-08-18
+
+description: >-
+  根据事件发生时间 #event_time 与用户表 server_open_time 计算玩家当前所处的开服天数，
+  再按开服天数映射对应活动。
+
+server_day_rule:
+  name: 开服天数
+  expression: "date_diff('day', date(ta_u.\"server_open_time\"), date(\"#event_time\")) + 1"
+  notes:
+    - 开服当天记为第1天
+    - date_diff 参数顺序固定为 server_open_time 在前、#event_time 在后
+    - 若事件时间早于开服时间，应视为数据异常并单独排查
+
+activities:
+  - start_day: 6
+    end_day: 11
+    activity: 抓小诡
+  - start_day: 12
+    end_day: 17
+    activity: 古墓摸金活动-城墙（双战令瑶姬皮肤）
+  - start_day: 18
+    end_day: 23
+    activity: 诡市寻宝大富翁-戒指
+  - start_day: 24
+    end_day: 29
+    activity: 诡橱秘宝-妲己红皮
+  - start_day: 30
+    end_day: 34
+    activity: 水果活动
+  - start_day: 35
+    end_day: 40
+    activity: 孟婆煮汤
+
+sql_case: |-
+  case
+      when date_diff('day',date(ta_u."server_open_time"),date("#event_time"))+1 between 35 and 40 then '孟婆煮汤'
+      when date_diff('day',date(ta_u."server_open_time"),date("#event_time"))+1 between 30 and 34 then '水果活动'
+      when date_diff('day',date(ta_u."server_open_time"),date("#event_time"))+1 between 24 and 29 then '诡橱秘宝-妲己红皮'
+      when date_diff('day',date(ta_u."server_open_time"),date("#event_time"))+1 between 18 and 23 then '诡市寻宝大富翁-戒指'
+      when date_diff('day',date(ta_u."server_open_time"),date("#event_time"))+1 between 12 and 17 then '古墓摸金活动-城墙（双战令瑶姬皮肤）'
+      when date_diff('day',date(ta_u."server_open_time"),date("#event_time"))+1 between 6 and 11 then '抓小诡'
+      else '非活动期'
+  end
