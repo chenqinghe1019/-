@@ -1,0 +1,22 @@
+project: 步步
+updated_at: 2026-08-18
+scope: 渠道100新增与付费留存
+rules:
+  channel_filter: "用户表 cast(channel_id as varchar)='100'"
+  pure_new: "同一 nb_open_id 下 create_role_time 最早的角色；滚服角色剔除"
+  server_dimension: "不剔除滚服；按 server_open_time 日期分组，只取开服当天创建角色"
+  first_stage:
+    name: "1-1"
+    map_id: 101
+    result_event: "battle_result_sever"
+  payment:
+    event: "pay_log"
+    field: "payment"
+    unit: "分"
+    conversion: "/100 转元"
+    valid_filter: "payment>0"
+  payment_retention:
+    denominator: "D1付费用户数"
+    numerator: "D1付费用户中第N日存在 log_in_out 活跃的用户数"
+    rule: "第N日不要求再次付费，只要再次活跃即算付费留存"
+    rate_format: "小数，不乘100"
