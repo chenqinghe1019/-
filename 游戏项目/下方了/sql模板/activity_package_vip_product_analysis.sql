@@ -2,14 +2,15 @@ SELECT
     row_number() OVER (
         ORDER BY
             q."分层排序",
-            q."汇总排序",
             q."礼包类型",
+            q."商品价格",
             q."礼包名"
     ) AS "序号",
 
     q."VIP层级（活动开始前）",
     q."礼包类型",
     q."礼包名",
+    q."商品价格",
     q."活动活跃人数",
     q."付费人数",
 
@@ -29,28 +30,18 @@ SELECT
 
     round(q."付费金额", 2) AS "付费金额",
 
-    CASE
-        WHEN q."汇总排序" = 0
-            THEN 1.0000
-        ELSE round(
-            q."付费金额" * 1.0000
-            / nullif(
-                sum(
-                    CASE
-                        WHEN q."汇总排序" = 1
-                            THEN q."付费金额"
-                        ELSE 0
-                    END
-                ) OVER (
-                    PARTITION BY
-                        q."VIP层级（活动开始前）",
-                        q."礼包类型"
-                ),
-                0
+    round(
+        q."付费金额" * 1.0000
+        / nullif(
+            sum(q."付费金额") OVER (
+                PARTITION BY
+                    q."VIP层级（活动开始前）",
+                    q."礼包类型"
             ),
-            4
-        )
-    END AS "付费金额占比（层内）",
+            0
+        ),
+        4
+    ) AS "付费金额占比（层内）",
 
     round(
         q."付费金额" * 1.0000
@@ -61,28 +52,27 @@ SELECT
 FROM
 (
     SELECT
-        r."VIP层级（活动开始前）",
-        r."分层排序",
+        CASE
+            WHEN grouping(r."VIP层级（活动开始前）") = 1
+                THEN '汇总'
+            ELSE r."VIP层级（活动开始前）"
+        END AS "VIP层级（活动开始前）",
 
         CASE
-            WHEN grouping(r."礼包类型") = 1
-                THEN 'VIP汇总'
-            ELSE r."礼包类型"
-        END AS "礼包类型",
-
-        CASE
-            WHEN grouping(r."礼包名") = 1
-                THEN 'VIP汇总'
-            ELSE r."礼包名"
-        END AS "礼包名",
-
-        CASE
-            WHEN grouping(r."礼包类型") = 1
+            WHEN grouping(r."VIP层级（活动开始前）") = 1
                 THEN 0
-            ELSE 1
-        END AS "汇总排序",
+            ELSE max(r."分层排序")
+        END AS "分层排序",
 
-        max(r."层内活动活跃人数") AS "活动活跃人数",
+        r."礼包类型",
+        r."礼包名",
+        r."商品价格",
+
+        CASE
+            WHEN grouping(r."VIP层级（活动开始前）") = 1
+                THEN max(r."总活动活跃人数")
+            ELSE max(r."层内活动活跃人数")
+        END AS "活动活跃人数",
 
         count(
             DISTINCT r."#account_id"
@@ -98,8 +88,10 @@ FROM
             s."VIP层级（活动开始前）",
             s."分层排序",
             s."层内活动活跃人数",
+            s."总活动活跃人数",
             p."礼包类型",
             p."礼包名",
+            p."商品价格",
 
             count(p."#event_time") AS "购买次数",
 
@@ -118,7 +110,9 @@ FROM
                 count(*) OVER (
                     PARTITION BY
                         z."VIP层级（活动开始前）"
-                ) AS "层内活动活跃人数"
+                ) AS "层内活动活跃人数",
+
+                count(*) OVER () AS "总活动活跃人数"
 
             FROM
             (
@@ -313,6 +307,7 @@ FROM
                 e."#event_time",
                 product_cfg."product_type_two" AS "礼包类型",
                 product_cfg."product_name" AS "礼包名",
+                product_cfg."price" AS "商品价格",
 
                 (
                     coalesce(
@@ -362,12 +357,18 @@ FROM
             (
                 SELECT
                     try_cast("product_id" AS bigint) AS "product_id",
+
                     max(
                         cast("product_name" AS varchar)
                     ) AS "product_name",
+
                     max(
                         cast("product_type_two" AS varchar)
-                    ) AS "product_type_two"
+                    ) AS "product_type_two",
+
+                    max(
+                        try_cast("price" AS double)
+                    ) AS "price"
 
                 FROM ta_ext.product_id_41
 
@@ -398,7 +399,9 @@ FROM
             3,
             4,
             5,
-            6
+            6,
+            7,
+            8
 
         HAVING count(p."#event_time") > 0
     ) r
@@ -407,19 +410,21 @@ FROM
     (
         (
             r."VIP层级（活动开始前）",
-            r."分层排序"
-        ),
-        (
-            r."VIP层级（活动开始前）",
             r."分层排序",
             r."礼包类型",
-            r."礼包名"
+            r."礼包名",
+            r."商品价格"
+        ),
+        (
+            r."礼包类型",
+            r."礼包名",
+            r."商品价格"
         )
     )
 ) q
 
 ORDER BY
     q."分层排序",
-    q."汇总排序",
     q."礼包类型",
+    q."商品价格",
     q."礼包名"
