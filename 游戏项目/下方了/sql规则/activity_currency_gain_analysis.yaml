@@ -1,0 +1,56 @@
+project: 下方了
+project_id: 41
+updated_at: '2026-08-19'
+name: 活动付费分层货币获取分析
+status: active
+
+rules:
+  activity_window:
+    active_period_parameter: '${PartDate:date2}'
+    activity_day_filter: '${Selector:selector2}'
+    mature_cycle_rule: 仅保留完整活动周期全部落在统计周期内的成熟区服；玩家必须在真实活动周期内存在in_out_log。
+
+  activity_payment_segment:
+    activity_product_type_filter: '${Selector:selector1}'
+    payment_source: ta.v_event_41.pay_log
+    payment_amount: '(payment + token_payment) / 100，且 payment > 0 OR token_payment > 0'
+    definition: 按完整活动期间指定product_type_two活动礼包累计付费金额分层，仅统计活动付费金额>0的成熟区服活动玩家。
+    thresholds:
+      - a_(0,12]: 0 < pay <= 12
+      - b_(12,30]: 12 < pay <= 30
+      - c_(30,68]: 30 < pay <= 68
+      - d_(68,196]: 68 < pay <= 196
+      - e_(196,328]: 196 < pay <= 328
+      - f_(328,648]: 328 < pay <= 648
+      - g_(648,1000]: 648 < pay <= 1000
+      - h_(1000,3000]: 1000 < pay <= 3000
+      - i_(3000,10000]: 3000 < pay <= 10000
+      - j_(10000,+): pay > 10000
+
+  currency_gain:
+    event: money_log
+    currency_id_field: item_id
+    currency_name_field: item_name
+    amount_field: item_num
+    direction_field: change_type
+    gain_direction: 1
+    direction_fallback: change_type缺失时，item_num>0视为获取、item_num<0视为消耗。
+    amount_logic: 获取数量使用abs(item_num)。
+    currency_id_filter: '${Selector:selector3}'
+    currency_id_examples:
+      - '= 3'
+      - 'IN (3,4)'
+    metrics:
+      - 分层总人数
+      - 获取人数
+      - 获取货币数量
+      - 人均货币数量
+    avg_currency_denominator: 人均货币数量 = 获取货币数量 / 该活动付费分层全部玩家数，而不是只除以货币获取人数。
+
+  selector_convention:
+    selector1: 活动礼包product_type_two正则内容
+    selector2: 活动开服天数条件，例如between 35 and 40
+    selector3: money_log.item_id货币ID条件片段，例如= 3或IN (3,4)
+    selector4: shop_id条件片段
+
+  sql_template: 游戏项目/下方了/sql模板/activity_payment_segment_currency_gain_analysis.sql
