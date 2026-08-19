@@ -1,7 +1,7 @@
 ltv_forecast_model:
-  version: "v1.6"
+  version: "v1.7"
   updated_at: "2026-08-19"
-  purpose: "LTV 两阶段模型：先按逐日同样本加权倍率补全 D1-D28 未成熟 cohort，再基于修正后的补全曲线做长期预测。"
+  purpose: "LTV 两阶段模型：先按逐日同样本加权倍率补全 D1-D28 未成熟 cohort，再基于修正后的补全曲线做长期预测，并增加预测与补全加权曲线的重叠偏差校验。"
 
   source_structure:
     source_max_day: 28
@@ -13,6 +13,7 @@ ltv_forecast_model:
     rules:
       - "补值矩阵严格只生成 D1-D28，不生成 D29 以后 cohort 数据。"
       - "真实成熟 LTV 永不覆盖；仅对未成熟单元格补值。"
+      - "D29+ 只允许存在于长期预测层。"
 
   stage_value_definition:
     formula: "StageLTV(Dn)=Σ[新增用户数_i×LTV_i(Dn)]/Σ新增用户数_i，仅统计真实成熟到 Dn 的 cohort。"
@@ -31,7 +32,7 @@ ltv_forecast_model:
       formula: "若 cohort i 的 Dt 未成熟，则 FilledLTV_i(Dt)=FilledLTV_i(D(t-1))×R(t)。"
       recursive: true
       max_day: 28
-      note: "若前一日是预测值，则继续以该预测值乘下一日的历史同样本日倍率向后递推。"
+      note: "若前一日是预测值，则继续以该预测值乘下一日历史同样本日倍率向后递推。"
     verified_example:
       cohort: "2026-08-18"
       target: "D2"
@@ -74,6 +75,7 @@ ltv_forecast_model:
       conservative_slope_factor: 0.85
       base_slope_factor: 1.0
       aggressive_slope_factor: 1.15
+      note: "保守/进取是经营情景，不是统计置信区间。"
     current_base_output:
       D30: {ltv: 14.882924261881485, multiplier_vs_D1: 5.197353740827006}
       D60: {ltv: 17.401207364663584, multiplier_vs_D1: 6.076778232573453}
@@ -82,8 +84,36 @@ ltv_forecast_model:
       D360: {ltv: 23.910874751555035, multiplier_vs_D1: 8.35005756595378}
       D720: {ltv: 26.429157854337134, multiplier_vs_D1: 9.229482057700226}
 
-  workbook_v1_6:
-    filename: "LTV预估模型_修正插值_D1-D28.xlsx"
+  validation_framework:
+    overlap_consistency_check:
+      purpose: "检查长期预测曲线与 phase1 补全后的加权阶段曲线是否衔接一致。"
+      train_window: "D7-D22"
+      compare_window: "D23-D28"
+      rows:
+        D23: {filled_ltv: 13.874509081055795, forecast_ltv: 13.917594226086479, relative_error: 0.0031053455498120833}
+        D24: {filled_ltv: 14.208039869192362, forecast_ltv: 14.072218180215808, relative_error: -0.00955949520320952}
+        D25: {filled_ltv: 14.346703656889211, forecast_ltv: 14.220529162219913, relative_error: -0.008794667938144096}
+        D26: {filled_ltv: 14.515352337968373, forecast_ltv: 14.363022505600727, relative_error: -0.01049439440537669}
+        D27: {filled_ltv: 14.538219269395164, forecast_ltv: 14.500137440088206, relative_error: -0.0026194287347917878}
+        D28: {filled_ltv: 14.538219269395164, forecast_ltv: 14.632265257054181, relative_error: 0.006468879435392488}
+      summary:
+        MAPE: 0.006840368544454445
+        WAPE: 0.0068534274188446044
+        bias: -0.0036651114641474657
+        max_absolute_relative_error: 0.01049439440537669
+        conclusion: "D23-D28 相对偏差全部约在 ±1.1% 内，长期预测与补全加权曲线衔接良好。"
+      limitation: "D23-D28 的补全加权值本身包含插值，因此该偏差是模型一致性校验，不代表独立真实预测准确率。"
+    true_accuracy_backtest:
+      method: "遮盖回测 / leave-one-out。对已经真实成熟的 cohort 人为截断到 D7/D14 等成熟日，使用其余历史 cohort 的倍率补后续，再与被遮盖 cohort 的真实 D21/D28 比较。"
+      metrics:
+        - "MAPE"
+        - "WAPE"
+        - "Bias"
+      rule: "判断 D60/D180/D720 是否可信时，必须同时参考重叠一致性和独立遮盖回测；不能只看拟合曲线。"
+
+  workbook_v1_7:
+    filename: "LTV预估模型_修正插值_含偏差校验.xlsx"
+    added_sheet: "长期预测偏差校验"
     sheets:
       - "原始数据"
       - "成熟标记"
@@ -95,8 +125,10 @@ ltv_forecast_model:
       - "长期拟合"
       - "长期预测参数"
       - "LTV预估结果"
+      - "长期预测偏差校验"
 
   usage_notes:
     - "插值与长期预测必须分层：D1-D28 是 cohort 补值，D29+ 是预测结果。"
-    - "新增真实数据后，逐日加权倍率、补全矩阵和长期预测参数都需要重新计算。"
-    - "D27/D28 的真实成熟样本非常少，因此长期拟合默认不直接用低覆盖率尾部做回归。"
+    - "每个日倍率必须由同一批真实成熟到目标日的 cohort 计算。"
+    - "长期预测与补全曲线必须在重叠区间做偏差校验；当前 D23-D28 MAPE≈0.684%、WAPE≈0.685%、Bias≈-0.367%。"
+    - "低重叠偏差只能说明两阶段衔接顺，不等于真实预测准确；仍需遮盖回测。"
