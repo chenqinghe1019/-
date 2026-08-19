@@ -1,7 +1,8 @@
 ltv_forecast_model:
-  version: "v1.0"
-  created_at: "2026-08-19"
-  purpose: "基于按新增日期展开的累计 LTV cohort 矩阵，对未成熟 cohort 预测 D30 / D60 / D90。"
+  version: "v1.1"
+  updated_at: "2026-08-19"
+  purpose: "基于按新增日期展开的累计 LTV cohort 矩阵，对未成熟 cohort 做短中期倍率预测，并对长期尾部进行参数化外推。"
+
   source_structure:
     columns:
       - "新增日期"
@@ -9,59 +10,76 @@ ltv_forecast_model:
       - "指标"
       - "D1...Dn 累计LTV"
     notes:
-      - "LTV 必须是累计值；缺失的未成熟天数保持空值或非数值占位。"
-      - "cohort 按日期从旧到新排列时，模型更容易检查成熟度和异常。"
-  algorithm:
-    step_factor:
-      definition: "Factor(d→d+1) = 同时拥有 Dd 与 Dd+1 的 cohort 的用户数加权平均 LTV(d+1) / 用户数加权平均 LTV(d)"
-      weighting: "新增用户数"
-    reliability_shrinkage:
-      min_reliable_cohorts_default: 7
-      reliability: "min(1, 有效cohort数 / 最低可靠样本数)"
-      stable_growth_window: "D14→D23"
-      rule: "样本不足时，原始日增长率按可靠度向稳态日增长率收缩。"
+      - "LTV 为 cohort 累计 LTV。"
+      - "未成熟阶段保持空值或非数值占位。"
+      - "cohort 默认按新增日期从旧到新排列。"
+
+  stage_value_definition:
+    rule: "原表‘阶段值’不是递进因子，而是该阶段已成熟 cohort 的累计 LTV 按各 cohort 新增用户数做加权聚合。"
+    formula: "StageLTV(Dn)=Σ[新增用户数_i×LTV_i(Dn)]/Σ新增用户数_i，仅统计已成熟到 Dn 的 cohort。"
+    weighting: "新增用户数"
+    maturity_rule: "每个 Dn 只纳入已有数值的 cohort。"
+    important_effect: "不同 Dn 的成熟 cohort 集合不同，因此阶段值并不是一条固定 cohort 的累计曲线；阶段值后期可能下降，这属于 cohort mix 变化，不代表累计 LTV 真实下降。"
+    verified_examples_2026_08_18:
+      D1:
+        mature_cohorts: 28
+        mature_users: 75302
+        recalculated_weighted_ltv: 2.8635580728267507
+        source_stage_value: 2.86
+      D17:
+        mature_cohorts: 12
+        mature_users: 36402
+        recalculated_weighted_ltv: 13.633729740124169
+        source_stage_value: 13.63
+      D22:
+        mature_cohorts: 7
+        mature_users: 20261
+        recalculated_weighted_ltv: 12.55665712452495
+        source_stage_value: 12.56
+      D28:
+        mature_cohorts: 1
+        note: "仅代表 2026-07-22 这一个成熟 cohort，不应直接视为整体 D28 水平。"
+
+  forecast_algorithm:
+    same_cohort_multiplier:
+      principle: "预测倍率的起点和目标必须使用同一批成熟到目标日的 cohort，不能直接用原表不同阶段值相除。"
+      anchor_weighted_ltv: "在成熟到目标日 Dt 的 cohort 集合内，按新增用户数加权计算 Da LTV。"
+      target_weighted_ltv: "在完全相同的 cohort 集合内，按新增用户数加权计算 Dt LTV。"
+      formula: "Multiplier(Da→Dt)=SameCohortWeightedLTV(Dt)/SameCohortWeightedLTV(Da)"
+      prediction: "PredictedLTV(Dt)=CurrentActualLTV(Da)×Multiplier(Da→Dt)"
+      reason: "消除不同阶段 cohort 构成变化造成的 cohort mix 偏差。"
+
+    reliability_cutoff:
+      min_reliable_mature_cohorts_default: 7
+      rule: "将成熟 cohort 数仍达到阈值的最后一天作为可靠经验截止日。"
+      current_reference_cutoff: 22
+      note: "当前样本 D23 以后成熟 cohort 少于 7 个，因此默认 D22 为经验数据可靠截止日。"
+
     tail_forecast:
-      tail_start_day_default: 28
-      auto_initial_growth_window: "D18→D26"
-      daily_decay_default: 0.94
-      rule: "超过尾部起始日后，日增长率(t)=尾部初始日增长率×衰减系数^(t-尾部起始日)。"
-    recursive_forecast:
-      rule: "LTV(d+1)=LTV(d)×模型递进因子(d→d+1)"
-      horizons:
-        - 30
-        - 60
-        - 90
+      rule: "超过可靠截止日后，不再直接使用阶段值或极少数成熟 cohort 的倍率，改用日新增 LTV 衰减模型。"
+      initial_daily_increment_window_default: 3
+      initial_daily_increment: "使用可靠截止日前最近 N 天，在同一批截止日成熟 cohort 上计算的累计 LTV 增量 / N。"
+      daily_increment_decay_default: 0.95
+      formula: "FutureIncrement(k)=InitialDailyIncrement×Decay^k"
+      usage: "用于 D30 / D60 / D90 等超出经验成熟区间的长期外推。"
+
   confidence_rule:
-    high: "实测天数 >= 14"
-    medium: "7 <= 实测天数 < 14"
-    medium_low: "3 <= 实测天数 < 7"
-    low: "实测天数 < 3"
-    note: "D60/D90 超出当前样本成熟度时，即使 cohort 已较成熟，也应视为尾部外推。"
-  backtest:
-    anchors:
-      - "D3→D14"
-      - "D7→D21"
-      - "D14→D28"
-    metric: "MAPE"
-    principle: "回测明显变差时，优先按版本、渠道、活动阶段拆 cohort，避免仅靠调尾部参数硬拟合。"
-  reference_dataset_2026_08_18:
-    max_observed_day: 28
-    stable_daily_growth: 0.01676015445632716
-    auto_tail_initial_daily_growth: 0.011904646950120945
-    backtest_mape:
-      D3_to_D14: 0.1781279947126642
-      D7_to_D21: 0.10617000324561263
-      D14_to_D28: 0.1307625773229244
+    empirical_high: "目标日成熟 cohort 数 >= 14"
+    empirical_medium: "7 <= 目标日成熟 cohort 数 < 14"
+    empirical_low: "目标日成熟 cohort 数 < 7"
+    tail: "超过可靠截止日统一标记为低置信度（尾部外推）。"
+
   workbook_layout:
     sheets:
       - "原始数据"
-      - "模型说明"
-      - "参数设置"
-      - "增长曲线"
-      - "LTV预测"
-      - "回测"
       - "辅助计算"
+      - "阶段聚合校验"
+      - "同Cohort倍率"
+      - "参数设置"
+      - "LTV预测"
+      - "模型说明"
+
   usage_notes:
-    - "D30 是当前样本下优先使用的短中期预测目标。"
-    - "D60/D90 对尾部衰减假设更敏感，应用时必须结合版本变化、投放结构和付费点改版判断。"
-    - "若换另一个游戏，优先替换 cohort LTV 原始数据，再观察回测误差；不要直接沿用旧游戏的尾部参数。"
+    - "绝对不要直接用原表 StageLTV(Dt)/StageLTV(Da) 作为经验倍率，除非 Da 和 Dt 先在同一批 cohort 上重新加权。"
+    - "换另一个游戏时，替换 cohort LTV 矩阵后，先检查阶段聚合校验和成熟 cohort 数，再决定可靠截止日。"
+    - "D30 及更长期结果对尾部衰减参数敏感，版本、投放结构、商业化改动后需要重新校准。"
