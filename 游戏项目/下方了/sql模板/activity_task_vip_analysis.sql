@@ -25,7 +25,7 @@ SELECT
 
     round(
         q."活动付费金额" * 1.0000
-        / nullif(q."活动参与人数", 0),
+        / nullif(q."活动活跃人数", 0),
         2
     ) AS "活动ARPU",
 
