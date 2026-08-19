@@ -2,10 +2,16 @@ SELECT
     row_number() OVER (
         ORDER BY
             q."分层排序",
+            q."商店ID",
+            q."商品ID",
+            q."商品名称",
             q."消耗资源ID"
     ) AS "序号",
 
     q."活动付费分层",
+    q."商店ID",
+    q."商品ID",
+    q."商品名称",
     q."消耗资源ID",
     q."购买数量",
     q."购买人数",
@@ -22,13 +28,19 @@ SELECT
         2
     ) AS "人均购买次数",
 
-    round(q."消耗资源数量", 2) AS "消耗资源数量",
+    round(
+        q."消耗资源数量",
+        2
+    ) AS "消耗资源数量",
 
     round(
         q."消耗资源数量" * 1.0000
         / nullif(
             sum(q."消耗资源数量") OVER (
-                PARTITION BY q."消耗资源ID"
+                PARTITION BY
+                    q."商店ID",
+                    q."商品ID",
+                    q."消耗资源ID"
             ),
             0
         ),
@@ -40,6 +52,9 @@ FROM
     SELECT
         r."活动付费分层",
         r."分层排序",
+        r."商店ID",
+        r."商品ID",
+        r."商品名称",
         r."消耗资源ID",
 
         max(r."分层总人数") AS "分层总人数",
@@ -55,18 +70,53 @@ FROM
             s."分层总人数",
             s."#account_id",
 
-            cast(s."res_id" AS varchar) AS "消耗资源ID",
+            cast(
+                s."shop_id"
+                AS varchar
+            ) AS "商店ID",
+
+            cast(
+                s."goods_id"
+                AS varchar
+            ) AS "商品ID",
+
+            coalesce(
+                nullif(
+                    array_join(
+                        array_distinct(
+                            transform(
+                                s."items",
+                                x -> cast(x."name" AS varchar)
+                            )
+                        ),
+                        '、'
+                    ),
+                    ''
+                ),
+                '未知商品'
+            ) AS "商品名称",
+
+            cast(
+                s."res_id"
+                AS varchar
+            ) AS "消耗资源ID",
 
             sum(
                 coalesce(
-                    try_cast(s."num" AS bigint),
+                    try_cast(
+                        s."num"
+                        AS bigint
+                    ),
                     0
                 )
             ) AS "购买数量",
 
             sum(
                 coalesce(
-                    try_cast(s."res_num" AS double),
+                    try_cast(
+                        s."res_num"
+                        AS double
+                    ),
                     0
                 )
             ) AS "消耗资源数量"
@@ -152,6 +202,8 @@ FROM
                             e."$part_event",
                             e."#event_time",
                             e."shop_id",
+                            e."goods_id",
+                            e."items",
                             e."num",
                             e."res_id",
                             e."res_num",
@@ -183,7 +235,10 @@ FROM
                         FROM
                         (
                             SELECT DISTINCT
-                                cast(a."#account_id" AS varchar) AS "#account_id",
+                                cast(
+                                    a."#account_id"
+                                    AS varchar
+                                ) AS "#account_id",
 
                                 cast(
                                     date_add(
@@ -242,8 +297,20 @@ FROM
                             CROSS JOIN
                             (
                                 SELECT
-                                    min(cast(d."$part_date" AS date)) AS "统计开始日期",
-                                    max(cast(d."$part_date" AS date)) AS "统计结束日期"
+                                    min(
+                                        cast(
+                                            d."$part_date"
+                                            AS date
+                                        )
+                                    ) AS "统计开始日期",
+
+                                    max(
+                                        cast(
+                                            d."$part_date"
+                                            AS date
+                                        )
+                                    ) AS "统计结束日期"
+
                                 FROM
                                 (
                                     SELECT "$part_date"
@@ -281,13 +348,19 @@ FROM
                         INNER JOIN
                         (
                             SELECT
-                                cast(e0."#account_id" AS varchar) AS "#account_id",
+                                cast(
+                                    e0."#account_id"
+                                    AS varchar
+                                ) AS "#account_id",
+
                                 e0."$part_event",
                                 e0."#event_time",
                                 e0."product_id",
                                 e0."payment",
                                 e0."token_payment",
                                 e0."shop_id",
+                                e0."goods_id",
+                                e0."items",
                                 e0."num",
                                 e0."res_id",
                                 e0."res_num"
@@ -392,15 +465,24 @@ FROM
             2,
             3,
             4,
-            5
+            5,
+            6,
+            7,
+            8
     ) r
 
     GROUP BY
         1,
         2,
-        3
+        3,
+        4,
+        5,
+        6
 ) q
 
 ORDER BY
     q."分层排序",
+    q."商店ID",
+    q."商品ID",
+    q."商品名称",
     q."消耗资源ID"
