@@ -1,6 +1,6 @@
 project: 下方了
 project_id: 41
-updated_at: '2026-08-18'
+updated_at: '2026-08-19'
 name: 活动商店分析模板
 status: active
 source: 2026-07-24 活动分析SQL（File Library: 粘贴的文本 (1).txt）
@@ -48,6 +48,7 @@ rules:
       - goods_id
       - 商品名称
       - 消耗资源ID
+    product_name_logic: "商品名称从shop_buy_log.items数组中的name提取；使用transform(items, x -> cast(x.name as varchar))、array_distinct去重、array_join(..., '、')拼接；空值显示未知商品。"
     metrics:
       - 购买数量
       - 购买人数
@@ -85,27 +86,31 @@ rules:
     shop_fields:
       shop_id: 商店ID
       goods_id: 商品ID
+      items: 商品内容数组；商品名称取items[].name去重拼接，空值为未知商品
       num: 购买数量
       res_id: 消耗资源ID
       res_num: 本次消耗资源数量
       res_count: 结算后资源剩余数量，不用于消耗统计
     grouping:
       - 活动付费分层
+      - shop_id
+      - goods_id
+      - 商品名称
       - res_id
     metrics:
       purchase_quantity: sum(num)
-      buyer_count: 购买该res_id的去重玩家数
+      buyer_count: 购买同一shop_id + goods_id + 商品名称 + res_id的去重玩家数
       buyer_rate_in_segment: 购买人数 / 该活动付费分层总人数
       avg_purchase_count: 购买数量 / 购买人数
       resource_cost: sum(res_num)
-      resource_cost_share: 同一res_id下该付费分层消耗数量 / 该res_id所有付费分层总消耗数量
+      resource_cost_share: 同一shop_id + goods_id + res_id下该付费分层消耗数量 / 该商品该资源所有付费分层总消耗数量
     performance:
       - 先使用${PartDate:date2}确定统计周期开始/结束日期。
       - 根据server_open_time与${Selector:selector2}推导每个区服真实活动开始日和结束日。
       - 仅保留完整活动周期完全落入统计周期的成熟区服，避免未成熟活动数据污染对比。
       - 再使用${PartDate:date2}的in_out_log选出成熟区服中的活动期活跃玩家。
       - 活动付费、任务、礼包购买、shop_buy_log等行为继续使用${PartDate:date2}做事件分区裁剪，并限制在真实活动窗口内。
-      - 商店分析先聚合到玩家×res_id，再做最终汇总，减少count(distinct)开销。
+      - 商店分析先聚合到玩家×shop_id×goods_id×商品名称×res_id，再做最终汇总，减少count(distinct)开销。
 
 notes:
   - 数数动态日期参数必须作为完整 WHERE 条件使用，不写 e.${PartDate:date2} 这类拼接形式。
@@ -114,3 +119,4 @@ notes:
   - 旧版“活动开启前付费分层商店分析”与新版“活动付费分层商店分析”是两套不同口径，不混用。
   - 新版活动付费分层只包含指定activity product_type_two下完整活动期间累计付费金额>0的成熟区服活动玩家。
   - shop_buy_log字段已确认：shop_id, goods_id, num, res_id, res_num, res_count, discount, items。
+  - 商品名称统一从shop_buy_log.items[].name提取，去重后以“、”拼接；无名称时显示“未知商品”。
