@@ -29,7 +29,6 @@ FROM
         r."分层排序",
         r."货币ID",
         max(r."货币名称") AS "货币名称",
-
         max(r."分层总人数") AS "分层总人数",
         count(*) AS "获取人数",
         sum(r."获取货币数量") AS "获取货币数量"
@@ -271,7 +270,6 @@ FROM
                             WHERE u."domain" = 'release'
                               AND u."server_open_time" IS NOT NULL
 
-                              /* 完整活动周期必须全部落在统计周期内 */
                               AND date_add(
                                     'day',
                                     activity_param."活动开始天数" - 1,
@@ -284,7 +282,6 @@ FROM
                                     date(u."server_open_time")
                                   ) <= stats_period."统计结束日期"
 
-                              /* 玩家必须在真实活动周期内有活跃 */
                               AND (
                                     date_diff(
                                         'day',
@@ -348,13 +345,17 @@ FROM
                                   OR
 
                                   (
-                                      e0."$part_event" = 'money_log'
+                                      e0."$part_event" = 'item_log'
 
-                                      /* 货币ID筛选，例如 = 3 / IN (3,4) */
                                       AND try_cast(
-                                          e0."item_id"
-                                          AS bigint
-                                      ) ${Selector:selector3}
+                                            e0."change_type"
+                                            AS bigint
+                                          ) = 1
+
+                                      AND try_cast(
+                                            e0."item_id"
+                                            AS bigint
+                                          ) ${Selector:selector3}
                                   )
                               )
                         ) e
@@ -401,33 +402,21 @@ FROM
                                AS bigint
                            ) = product_cfg."product_id"
 
-                        /* 只保留目标活动礼包付费和目标货币流水 */
-                        WHERE e."$part_event" = 'money_log'
+                        WHERE e."$part_event" = 'item_log'
                            OR product_cfg."product_id" IS NOT NULL
                     ) b
                 ) z
 
-                /* 活动付费分层只统计活动礼包累计付费 > 0 的玩家 */
                 WHERE z."活动付费金额" > 0
             ) t
         ) s
 
-        WHERE s."$part_event" = 'money_log'
+        WHERE s."$part_event" = 'item_log'
           AND s."item_id" IS NOT NULL
-
-          /* 仅统计货币获取；change_type缺失时用item_num正负兜底 */
-          AND coalesce(
-                try_cast(
-                    s."change_type"
-                    AS bigint
-                ),
-                CASE
-                    WHEN try_cast(s."item_num" AS double) > 0 THEN 1
-                    WHEN try_cast(s."item_num" AS double) < 0 THEN 2
-                    ELSE 0
-                END
+          AND try_cast(
+                s."change_type"
+                AS bigint
               ) = 1
-
           AND abs(
                 coalesce(
                     try_cast(
