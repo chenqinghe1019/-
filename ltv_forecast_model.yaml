@@ -1,7 +1,7 @@
 ltv_forecast_model:
-  version: "v1.4"
+  version: "v1.5"
   updated_at: "2026-08-19"
-  purpose: "当前优先目标不是直接做 D720 长期拟合，而是先利用历史成熟 cohort 的同样本加权倍率，把未成熟 cohort 的累计 LTV 补全，形成更完整的 cohort LTV 矩阵；后续再基于补全数据做长期倍率/预测。"
+  purpose: "LTV 两阶段模型：第一阶段用同样本加权倍率补全未成熟 cohort；第二阶段基于补全后的稳定阶段曲线做长期 LTV 预测。"
 
   source_structure:
     columns:
@@ -11,109 +11,93 @@ ltv_forecast_model:
       - "D1...Dn 累计LTV"
     notes:
       - "LTV 为 cohort 累计 LTV。"
-      - "未成熟阶段保持空值或非数值占位，作为待补值。"
+      - "真实成熟值永不覆盖；未成熟值才进入补值。"
 
   stage_value_definition:
-    rule: "原表‘阶段值’是该阶段已成熟 cohort 的累计 LTV，按各 cohort 新增用户数加权聚合。"
-    formula: "StageLTV(Dn)=Σ[新增用户数_i×LTV_i(Dn)]/Σ新增用户数_i，仅统计已成熟到 Dn 的 cohort。"
+    formula: "StageLTV(Dn)=Σ[新增用户数_i×LTV_i(Dn)]/Σ新增用户数_i，仅统计真实成熟到 Dn 的 cohort。"
     weighting: "新增用户数"
-    important_effect: "不同 Dn 的成熟 cohort 集合不同，因此不同阶段值不能直接相除作为倍率。"
+    warning: "不同 Dn 的成熟 cohort 集合不同，因此不能直接用 StageLTV(D_M)/StageLTV(D_N) 当作补值倍率。"
 
-  preferred_workflow:
-    - "Step 1：保留所有 cohort 的真实已成熟 LTV。"
-    - "Step 2：针对每个未成熟 cohort，识别其最后一个真实成熟日 N。"
-    - "Step 3：用历史上已成熟到目标日 M 的同一批 cohort，计算 D_N→D_M 的新增人数加权倍率。"
-    - "Step 4：未成熟 cohort 的 D_M 预测值 = 该 cohort 实测 D_N LTV × 历史同样本加权倍率(N→M)。"
-    - "Step 5：重复补全所有目标天数，得到实测+预测混合的完整 cohort LTV 矩阵。"
-    - "Step 6：基于补全后的矩阵重新计算阶段值、D1倍率、版本/渠道分组差异，并在数据成熟度足够后再做 D180/D360/D720 长期预测。"
+  phase1_cohort_imputation:
+    model: "同样本加权倍率补值"
+    maturity_anchor: "N = 当前 cohort 最后一个真实成熟日。"
+    historical_reference: "J(M) = 历史上真实成熟到目标日 M 的 cohort 集合。"
+    multiplier: "R(N→M)=WeightedLTV_M(J(M))/WeightedLTV_N(J(M))"
+    imputed_value: "PredLTV_i(M)=ActualLTV_i(N)×R(N→M)"
+    direct_multiplier_preferred: true
+    multi_anchor:
+      configurable: true
+      current_default_N: 1
+      weight_rule: "最后 N 个真实成熟日依次使用 1,2,...,N 权重；越靠近最后成熟日权重越高。"
+      current_reason: "当前 leave-one-out 遮盖回测 N=1 的整体 WAPE 最低。"
+    sparse_tail_control:
+      min_reference_cohorts_default: 5
+      reliable_cutoff_day_current: 24
+      tail_daily_multiplier_window_default: 5
+      tail_daily_multiplier_current: 1.0124553870053676
+      rule: "目标日真实成熟 cohort 少于阈值时，不直接使用稀疏倍率；从可靠截止日开始使用最近 K 个可靠日倍率的成熟用户加权均值向后补值。"
+    validation:
+      method: "leave-one-out 遮盖回测"
+      current_N_comparison:
+        N1: {samples: 123, MAPE: 0.15276920449645187, WAPE: 0.15006612832080188, weighted_bias: 0.0034102037326095903}
+        N2: {samples: 123, MAPE: 0.15882887692575953, WAPE: 0.15632364599105839, weighted_bias: 0.0035901680271152895}
+        N3: {samples: 123, MAPE: 0.1641669149181428, WAPE: 0.16094974920461566, weighted_bias: 0.0035670408196169442}
+        N5: {samples: 123, MAPE: 0.1693412364072677, WAPE: 0.16732615293445613, weighted_bias: 0.003969186374311338}
+        N7: {samples: 123, MAPE: 0.1761217900561904, WAPE: 0.17468745929925536, weighted_bias: 0.004335578468093591}
+      current_selected_N: 1
 
-  imputation_model:
-    name: "同样本加权倍率补值"
-    maturity_anchor:
-      definition: "N = 当前 cohort 最后一个有真实累计 LTV 的成熟日。"
-      rule: "真实值永不覆盖；只补 N 之后的空白。"
-    target_day:
-      definition: "M = 需要补值的目标天数，M>N。"
-    historical_reference_set:
-      definition: "J(M) = 历史上已经真实成熟到 D_M 的 cohort 集合。"
-      rule: "计算起点 D_N 和目标 D_M 时必须使用完全相同的 J(M)，禁止分别用各自阶段值。"
-    weighting:
-      field: "新增用户数"
-      formula_start: "WeightedLTV_N(M)=Σ[j∈J(M)] users_j×LTV_j(N) / Σ[j∈J(M)] users_j"
-      formula_target: "WeightedLTV_M=Σ[j∈J(M)] users_j×LTV_j(M) / Σ[j∈J(M)] users_j"
-    multiplier:
-      formula: "R(N→M)=WeightedLTV_M / WeightedLTV_N(M)"
-    imputed_value:
-      formula: "PredLTV_i(M)=ActualLTV_i(N)×R(N→M)"
-      preferred: "优先直接使用 N→M 倍率，不推荐用 N→N+1→...→M 连续逐日连乘，以减少误差累积。"
+  phase2_long_term_forecast:
+    status: "已开始使用，基于 phase1 补全结果。"
+    preprocessing:
+      - "先对补全阶段值做单调校正：CorrectedLTV(Dn)=max(CorrectedLTV(Dn-1),FilledStageLTV(Dn))，因为累计 LTV 不允许下降。"
+      - "只在补值可靠且实测覆盖率足够高的窗口拟合，避免低覆盖率补值反向污染长期模型。"
+    current_fit_window:
+      start_day: 7
+      min_actual_coverage: 0.25
+      phase1_reliable_cutoff: 24
+      selected_end_day: 22
+      samples: 16
+    base_model:
+      name: "对数累计 LTV 长尾"
+      regression: "CorrectedLTV(d)=intercept+slope×ln(d)，在 D7-D22 做 OLS。"
+      slope_current: 3.352611393744351
+      intercept_current: 3.1795854665047454
+      forecast_anchor: "D22 单调校正累计 LTV = 13.500065448397738"
+      continuation: "当 d>D22：LTV(d)=LTV(D22)+slope×ln(d/22)，保证从 D22 连续衔接。"
+      d1_ltv_current: 2.8635580728267507
+    scenarios:
+      conservative_slope_factor: 0.85
+      base_slope_factor: 1.0
+      aggressive_slope_factor: 1.15
+      note: "保守/进取为经营情景，不是统计置信区间。"
+    rolling_backtest:
+      note: "用 D7 起拟合，训练截止 D12/D14/D16/D18，向后验证到 D22。"
+      mape_range: "约 0.5%~0.9%"
+      conclusion: "当前对数累计 LTV 模型的短期滚动外推明显优于直接使用低成熟阶段值做长期拟合。"
+    current_base_output:
+      D30: {ltv: 14.539894394855152, multiplier_vs_D1: 5.077562258237057}
+      D60: {ltv: 16.8637475299422, multiplier_vs_D1: 5.889088714480029}
+      D90: {ltv: 18.223114471151415, multiplier_vs_D1: 6.363801259725295}
+      D180: {ltv: 20.54696760623846, multiplier_vs_D1: 7.175327715968267}
+      D360: {ltv: 22.870820741325506, multiplier_vs_D1: 7.986854172211238}
+      D720: {ltv: 25.19467387641255, multiplier_vs_D1: 8.79838062845421}
+    current_scenario_output_D720:
+      conservative: {ltv: 23.440482612210328, multiplier_vs_D1: 8.185789153237302}
+      base: {ltv: 25.19467387641255, multiplier_vs_D1: 8.79838062845421}
+      aggressive: {ltv: 26.94886514061477, multiplier_vs_D1: 9.410972103671115}
 
-  multi_anchor_model:
-    status: "已实现，可配置"
-    parameter: "前N天锚点数"
-    anchor_days: "k ∈ [max(1,N_last-N+1), N_last]"
-    each_anchor_prediction: "Pred_k(M)=ActualLTV_i(k)×R(k→M)"
-    combined_prediction: "Pred(M)=Σ alpha_k×Pred_k(M) / Σ alpha_k"
-    weight_rule: "越靠近最后真实成熟日权重越高，依次使用 1,2,...,N。"
-    current_default_N: 1
-    current_reason: "当前文件 leave-one-out 遮盖回测中 N=1 的整体 WAPE 最低。"
-
-  sparse_tail_control:
-    min_reference_cohorts_default: 5
-    tail_daily_multiplier_window_default: 5
-    rule: "当目标日真实成熟 cohort 数低于阈值时，不直接使用稀疏目标日倍率；从可靠倍率截止日开始，使用最近 K 个可靠同 cohort 日倍率，按成熟新增用户数加权后向后外推。"
-    current_reference:
-      reliable_cutoff_day: 24
-      tail_daily_multiplier: 1.0124553870053676
-      total_new_users: 75302
-    note: "当前 D25 及以后成熟 cohort 少于 5 个，因此补值不直接依赖 D25-D28 的 4/3/2/1 个 cohort。"
-
-  validation:
-    method: "leave-one-out 遮盖回测 / rolling backtest"
-    metrics:
-      - "MAPE"
-      - "WAPE（新增用户数加权）"
-      - "加权 Bias"
-    current_N_comparison:
-      N1: {samples: 123, MAPE: 0.15276920449645187, WAPE: 0.15006612832080188, weighted_bias: 0.0034102037326095903}
-      N2: {samples: 123, MAPE: 0.15882887692575953, WAPE: 0.15632364599105839, weighted_bias: 0.0035901680271152895}
-      N3: {samples: 123, MAPE: 0.1641669149181428, WAPE: 0.16094974920461566, weighted_bias: 0.0035670408196169442}
-      N5: {samples: 123, MAPE: 0.1693412364072677, WAPE: 0.16732615293445613, weighted_bias: 0.003969186374311338}
-      N7: {samples: 123, MAPE: 0.1761217900561904, WAPE: 0.17468745929925536, weighted_bias: 0.004335578468093591}
-    current_selected_N: 1
-    selected_rule: "当前选择整体 WAPE 最低的 N；换游戏或补充更多成熟 cohort 后重新回测。"
-    maturity_effect_note: "成熟度越高后再补值误差明显更低，因此阶段汇总必须同时展示实测覆盖率。"
-
-  workbook_v1_4:
-    filename: "LTV_Cohort补值模型.xlsx"
-    sheets:
-      - "原始数据"
-      - "辅助_成熟标记"
-      - "参数设置"
-      - "日倍率"
-      - "倍率矩阵"
-      - "辅助_锚点权重"
-      - "补全矩阵"
-      - "补值标记"
-      - "补全阶段值"
-      - "参数回测"
-      - "遮盖回测汇总"
-      - "遮盖回测明细"
-      - "模型说明"
-    outputs:
-      - "补全矩阵：保留真实值，空白未成熟值自动预测。"
-      - "补值标记：区分实测 / 预测 / 无依据。"
-      - "补全阶段值：同时输出原表阶段值、实测重算、补全阶段值、实测覆盖率、预测占比。"
-      - "参数回测：比较 N=1/2/3/5/7。"
-      - "遮盖回测：按模拟成熟日与目标日查看 MAPE/WAPE/Bias。"
-
-  long_tail_forecast:
-    status: "暂缓作为主模型"
-    reason: "当前历史成熟度不足，先完成未成熟 cohort 补全与稳定回测。"
-    future_rule: "当真实成熟窗口明显拉长后，再重新评估 D180/D360/D720 的长期模型。"
+  workbook_v1_5:
+    filename: "LTV预估_补值后长期模型.xlsx"
+    base_workbook: "LTV_Cohort补值模型.xlsx"
+    added_sheets:
+      - "长期拟合数据"
+      - "长期预测参数"
+      - "D1-D720预测曲线"
+      - "LTV预估结果"
+      - "长期模型回测"
 
   usage_notes:
-    - "当前主模型目标是‘补齐数据’，不是给出看似精确的 D720 单点倍率。"
-    - "不能使用 StageLTV(D_M)/StageLTV(D_N) 直接补值，因为两者历史 cohort 集合不同。"
-    - "补值倍率必须在成熟到目标日 M 的同一批 cohort 上，同时计算 D_N 和 D_M。"
-    - "真实成熟值一旦出现，应覆盖之前的预测值，并进入下一轮倍率训练/回测。"
-    - "分析补全阶段值时必须同时看实测覆盖率；覆盖率低时应降低结论置信度。"
+    - "经营上优先看基准 LTV，同时保留保守/进取情景。"
+    - "D30 用于检查 phase1 补值和 phase2 长期模型的衔接；当前补值 D30=14.4105，长期基准 D30=14.5399，差异约 0.9%，衔接正常。"
+    - "真实成熟值更新后，应重新计算补值矩阵、实测覆盖率、长期拟合截止日与 slope。"
+    - "D180/D360/D720 仍是模型预测，不应视为真实历史倍率；随着成熟数据延长必须持续回测和重估。"
