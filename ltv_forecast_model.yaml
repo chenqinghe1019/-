@@ -1,7 +1,7 @@
 ltv_forecast_model:
-  version: "v1.1"
+  version: "v1.2"
   updated_at: "2026-08-19"
-  purpose: "基于按新增日期展开的累计 LTV cohort 矩阵，对未成熟 cohort 做短中期倍率预测，并对长期尾部进行参数化外推。"
+  purpose: "基于按新增日期展开的累计 LTV cohort 矩阵，统一以 D1=1.00x 为基准，构建 D1→D720 的长期 LTV 倍率预测模型。"
 
   source_structure:
     columns:
@@ -12,74 +12,80 @@ ltv_forecast_model:
     notes:
       - "LTV 为 cohort 累计 LTV。"
       - "未成熟阶段保持空值或非数值占位。"
-      - "cohort 默认按新增日期从旧到新排列。"
 
   stage_value_definition:
-    rule: "原表‘阶段值’不是递进因子，而是该阶段已成熟 cohort 的累计 LTV 按各 cohort 新增用户数做加权聚合。"
+    rule: "原表‘阶段值’是该阶段已成熟 cohort 的累计 LTV，按各 cohort 新增用户数加权聚合；不是逐日递进因子。"
     formula: "StageLTV(Dn)=Σ[新增用户数_i×LTV_i(Dn)]/Σ新增用户数_i，仅统计已成熟到 Dn 的 cohort。"
     weighting: "新增用户数"
-    maturity_rule: "每个 Dn 只纳入已有数值的 cohort。"
-    important_effect: "不同 Dn 的成熟 cohort 集合不同，因此阶段值并不是一条固定 cohort 的累计曲线；阶段值后期可能下降，这属于 cohort mix 变化，不代表累计 LTV 真实下降。"
+    important_effect: "不同 Dn 的成熟 cohort 集合不同，因此阶段值后期可能下降；这是 cohort mix 变化，不代表单个 cohort 的累计 LTV 下降。"
     verified_examples_2026_08_18:
-      D1:
-        mature_cohorts: 28
-        mature_users: 75302
-        recalculated_weighted_ltv: 2.8635580728267507
-        source_stage_value: 2.86
-      D17:
-        mature_cohorts: 12
-        mature_users: 36402
-        recalculated_weighted_ltv: 13.633729740124169
-        source_stage_value: 13.63
-      D22:
-        mature_cohorts: 7
-        mature_users: 20261
-        recalculated_weighted_ltv: 12.55665712452495
-        source_stage_value: 12.56
+      D1: {mature_cohorts: 28, mature_users: 75302, recalculated_weighted_ltv: 2.8635580728267507, source_stage_value: 2.86}
+      D17: {mature_cohorts: 12, mature_users: 36402, recalculated_weighted_ltv: 13.633729740124169, source_stage_value: 13.63}
+      D22: {mature_cohorts: 7, mature_users: 20261, recalculated_weighted_ltv: 12.55665712452495, source_stage_value: 12.56}
       D28:
         mature_cohorts: 1
-        note: "仅代表 2026-07-22 这一个成熟 cohort，不应直接视为整体 D28 水平。"
+        note: "仅代表一个成熟 cohort，不应直接视为整体 D28 水平。"
 
-  forecast_algorithm:
-    same_cohort_multiplier:
-      principle: "预测倍率的起点和目标必须使用同一批成熟到目标日的 cohort，不能直接用原表不同阶段值相除。"
-      anchor_weighted_ltv: "在成熟到目标日 Dt 的 cohort 集合内，按新增用户数加权计算 Da LTV。"
-      target_weighted_ltv: "在完全相同的 cohort 集合内，按新增用户数加权计算 Dt LTV。"
-      formula: "Multiplier(Da→Dt)=SameCohortWeightedLTV(Dt)/SameCohortWeightedLTV(Da)"
-      prediction: "PredictedLTV(Dt)=CurrentActualLTV(Da)×Multiplier(Da→Dt)"
-      reason: "消除不同阶段 cohort 构成变化造成的 cohort mix 偏差。"
+  d1_multiplier_definition:
+    anchor: "D1"
+    anchor_multiplier: "1.00x"
+    formula: "Multiplier(Dn)=PredictedOrObservedLTV(Dn)/SameCohortWeightedLTV(D1)"
+    rule: "所有 D7/D14/D30/D60/D90/D180/D360/D720 倍率统一相对 D1，不再以当前成熟日作为锚点。"
 
-    reliability_cutoff:
-      min_reliable_mature_cohorts_default: 7
-      rule: "将成熟 cohort 数仍达到阈值的最后一天作为可靠经验截止日。"
+  same_cohort_empirical_curve:
+    principle: "先锁定成熟到可靠截止日的同一批 cohort，再在这批 cohort 上按新增用户数加权计算 D1~截止日累计 LTV。"
+    reason: "避免直接使用不同阶段的 StageLTV 相除导致 cohort mix 偏差。"
+    reliable_cutoff:
+      min_mature_cohorts_default: 7
       current_reference_cutoff: 22
-      note: "当前样本 D23 以后成熟 cohort 少于 7 个，因此默认 D22 为经验数据可靠截止日。"
+      current_reference_cohorts: 7
+      current_reference_users: 20261
+    current_reference_same_cohort:
+      D1_ltv: 3.0206046098415675
+      D22_ltv: 12.55665712452495
+      D21_multiplier_vs_D1: 4.1157525424232855
 
-    tail_forecast:
-      rule: "超过可靠截止日后，不再直接使用阶段值或极少数成熟 cohort 的倍率，改用日新增 LTV 衰减模型。"
-      initial_daily_increment_window_default: 3
-      initial_daily_increment: "使用可靠截止日前最近 N 天，在同一批截止日成熟 cohort 上计算的累计 LTV 增量 / N。"
-      daily_increment_decay_default: 0.95
-      formula: "FutureIncrement(k)=InitialDailyIncrement×Decay^k"
-      usage: "用于 D30 / D60 / D90 等超出经验成熟区间的长期外推。"
+  long_tail_forecast:
+    fit_target: "日新增 LTV = 累计LTV(Dn)-累计LTV(Dn-1)"
+    fit_start_day_default: 14
+    fit_end_day: "可靠截止日"
+    conservative:
+      model: "指数衰减"
+      formula: "ΔLTV(day)=A×exp(k×day)"
+      role: "长期快速收敛，下界情景。"
+    base:
+      model: "幂律衰减"
+      formula: "ΔLTV(day)=A×day^(-b)"
+      role: "默认基准情景；当前短区间回测比指数尾部更贴近后续实测。"
+      current_reference_power_exponent_b: 1.0032380095496132
+    aggressive:
+      model: "较慢幂律衰减"
+      exponent_factor_default: 0.85
+      formula: "b_aggressive=b_base×0.85，并保持截止日+1的日新增 LTV 连续。"
+      role: "长期付费更强的上行情景。"
+    calculation_note: "D30/D60/D90/D180/D360/D720 使用尾部累计积分/闭式近似，不需要逐日铺满 720 行。"
 
-  confidence_rule:
-    empirical_high: "目标日成熟 cohort 数 >= 14"
-    empirical_medium: "7 <= 目标日成熟 cohort 数 < 14"
-    empirical_low: "目标日成熟 cohort 数 < 7"
-    tail: "超过可靠截止日统一标记为低置信度（尾部外推）。"
+  current_reference_output:
+    D30: {conservative_multiplier: 4.4211177468064795, base_multiplier: 4.453371750490742, aggressive_multiplier: 4.456078551947192}
+    D60: {conservative_multiplier: 4.782328084638241, base_multiplier: 5.120635107485041, aggressive_multiplier: 5.180548361302721}
+    D90: {conservative_multiplier: 4.8431597651439855, base_multiplier: 5.512962070455896, aggressive_multiplier: 5.64189450053172}
+    D180: {conservative_multiplier: 4.855420349881151, base_multiplier: 6.185548835377755, aggressive_multiplier: 6.4993296023539875}
+    D360: {conservative_multiplier: 4.855479192172636, base_multiplier: 6.859480277004491, aggressive_multiplier: 7.450509393259394}
+    D720: {conservative_multiplier: 4.855479193515145, base_multiplier: 7.534086155290219, aggressive_multiplier: 8.504791576483164}
+    warning: "当前原始数据仅成熟到约 D28，因此 D180/D360/D720 均属于模型预测，不是已验证历史真实倍率。"
 
   workbook_layout:
     sheets:
       - "原始数据"
       - "辅助计算"
-      - "阶段聚合校验"
-      - "同Cohort倍率"
-      - "参数设置"
-      - "LTV预测"
+      - "同Cohort矩阵"
+      - "模型参数"
+      - "拟合数据"
+      - "结果汇总"
       - "模型说明"
 
   usage_notes:
-    - "绝对不要直接用原表 StageLTV(Dt)/StageLTV(Da) 作为经验倍率，除非 Da 和 Dt 先在同一批 cohort 上重新加权。"
-    - "换另一个游戏时，替换 cohort LTV 矩阵后，先检查阶段聚合校验和成熟 cohort 数，再决定可靠截止日。"
-    - "D30 及更长期结果对尾部衰减参数敏感，版本、投放结构、商业化改动后需要重新校准。"
+    - "720天倍率统一定义为 D720预测累计LTV / 同样本D1累计LTV。"
+    - "不能直接用原表 StageLTV(D720)/StageLTV(D1)，因为阶段成熟 cohort 集合不同。"
+    - "长期倍率高度依赖尾部形态；默认同时输出保守、基准、进取三种情景。"
+    - "换游戏或版本后，需要重新检查可靠截止日、长尾拟合起始日和幂律指数，不应直接沿用旧游戏参数。"
