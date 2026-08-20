@@ -44,19 +44,46 @@ FROM
             y."#account_id",
 
             CASE
-                WHEN coalesce(y."活动开始前VIP等级", 0) BETWEEN 0 AND 3
+                WHEN coalesce(
+                    y."活动开始前VIP等级",
+                    0
+                ) BETWEEN 0 AND 3
                     THEN 'a.V0-V3'
-                WHEN coalesce(y."活动开始前VIP等级", 0) BETWEEN 4 AND 6
+
+                WHEN coalesce(
+                    y."活动开始前VIP等级",
+                    0
+                ) BETWEEN 4 AND 6
                     THEN 'b.V4-V6'
-                WHEN coalesce(y."活动开始前VIP等级", 0) BETWEEN 7 AND 9
+
+                WHEN coalesce(
+                    y."活动开始前VIP等级",
+                    0
+                ) BETWEEN 7 AND 9
                     THEN 'c.V7-V9'
+
                 ELSE 'd.V10+'
             END AS "VIP层级",
 
             CASE
-                WHEN coalesce(y."活动开始前VIP等级", 0) BETWEEN 0 AND 3 THEN 1
-                WHEN coalesce(y."活动开始前VIP等级", 0) BETWEEN 4 AND 6 THEN 2
-                WHEN coalesce(y."活动开始前VIP等级", 0) BETWEEN 7 AND 9 THEN 3
+                WHEN coalesce(
+                    y."活动开始前VIP等级",
+                    0
+                ) BETWEEN 0 AND 3
+                    THEN 1
+
+                WHEN coalesce(
+                    y."活动开始前VIP等级",
+                    0
+                ) BETWEEN 4 AND 6
+                    THEN 2
+
+                WHEN coalesce(
+                    y."活动开始前VIP等级",
+                    0
+                ) BETWEEN 7 AND 9
+                    THEN 3
+
                 ELSE 4
             END AS "分层排序",
 
@@ -81,7 +108,6 @@ FROM
                     active_user."#account_id",
                     active_user."开服日期",
                     active_user."活动开始时间",
-                    active_user."活动结束时间",
 
                     max(
                         CASE
@@ -107,7 +133,9 @@ FROM
                             date_add(
                                 'day',
                                 activity_param."活动开始天数" - 1,
-                                date(u."server_open_time")
+                                date(
+                                    u."server_open_time"
+                                )
                             )
                             AS timestamp
                         ) AS "活动开始时间",
@@ -116,7 +144,9 @@ FROM
                             date_add(
                                 'day',
                                 activity_param."活动结束天数",
-                                date(u."server_open_time")
+                                date(
+                                    u."server_open_time"
+                                )
                             )
                             AS timestamp
                         ) AS "活动结束时间"
@@ -125,40 +155,33 @@ FROM
                     (
                         SELECT
                             "#account_id",
-                            "#event_time",
-                            cast("region_id" AS varchar) AS "region_id"
+                            "#event_time"
 
                         FROM ta.v_event_41
 
                         WHERE ${PartDate:date2}
-                          AND "domain" = 'release'
-                          AND "$part_event" = 'in_out_log'
-                          AND "#account_id" IS NOT NULL
-                          AND "region_id" IS NOT NULL
+
+                          AND "domain"
+                              = 'release'
+
+                          AND "$part_event"
+                              = 'in_out_log'
+
+                          AND "#account_id"
+                              IS NOT NULL
                     ) a
-
-                    /* 只有该区服当天确实出现mining_log，这一天才进入活跃分母 */
-                    INNER JOIN
-                    (
-                        SELECT DISTINCT
-                            cast(m."region_id" AS varchar) AS "region_id",
-                            date(m."#event_time") AS "矿脉日期"
-
-                        FROM ta.v_event_41 m
-
-                        WHERE ${PartDate:date2}
-                          AND m."domain" = 'release'
-                          AND m."$part_event" = 'mining_log'
-                          AND m."region_id" IS NOT NULL
-                    ) mining_server_day
-
-                        ON a."region_id" = mining_server_day."region_id"
-                       AND date(a."#event_time") = mining_server_day."矿脉日期"
 
                     INNER JOIN ta.v_user_41 u
 
-                        ON cast(a."#account_id" AS varchar)
-                            = cast(u."#account_id" AS varchar)
+                        ON cast(
+                            a."#account_id"
+                            AS varchar
+                        )
+                        =
+                        cast(
+                            u."#account_id"
+                            AS varchar
+                        )
 
                     CROSS JOIN
                     (
@@ -168,7 +191,8 @@ FROM
                                     '${Selector:selector2}',
                                     '(?i)between *([0-9]+) *and *([0-9]+)',
                                     1
-                                ) AS bigint
+                                )
+                                AS bigint
                             ) AS "活动开始天数",
 
                             try_cast(
@@ -176,46 +200,74 @@ FROM
                                     '${Selector:selector2}',
                                     '(?i)between *([0-9]+) *and *([0-9]+)',
                                     2
-                                ) AS bigint
+                                )
+                                AS bigint
                             ) AS "活动结束天数"
                     ) activity_param
 
                     CROSS JOIN
                     (
                         SELECT
-                            min(cast(d."$part_date" AS date)) AS "统计开始日期",
-                            max(cast(d."$part_date" AS date)) AS "统计结束日期"
+                            min(
+                                cast(
+                                    d."$part_date"
+                                    AS date
+                                )
+                            ) AS "统计开始日期",
+
+                            max(
+                                cast(
+                                    d."$part_date"
+                                    AS date
+                                )
+                            ) AS "统计结束日期"
 
                         FROM
                         (
-                            SELECT "$part_date"
+                            SELECT
+                                "$part_date"
+
                             FROM ta.v_event_41
+
                             WHERE ${PartDate:date2}
                         ) d
                     ) stats_period
 
-                    WHERE u."domain" = 'release'
-                      AND u."server_open_time" IS NOT NULL
+                    WHERE u."domain"
+                            = 'release'
 
-                      /* 完整活动周期必须全部落在统计周期内 */
+                      AND u."server_open_time"
+                            IS NOT NULL
+
+                      /* 只保留完整活动周期完全落在统计周期内的成熟区服 */
                       AND date_add(
                             'day',
                             activity_param."活动开始天数" - 1,
-                            date(u."server_open_time")
-                          ) >= stats_period."统计开始日期"
+                            date(
+                                u."server_open_time"
+                            )
+                          )
+                          >= stats_period."统计开始日期"
 
                       AND date_add(
                             'day',
                             activity_param."活动结束天数" - 1,
-                            date(u."server_open_time")
-                          ) <= stats_period."统计结束日期"
+                            date(
+                                u."server_open_time"
+                            )
+                          )
+                          <= stats_period."统计结束日期"
 
-                      /* 有效矿脉区服日仍需位于目标开服天数范围 */
+                      /* 玩家必须在真实活动周期内有活跃 */
                       AND (
                             date_diff(
                                 'day',
-                                date(u."server_open_time"),
-                                date(a."#event_time")
+                                date(
+                                    u."server_open_time"
+                                ),
+                                date(
+                                    a."#event_time"
+                                )
                             ) + 1
                           ) ${Selector:selector2}
                 ) active_user
@@ -223,42 +275,72 @@ FROM
                 LEFT JOIN
                 (
                     SELECT
-                        cast(e0."#account_id" AS varchar) AS "#account_id",
+                        cast(
+                            e0."#account_id"
+                            AS varchar
+                        ) AS "#account_id",
+
                         e0."#event_time"
 
                     FROM ta.v_event_41 e0
 
                     WHERE ${PartDate:date2}
-                      AND e0."domain" = 'release'
-                      AND e0."#account_id" IS NOT NULL
-                      AND e0."$part_event" = 'mining_log'
+
+                      AND e0."domain"
+                          = 'release'
+
+                      AND e0."#account_id"
+                          IS NOT NULL
+
+                      AND e0."$part_event"
+                          = 'mining_log'
                 ) mining_e
 
-                    ON mining_e."#account_id" = active_user."#account_id"
-                   AND mining_e."#event_time" >= active_user."活动开始时间"
-                   AND mining_e."#event_time" < active_user."活动结束时间"
+                    ON mining_e."#account_id"
+                        = active_user."#account_id"
+
+                   AND mining_e."#event_time"
+                        >= active_user."活动开始时间"
+
+                   AND mining_e."#event_time"
+                        < active_user."活动结束时间"
 
                 GROUP BY
                     1,
                     2,
-                    3,
-                    4
+                    3
             ) x
 
             LEFT JOIN ta.v_event_41 vip_e
 
-                ON cast(vip_e."#account_id" AS varchar) = x."#account_id"
-               AND vip_e."$part_event" = 'vip_change_log'
-               AND vip_e."domain" = 'release'
-               AND vip_e."#event_time" < x."活动开始时间"
+                ON cast(
+                    vip_e."#account_id"
+                    AS varchar
+                ) = x."#account_id"
+
+               AND vip_e."$part_event"
+                    = 'vip_change_log'
+
+               AND vip_e."domain"
+                    = 'release'
+
+               AND vip_e."#event_time"
+                    < x."活动开始时间"
+
                AND vip_e."$part_date"
-                    BETWEEN cast(x."开服日期" AS varchar)
+                    BETWEEN cast(
+                        x."开服日期"
+                        AS varchar
+                    )
                     AND cast(
                         date_add(
                             'day',
                             -1,
-                            date(x."活动开始时间")
-                        ) AS varchar
+                            date(
+                                x."活动开始时间"
+                            )
+                        )
+                        AS varchar
                     )
 
             GROUP BY
