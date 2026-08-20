@@ -205,10 +205,13 @@ FROM
                 FROM
                 (
                     /*
-                     * 活跃玩家只取：
-                     * 1. mining_log真实出现的区服
-                     * 2. mining_log真实出现的日期
-                     * 3. 完整3日周期
+                     * 活跃玩家按真实玩法周期限制：
+                     * 1. 先按region_id识别mining_log每轮首次出现日期；
+                     * 2. 每3天切一个周期；
+                     * 3. 周期是否成熟只看${PartDate:date2}是否覆盖周期开始日+2天；
+                     * 4. 成熟周期固定生成第1/2/3天，再用region_id+活动日期匹配in_out_log。
+                     *
+                     * 注意：不要求3天都实际出现mining_log，避免“某天无人参与”被误判为玩法未开放。
                      */
                     SELECT DISTINCT
                         cast(
@@ -221,47 +224,38 @@ FROM
                             AS varchar
                         ) AS "region_id",
 
-                        date(
-                            a."#event_time"
-                        ) AS "活动日期",
-
-                        cycle_map."玩法轮次排序",
-                        cycle_map."周期排序",
-                        cycle_map."周期开始日期",
-                        cycle_map."周期内第几天"
+                        cycle_calendar."活动日期",
+                        cycle_calendar."玩法轮次排序",
+                        cycle_calendar."周期排序",
+                        cycle_calendar."周期开始日期",
+                        cycle_calendar."周期内第几天"
 
                     FROM ta.v_event_41 a
 
                     INNER JOIN
                     (
                         SELECT
-                            full_cycle."region_id",
-                            full_cycle."日志日期",
-                            full_cycle."玩法轮次排序",
-                            full_cycle."周期排序",
-                            full_cycle."周期开始日期",
+                            mature_cycle."region_id",
+                            mature_cycle."玩法轮次排序",
+                            mature_cycle."周期排序",
+                            mature_cycle."周期开始日期",
 
-                            date_diff(
+                            day_offset."周期日偏移" + 1
+                                AS "周期内第几天",
+
+                            date_add(
                                 'day',
-                                full_cycle."周期开始日期",
-                                full_cycle."日志日期"
-                            ) + 1 AS "周期内第几天"
+                                day_offset."周期日偏移",
+                                mature_cycle."周期开始日期"
+                            ) AS "活动日期"
 
                         FROM
                         (
-                            SELECT
+                            SELECT DISTINCT
                                 cycle_day."region_id",
-                                cycle_day."日志日期",
                                 cycle_day."玩法轮次排序",
                                 cycle_day."周期排序",
-                                cycle_day."周期开始日期",
-
-                                count(*) OVER (
-                                    PARTITION BY
-                                        cycle_day."region_id",
-                                        cycle_day."玩法轮次排序",
-                                        cycle_day."周期排序"
-                                ) AS "周期开放天数"
+                                cycle_day."周期开始日期"
 
                             FROM
                             (
@@ -325,9 +319,12 @@ FROM
                                             ) OVER (
                                                 PARTITION BY
                                                     breakpoint_day."region_id"
+
                                                 ORDER BY
                                                     breakpoint_day."日志日期"
-                                                ROWS BETWEEN UNBOUNDED PRECEDING
+
+                                                ROWS BETWEEN
+                                                    UNBOUNDED PRECEDING
                                                     AND CURRENT ROW
                                             ) AS "玩法轮次排序"
 
@@ -338,7 +335,8 @@ FROM
                                                 prev_day."日志日期",
 
                                                 CASE
-                                                    WHEN prev_day."上一日志日期" IS NULL
+                                                    WHEN prev_day."上一日志日期"
+                                                            IS NULL
                                                         THEN 1
 
                                                     WHEN date_diff(
@@ -362,6 +360,7 @@ FROM
                                                     ) OVER (
                                                         PARTITION BY
                                                             server_day."region_id"
+
                                                         ORDER BY
                                                             server_day."日志日期"
                                                     ) AS "上一日志日期"
@@ -369,8 +368,7 @@ FROM
                                                 FROM
                                                 (
                                                     /*
-                                                     * mining_log按区服+自然日去重。
-                                                     * 每个区服独立判断开放节奏。
+                                                     * mining_log只用于识别各区服的实际玩法起点/断点。
                                                      */
                                                     SELECT DISTINCT
                                                         cast(
@@ -385,38 +383,93 @@ FROM
                                                     FROM ta.v_event_41 m
 
                                                     WHERE ${PartDate:date2}
-                                                      AND m."domain" = 'release'
-                                                      AND m."$part_event" = 'mining_log'
-                                                      AND m."region_id" IS NOT NULL
+
+                                                      AND m."domain"
+                                                          = 'release'
+
+                                                      AND m."$part_event"
+                                                          = 'mining_log'
+
+                                                      AND m."region_id"
+                                                          IS NOT NULL
                                                 ) server_day
                                             ) prev_day
                                         ) breakpoint_day
                                     ) round_day
                                 ) round_base
                             ) cycle_day
-                        ) full_cycle
 
-                        /*
-                         * 周期必须实际存在完整3个mining_log开放日。
-                         * 只有1天或2天的尾周期直接剔除。
-                         */
-                        WHERE full_cycle."周期开放天数" = 3
-                    ) cycle_map
+                            CROSS JOIN
+                            (
+                                SELECT
+                                    min(
+                                        cast(
+                                            d."$part_date"
+                                            AS date
+                                        )
+                                    ) AS "统计开始日期",
+
+                                    max(
+                                        cast(
+                                            d."$part_date"
+                                            AS date
+                                        )
+                                    ) AS "统计结束日期"
+
+                                FROM
+                                (
+                                    SELECT
+                                        "$part_date"
+
+                                    FROM ta.v_event_41
+
+                                    WHERE ${PartDate:date2}
+                                ) d
+                            ) stats_period
+
+                            /*
+                             * 完整3日周期判断：
+                             * 只要求查询$part_date覆盖周期开始日以及其后两日。
+                             * 不要求第2/3天实际存在mining_log。
+                             */
+                            WHERE cycle_day."周期开始日期"
+                                    >= stats_period."统计开始日期"
+
+                              AND date_add(
+                                    'day',
+                                    2,
+                                    cycle_day."周期开始日期"
+                                  )
+                                  <= stats_period."统计结束日期"
+                        ) mature_cycle
+
+                        CROSS JOIN UNNEST(
+                            sequence(0, 2)
+                        ) AS day_offset("周期日偏移")
+                    ) cycle_calendar
 
                         ON cast(
                             a."region_id"
                             AS varchar
-                           ) = cycle_map."region_id"
+                           ) = cycle_calendar."region_id"
 
                        AND date(
                             a."#event_time"
-                           ) = cycle_map."日志日期"
+                           ) = cycle_calendar."活动日期"
 
                     WHERE ${PartDate:date2}
-                      AND a."domain" = 'release'
-                      AND a."$part_event" = 'in_out_log'
-                      AND a."#account_id" IS NOT NULL
-                      AND a."region_id" IS NOT NULL
+
+                      AND a."domain"
+                          = 'release'
+
+                      AND a."$part_event"
+                          = 'in_out_log'
+
+                      AND a."#account_id"
+                          IS NOT NULL
+
+                      AND a."region_id"
+                          IS NOT NULL
                 ) active_player
 
                 INNER JOIN
@@ -435,9 +488,14 @@ FROM
 
                     FROM ta.v_user_41 u
 
-                    WHERE u."domain" = 'release'
-                      AND u."#account_id" IS NOT NULL
-                      AND u."server_open_time" IS NOT NULL
+                    WHERE u."domain"
+                            = 'release'
+
+                      AND u."#account_id"
+                            IS NOT NULL
+
+                      AND u."server_open_time"
+                            IS NOT NULL
 
                     GROUP BY 1
                 ) user_base
@@ -447,7 +505,9 @@ FROM
 
                 LEFT JOIN
                 (
-                    /* 当天、同区服出现mining_log才算参与 */
+                    /*
+                     * 当天、同区服出现mining_log才算当天参与。
+                     */
                     SELECT DISTINCT
                         cast(
                             m0."#account_id"
@@ -466,10 +526,18 @@ FROM
                     FROM ta.v_event_41 m0
 
                     WHERE ${PartDate:date2}
-                      AND m0."domain" = 'release'
-                      AND m0."$part_event" = 'mining_log'
-                      AND m0."#account_id" IS NOT NULL
-                      AND m0."region_id" IS NOT NULL
+
+                      AND m0."domain"
+                          = 'release'
+
+                      AND m0."$part_event"
+                          = 'mining_log'
+
+                      AND m0."#account_id"
+                          IS NOT NULL
+
+                      AND m0."region_id"
+                          IS NOT NULL
                 ) mining_player
 
                     ON mining_player."#account_id"
@@ -485,6 +553,7 @@ FROM
                 (
                     /*
                      * 目标活动礼包付费：
+                     * selector1筛product_type_two；
                      * 同玩家 + 同区服 + 同一天聚合。
                      */
                     SELECT
@@ -534,7 +603,9 @@ FROM
 
                         FROM ta_ext.product_id_41
 
-                        WHERE "product_id" IS NOT NULL
+                        WHERE "product_id"
+                                IS NOT NULL
+
                           AND regexp_like(
                                 coalesce(
                                     cast(
@@ -555,10 +626,18 @@ FROM
                            ) = product_cfg."product_id"
 
                     WHERE ${PartDate:date2}
-                      AND p0."domain" = 'release'
-                      AND p0."$part_event" = 'pay_log'
-                      AND p0."#account_id" IS NOT NULL
-                      AND p0."region_id" IS NOT NULL
+
+                      AND p0."domain"
+                          = 'release'
+
+                      AND p0."$part_event"
+                          = 'pay_log'
+
+                      AND p0."#account_id"
+                          IS NOT NULL
+
+                      AND p0."region_id"
+                          IS NOT NULL
 
                       AND
                       (
@@ -609,10 +688,13 @@ FROM
                     AS varchar
                    ) = x."region_id"
 
-               AND vip_e."$part_event" = 'vip_change_log'
-               AND vip_e."domain" = 'release'
+               AND vip_e."$part_event"
+                    = 'vip_change_log'
 
-               /* VIP固定取当前3日周期开始前 */
+               AND vip_e."domain"
+                    = 'release'
+
+               /* VIP固定为该3日周期开始前VIP */
                AND vip_e."#event_time"
                     < cast(
                         x."周期开始日期"
