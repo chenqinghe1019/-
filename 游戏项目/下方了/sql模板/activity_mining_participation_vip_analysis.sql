@@ -11,7 +11,15 @@ SELECT
     q."活动周期",
     q."周期内第几天",
     q."VIP层级（周期开始前）",
+    q."活动活跃人数",
     q."矿脉参与人数",
+
+    round(
+        q."矿脉参与人数" * 1.0000
+        / nullif(q."活动活跃人数", 0),
+        4
+    ) AS "矿脉参与率",
+
     q."活动付费人数",
 
     round(
@@ -27,7 +35,7 @@ SELECT
 
     round(
         q."活动付费金额" * 1.0000
-        / nullif(q."矿脉参与人数", 0),
+        / nullif(q."活动活跃人数", 0),
         2
     ) AS "活动ARPU",
 
@@ -68,24 +76,38 @@ FROM
             ELSE max(p."分层排序")
         END AS "分层排序",
 
-        count(*) AS "矿脉参与人数",
+        count(*) AS "活动活跃人数",
 
         sum(
             CASE
-                WHEN p."当日活动付费金额" > 0
+                WHEN p."是否参与矿脉" = 1
+                    THEN 1
+                ELSE 0
+            END
+        ) AS "矿脉参与人数",
+
+        sum(
+            CASE
+                WHEN p."是否参与矿脉" = 1
+                 AND p."当日活动付费金额" > 0
                     THEN 1
                 ELSE 0
             END
         ) AS "活动付费人数",
 
         sum(
-            p."当日活动付费金额"
+            CASE
+                WHEN p."是否参与矿脉" = 1
+                    THEN p."当日活动付费金额"
+                ELSE 0
+            END
         ) AS "活动付费金额"
 
     FROM
     (
         SELECT
             y."#account_id",
+            y."region_id",
             y."玩法轮次排序",
             y."周期排序",
             y."周期内第几天",
@@ -134,17 +156,20 @@ FROM
                 ELSE 4
             END AS "分层排序",
 
+            y."是否参与矿脉",
             y."当日活动付费金额"
 
         FROM
         (
             SELECT
                 x."#account_id",
+                x."region_id",
                 x."玩法轮次排序",
                 x."周期排序",
                 x."周期内第几天",
-                x."参与日期",
+                x."活动日期",
                 x."周期开始日期",
+                x."是否参与矿脉",
                 x."当日活动付费金额",
 
                 max(
@@ -157,259 +182,242 @@ FROM
             FROM
             (
                 SELECT
-                    participant."#account_id",
-                    participant."region_id",
-                    participant."玩法轮次排序",
-                    participant."周期排序",
-                    participant."周期内第几天",
-                    participant."参与日期",
-                    participant."周期开始日期",
+                    active_player."#account_id",
+                    active_player."region_id",
+                    active_player."玩法轮次排序",
+                    active_player."周期排序",
+                    active_player."周期内第几天",
+                    active_player."活动日期",
+                    active_player."周期开始日期",
                     user_base."开服日期",
 
-                    sum(
-                        CASE
-                            WHEN pay_e."#account_id" IS NOT NULL
-                             AND product_cfg."product_id" IS NOT NULL
-                                THEN
-                                (
-                                    coalesce(
-                                        try_cast(
-                                            pay_e."payment"
-                                            AS double
-                                        ),
-                                        0
-                                    )
-                                    +
-                                    coalesce(
-                                        try_cast(
-                                            pay_e."token_payment"
-                                            AS double
-                                        ),
-                                        0
-                                    )
-                                ) / 100.0000
-                            ELSE 0
-                        END
+                    CASE
+                        WHEN mining_player."#account_id" IS NOT NULL
+                            THEN 1
+                        ELSE 0
+                    END AS "是否参与矿脉",
+
+                    coalesce(
+                        pay_player."当日活动付费金额",
+                        0
                     ) AS "当日活动付费金额"
 
                 FROM
                 (
+                    /*
+                     * 活跃玩家只取：
+                     * 1. mining_log真实出现的区服
+                     * 2. mining_log真实出现的日期
+                     * 3. 完整3日周期
+                     */
                     SELECT DISTINCT
                         cast(
-                            m."#account_id"
+                            a."#account_id"
                             AS varchar
                         ) AS "#account_id",
 
                         cast(
-                            m."region_id"
+                            a."region_id"
                             AS varchar
                         ) AS "region_id",
 
+                        date(
+                            a."#event_time"
+                        ) AS "活动日期",
+
                         cycle_map."玩法轮次排序",
                         cycle_map."周期排序",
-                        cycle_map."周期内第几天",
                         cycle_map."周期开始日期",
-                        date(m."#event_time") AS "参与日期"
+                        cycle_map."周期内第几天"
 
-                    FROM ta.v_event_41 m
+                    FROM ta.v_event_41 a
 
                     INNER JOIN
                     (
                         SELECT
-                            cycle_base."region_id",
-                            cycle_base."日志日期",
-                            cycle_base."玩法轮次排序",
-                            cycle_base."周期排序",
-                            cycle_base."周期开始日期",
+                            full_cycle."region_id",
+                            full_cycle."日志日期",
+                            full_cycle."玩法轮次排序",
+                            full_cycle."周期排序",
+                            full_cycle."周期开始日期",
 
                             date_diff(
                                 'day',
-                                cycle_base."周期开始日期",
-                                cycle_base."日志日期"
+                                full_cycle."周期开始日期",
+                                full_cycle."日志日期"
                             ) + 1 AS "周期内第几天"
 
                         FROM
                         (
                             SELECT
-                                round_base."region_id",
-                                round_base."日志日期",
-                                round_base."玩法轮次排序",
+                                cycle_day."region_id",
+                                cycle_day."日志日期",
+                                cycle_day."玩法轮次排序",
+                                cycle_day."周期排序",
+                                cycle_day."周期开始日期",
 
-                                cast(
-                                    floor(
-                                        date_diff(
-                                            'day',
-                                            round_base."轮次开始日期",
-                                            round_base."日志日期"
-                                        ) / 3.0000
-                                    ) + 1
-                                    AS bigint
-                                ) AS "周期排序",
-
-                                date_add(
-                                    'day',
-                                    3 *
-                                    (
-                                        cast(
-                                            floor(
-                                                date_diff(
-                                                    'day',
-                                                    round_base."轮次开始日期",
-                                                    round_base."日志日期"
-                                                ) / 3.0000
-                                            ) + 1
-                                            AS bigint
-                                        ) - 1
-                                    ),
-                                    round_base."轮次开始日期"
-                                ) AS "周期开始日期"
+                                count(*) OVER (
+                                    PARTITION BY
+                                        cycle_day."region_id",
+                                        cycle_day."玩法轮次排序",
+                                        cycle_day."周期排序"
+                                ) AS "周期开放天数"
 
                             FROM
                             (
                                 SELECT
-                                    round_day."region_id",
-                                    round_day."日志日期",
-                                    round_day."玩法轮次排序",
+                                    round_base."region_id",
+                                    round_base."日志日期",
+                                    round_base."玩法轮次排序",
 
-                                    min(
-                                        round_day."日志日期"
-                                    ) OVER (
-                                        PARTITION BY
-                                            round_day."region_id",
-                                            round_day."玩法轮次排序"
-                                    ) AS "轮次开始日期"
+                                    cast(
+                                        floor(
+                                            date_diff(
+                                                'day',
+                                                round_base."轮次开始日期",
+                                                round_base."日志日期"
+                                            ) / 3.0000
+                                        ) + 1
+                                        AS bigint
+                                    ) AS "周期排序",
+
+                                    date_add(
+                                        'day',
+                                        3 *
+                                        (
+                                            cast(
+                                                floor(
+                                                    date_diff(
+                                                        'day',
+                                                        round_base."轮次开始日期",
+                                                        round_base."日志日期"
+                                                    ) / 3.0000
+                                                ) + 1
+                                                AS bigint
+                                            ) - 1
+                                        ),
+                                        round_base."轮次开始日期"
+                                    ) AS "周期开始日期"
 
                                 FROM
                                 (
                                     SELECT
-                                        breakpoint_day."region_id",
-                                        breakpoint_day."日志日期",
+                                        round_day."region_id",
+                                        round_day."日志日期",
+                                        round_day."玩法轮次排序",
 
-                                        sum(
-                                            breakpoint_day."是否新轮次"
+                                        min(
+                                            round_day."日志日期"
                                         ) OVER (
                                             PARTITION BY
-                                                breakpoint_day."region_id"
-                                            ORDER BY
-                                                breakpoint_day."日志日期"
-                                            ROWS BETWEEN UNBOUNDED PRECEDING
-                                                AND CURRENT ROW
-                                        ) AS "玩法轮次排序"
+                                                round_day."region_id",
+                                                round_day."玩法轮次排序"
+                                        ) AS "轮次开始日期"
 
                                     FROM
                                     (
                                         SELECT
-                                            prev_day."region_id",
-                                            prev_day."日志日期",
+                                            breakpoint_day."region_id",
+                                            breakpoint_day."日志日期",
 
-                                            CASE
-                                                WHEN prev_day."上一日志日期" IS NULL
-                                                    THEN 1
-
-                                                WHEN date_diff(
-                                                    'day',
-                                                    prev_day."上一日志日期",
-                                                    prev_day."日志日期"
-                                                ) > 1
-                                                    THEN 1
-
-                                                ELSE 0
-                                            END AS "是否新轮次"
+                                            sum(
+                                                breakpoint_day."是否新轮次"
+                                            ) OVER (
+                                                PARTITION BY
+                                                    breakpoint_day."region_id"
+                                                ORDER BY
+                                                    breakpoint_day."日志日期"
+                                                ROWS BETWEEN UNBOUNDED PRECEDING
+                                                    AND CURRENT ROW
+                                            ) AS "玩法轮次排序"
 
                                         FROM
                                         (
                                             SELECT
-                                                server_day."region_id",
-                                                server_day."日志日期",
+                                                prev_day."region_id",
+                                                prev_day."日志日期",
 
-                                                lag(
-                                                    server_day."日志日期"
-                                                ) OVER (
-                                                    PARTITION BY
-                                                        server_day."region_id"
-                                                    ORDER BY
-                                                        server_day."日志日期"
-                                                ) AS "上一日志日期"
+                                                CASE
+                                                    WHEN prev_day."上一日志日期" IS NULL
+                                                        THEN 1
+
+                                                    WHEN date_diff(
+                                                        'day',
+                                                        prev_day."上一日志日期",
+                                                        prev_day."日志日期"
+                                                    ) > 1
+                                                        THEN 1
+
+                                                    ELSE 0
+                                                END AS "是否新轮次"
 
                                             FROM
                                             (
-                                                SELECT DISTINCT
-                                                    cast(
-                                                        e0."region_id"
-                                                        AS varchar
-                                                    ) AS "region_id",
+                                                SELECT
+                                                    server_day."region_id",
+                                                    server_day."日志日期",
 
-                                                    date(
-                                                        e0."#event_time"
-                                                    ) AS "日志日期"
+                                                    lag(
+                                                        server_day."日志日期"
+                                                    ) OVER (
+                                                        PARTITION BY
+                                                            server_day."region_id"
+                                                        ORDER BY
+                                                            server_day."日志日期"
+                                                    ) AS "上一日志日期"
 
-                                                FROM ta.v_event_41 e0
+                                                FROM
+                                                (
+                                                    /*
+                                                     * mining_log按区服+自然日去重。
+                                                     * 每个区服独立判断开放节奏。
+                                                     */
+                                                    SELECT DISTINCT
+                                                        cast(
+                                                            m."region_id"
+                                                            AS varchar
+                                                        ) AS "region_id",
 
-                                                WHERE ${PartDate:date2}
-                                                  AND e0."domain" = 'release'
-                                                  AND e0."$part_event" = 'mining_log'
-                                                  AND e0."region_id" IS NOT NULL
-                                            ) server_day
-                                        ) prev_day
-                                    ) breakpoint_day
-                                ) round_day
-                            ) round_base
-                        ) cycle_base
+                                                        date(
+                                                            m."#event_time"
+                                                        ) AS "日志日期"
 
-                        CROSS JOIN
-                        (
-                            SELECT
-                                min(
-                                    cast(
-                                        d."$part_date"
-                                        AS date
-                                    )
-                                ) AS "统计开始日期",
+                                                    FROM ta.v_event_41 m
 
-                                max(
-                                    cast(
-                                        d."$part_date"
-                                        AS date
-                                    )
-                                ) AS "统计结束日期"
+                                                    WHERE ${PartDate:date2}
+                                                      AND m."domain" = 'release'
+                                                      AND m."$part_event" = 'mining_log'
+                                                      AND m."region_id" IS NOT NULL
+                                                ) server_day
+                                            ) prev_day
+                                        ) breakpoint_day
+                                    ) round_day
+                                ) round_base
+                            ) cycle_day
+                        ) full_cycle
 
-                            FROM
-                            (
-                                SELECT
-                                    "$part_date"
-
-                                FROM ta.v_event_41
-
-                                WHERE ${PartDate:date2}
-                            ) d
-                        ) stats_period
-
-                        /* 仅保留完整3日周期 */
-                        WHERE cycle_base."周期开始日期"
-                                >= stats_period."统计开始日期"
-
-                          AND date_add(
-                                'day',
-                                2,
-                                cycle_base."周期开始日期"
-                              ) <= stats_period."统计结束日期"
+                        /*
+                         * 周期必须实际存在完整3个mining_log开放日。
+                         * 只有1天或2天的尾周期直接剔除。
+                         */
+                        WHERE full_cycle."周期开放天数" = 3
                     ) cycle_map
 
                         ON cast(
-                            m."region_id"
+                            a."region_id"
                             AS varchar
                            ) = cycle_map."region_id"
 
                        AND date(
-                            m."#event_time"
+                            a."#event_time"
                            ) = cycle_map."日志日期"
 
                     WHERE ${PartDate:date2}
-                      AND m."domain" = 'release'
-                      AND m."$part_event" = 'mining_log'
-                      AND m."#account_id" IS NOT NULL
-                      AND m."region_id" IS NOT NULL
-                ) participant
+                      AND a."domain" = 'release'
+                      AND a."$part_event" = 'in_out_log'
+                      AND a."#account_id" IS NOT NULL
+                      AND a."region_id" IS NOT NULL
+                ) active_player
 
                 INNER JOIN
                 (
@@ -434,11 +442,51 @@ FROM
                     GROUP BY 1
                 ) user_base
 
-                    ON participant."#account_id"
+                    ON active_player."#account_id"
                         = user_base."#account_id"
 
                 LEFT JOIN
                 (
+                    /* 当天、同区服出现mining_log才算参与 */
+                    SELECT DISTINCT
+                        cast(
+                            m0."#account_id"
+                            AS varchar
+                        ) AS "#account_id",
+
+                        cast(
+                            m0."region_id"
+                            AS varchar
+                        ) AS "region_id",
+
+                        date(
+                            m0."#event_time"
+                        ) AS "参与日期"
+
+                    FROM ta.v_event_41 m0
+
+                    WHERE ${PartDate:date2}
+                      AND m0."domain" = 'release'
+                      AND m0."$part_event" = 'mining_log'
+                      AND m0."#account_id" IS NOT NULL
+                      AND m0."region_id" IS NOT NULL
+                ) mining_player
+
+                    ON mining_player."#account_id"
+                        = active_player."#account_id"
+
+                   AND mining_player."region_id"
+                        = active_player."region_id"
+
+                   AND mining_player."参与日期"
+                        = active_player."活动日期"
+
+                LEFT JOIN
+                (
+                    /*
+                     * 目标活动礼包付费：
+                     * 同玩家 + 同区服 + 同一天聚合。
+                     */
                     SELECT
                         cast(
                             p0."#account_id"
@@ -450,17 +498,68 @@ FROM
                             AS varchar
                         ) AS "region_id",
 
-                        p0."#event_time",
-                        p0."product_id",
-                        p0."payment",
-                        p0."token_payment"
+                        date(
+                            p0."#event_time"
+                        ) AS "付费日期",
+
+                        sum(
+                            (
+                                coalesce(
+                                    try_cast(
+                                        p0."payment"
+                                        AS double
+                                    ),
+                                    0
+                                )
+                                +
+                                coalesce(
+                                    try_cast(
+                                        p0."token_payment"
+                                        AS double
+                                    ),
+                                    0
+                                )
+                            ) / 100.0000
+                        ) AS "当日活动付费金额"
 
                     FROM ta.v_event_41 p0
+
+                    INNER JOIN
+                    (
+                        SELECT
+                            try_cast(
+                                "product_id"
+                                AS bigint
+                            ) AS "product_id"
+
+                        FROM ta_ext.product_id_41
+
+                        WHERE "product_id" IS NOT NULL
+                          AND regexp_like(
+                                coalesce(
+                                    cast(
+                                        "product_type_two"
+                                        AS varchar
+                                    ),
+                                    ''
+                                ),
+                                '${Selector:selector1}'
+                          )
+
+                        GROUP BY 1
+                    ) product_cfg
+
+                        ON try_cast(
+                            p0."product_id"
+                            AS bigint
+                           ) = product_cfg."product_id"
 
                     WHERE ${PartDate:date2}
                       AND p0."domain" = 'release'
                       AND p0."$part_event" = 'pay_log'
                       AND p0."#account_id" IS NOT NULL
+                      AND p0."region_id" IS NOT NULL
+
                       AND
                       (
                           coalesce(
@@ -481,60 +580,21 @@ FROM
                               0
                           ) > 0
                       )
-                ) pay_e
 
-                    ON pay_e."#account_id"
-                        = participant."#account_id"
+                    GROUP BY
+                        1,
+                        2,
+                        3
+                ) pay_player
 
-                   AND coalesce(
-                        pay_e."region_id",
-                        participant."region_id"
-                       ) = participant."region_id"
+                    ON pay_player."#account_id"
+                        = active_player."#account_id"
 
-                   /* 付费与参与按同一天归属 */
-                   AND date(
-                        pay_e."#event_time"
-                       ) = participant."参与日期"
+                   AND pay_player."region_id"
+                        = active_player."region_id"
 
-                LEFT JOIN
-                (
-                    SELECT
-                        try_cast(
-                            "product_id"
-                            AS bigint
-                        ) AS "product_id"
-
-                    FROM ta_ext.product_id_41
-
-                    WHERE "product_id" IS NOT NULL
-                      AND regexp_like(
-                            coalesce(
-                                cast(
-                                    "product_type_two"
-                                    AS varchar
-                                ),
-                                ''
-                            ),
-                            '${Selector:selector1}'
-                      )
-
-                    GROUP BY 1
-                ) product_cfg
-
-                    ON try_cast(
-                        pay_e."product_id"
-                        AS bigint
-                       ) = product_cfg."product_id"
-
-                GROUP BY
-                    1,
-                    2,
-                    3,
-                    4,
-                    5,
-                    6,
-                    7,
-                    8
+                   AND pay_player."付费日期"
+                        = active_player."活动日期"
             ) x
 
             LEFT JOIN ta.v_event_41 vip_e
@@ -544,10 +604,15 @@ FROM
                     AS varchar
                 ) = x."#account_id"
 
+               AND cast(
+                    vip_e."region_id"
+                    AS varchar
+                   ) = x."region_id"
+
                AND vip_e."$part_event" = 'vip_change_log'
                AND vip_e."domain" = 'release'
 
-               /* VIP取该3日周期开始前 */
+               /* VIP固定取当前3日周期开始前 */
                AND vip_e."#event_time"
                     < cast(
                         x."周期开始日期"
@@ -575,7 +640,9 @@ FROM
                 4,
                 5,
                 6,
-                7
+                7,
+                8,
+                9
         ) y
     ) p
 
