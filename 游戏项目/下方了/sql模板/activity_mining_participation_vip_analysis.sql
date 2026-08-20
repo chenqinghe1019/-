@@ -155,7 +155,11 @@ FROM
                     (
                         SELECT
                             "#account_id",
-                            "#event_time"
+                            "#event_time",
+                            cast(
+                                "region_id"
+                                AS varchar
+                            ) AS "region_id"
 
                         FROM ta.v_event_41
 
@@ -169,7 +173,48 @@ FROM
 
                           AND "#account_id"
                               IS NOT NULL
+
+                          AND "region_id"
+                              IS NOT NULL
                     ) a
+
+                    /*
+                     * 只有“该区服当天真实出现过mining_log”的自然日
+                     * 才纳入活动活跃分母
+                     */
+                    INNER JOIN
+                    (
+                        SELECT DISTINCT
+                            cast(
+                                m."region_id"
+                                AS varchar
+                            ) AS "region_id",
+
+                            date(
+                                m."#event_time"
+                            ) AS "矿脉日期"
+
+                        FROM ta.v_event_41 m
+
+                        WHERE ${PartDate:date2}
+
+                          AND m."domain"
+                              = 'release'
+
+                          AND m."$part_event"
+                              = 'mining_log'
+
+                          AND m."region_id"
+                              IS NOT NULL
+                    ) mining_server_day
+
+                        ON a."region_id"
+                            = mining_server_day."region_id"
+
+                       AND date(
+                            a."#event_time"
+                           )
+                           = mining_server_day."矿脉日期"
 
                     INNER JOIN ta.v_user_41 u
 
@@ -239,7 +284,7 @@ FROM
                       AND u."server_open_time"
                             IS NOT NULL
 
-                      /* 只保留完整活动周期完全落在统计周期内的成熟区服 */
+                      /* 完整活动周期必须全部落在统计周期内 */
                       AND date_add(
                             'day',
                             activity_param."活动开始天数" - 1,
@@ -258,7 +303,7 @@ FROM
                           )
                           <= stats_period."统计结束日期"
 
-                      /* 玩家必须在真实活动周期内有活跃 */
+                      /* mining_log有效区服日仍需处于目标开服天数范围 */
                       AND (
                             date_diff(
                                 'day',
@@ -303,7 +348,19 @@ FROM
                         >= active_user."活动开始时间"
 
                    AND mining_e."#event_time"
-                        < active_user."活动结束时间"
+                        < active_user."活动开始时间"
+                            + interval '1' day
+                            * (
+                                date_diff(
+                                    'day',
+                                    date(active_user."活动开始时间"),
+                                    date_add(
+                                        'day',
+                                        0,
+                                        date(active_user."活动开始时间")
+                                    )
+                                ) + 1
+                              )
 
                 GROUP BY
                     1,
