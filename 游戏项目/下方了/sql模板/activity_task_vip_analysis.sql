@@ -221,7 +221,6 @@ FROM
                     WHERE u."domain" = 'release'
                       AND u."server_open_time" IS NOT NULL
 
-                      /* 只保留完整活动周期完全落在统计周期内的成熟区服 */
                       AND date_add(
                             'day',
                             activity_param."活动开始天数" - 1,
@@ -234,7 +233,6 @@ FROM
                             date(u."server_open_time")
                           ) <= stats_period."统计结束日期"
 
-                      /* 玩家必须在真实活动周期内有活跃 */
                       AND (
                             date_diff(
                                 'day',
@@ -252,6 +250,7 @@ FROM
                         e0."#event_time",
                         e0."task_type",
                         e0."product_id",
+                        e0."product_name",
                         e0."payment",
                         e0."token_payment"
 
@@ -297,11 +296,13 @@ FROM
                 LEFT JOIN
                 (
                     SELECT
-                        try_cast("product_id" AS bigint) AS "product_id"
+                        try_cast("product_id" AS bigint) AS "product_id",
+                        cast("product_name" AS varchar) AS "product_name"
 
-                    FROM ta_ext.product_id_41
+                    FROM ta_ext.product_id_name_41
 
                     WHERE "product_id" IS NOT NULL
+                      AND "product_name" IS NOT NULL
                       AND regexp_like(
                             coalesce(
                                 cast("product_type_two" AS varchar),
@@ -310,11 +311,15 @@ FROM
                             '${Selector:selector1}'
                       )
 
-                    GROUP BY 1
+                    GROUP BY
+                        1,
+                        2
                 ) product_cfg
                     ON e."$part_event" = 'pay_log'
                    AND try_cast(e."product_id" AS bigint)
                         = product_cfg."product_id"
+                   AND cast(e."product_name" AS varchar)
+                        = product_cfg."product_name"
 
                 GROUP BY
                     1,
