@@ -6,12 +6,27 @@ analysis_usage:
     - "活动期数"
     - "活动周期"
   activity_period_format: "YYYY-MM-DD~YYYY-MM-DD"
+  active_event: "log_in_out"
+  payment_event: "pay_log"
+  payment_unit: "分，统计金额时 /100 转元"
+  server_day_definition: "date_diff('day', date(server_open_time), event_date) + 1"
+  participation_rules:
+    default: "开服天数 >= 7"
+    monthly_activity: "开服天数 > 0"
+  first_step_metrics:
+    - "活跃玩家数"
+    - "付费玩家数（活动周期内有 pay_log 即算）"
+    - "总体付费金额"
+    - "总体付费率 = 付费玩家数 / 活跃玩家数"
+    - "总体ARPU = 总体付费金额 / 活跃玩家数"
+    - "总体ARPPU = 总体付费金额 / 付费玩家数"
 
 activities:
   - activity_name: "厨神小当家"
     overall_period_type: "授权时间"
     overall_start_date: "2025-05-16"
     overall_end_date: "2025-07-15"
+    participation_rule: "开服天数 >= 7"
     periods:
       - period_name: "第一期"
         start_date: "2025-05-24"
@@ -26,6 +41,7 @@ activities:
     overall_period_type: "授权时间"
     overall_start_date: "2025-07-31"
     overall_end_date: "2025-10-31"
+    participation_rule: "开服天数 >= 7"
     periods:
       - period_name: "第一期"
         start_date: "2025-08-07"
@@ -44,6 +60,7 @@ activities:
     overall_period_type: "授权时间"
     overall_start_date: "2026-01-26"
     overall_end_date: "2026-03-31"
+    participation_rule: "开服天数 >= 7"
     periods:
       - period_name: "第一期"
         start_date: "2026-02-02"
@@ -58,6 +75,7 @@ activities:
     overall_period_type: "授权时间"
     overall_start_date: "2026-05-10"
     overall_end_date: "2026-08-17"
+    participation_rule: "开服天数 >= 7"
     periods:
       - period_name: "第一期"
         start_date: "2026-05-18"
@@ -76,6 +94,7 @@ activities:
     overall_period_type: "代言时间"
     overall_start_date: "2026-06-22"
     overall_end_date: "2026-09-22"
+    participation_rule: "开服天数 > 0"
     periods:
       - period_name: "月度活动"
         start_date: "2026-06-22"
@@ -86,3 +105,4 @@ notes:
   - "后续步步活动效果分析默认按活动名称、活动期数、活动周期分组。"
   - "活动周期按自然日闭区间统计，起止日期均包含。"
   - "授权/代言整体时间用于校验活动是否处于有效合作期，不等同于单期活动统计周期。"
+  - "第一步效果指标统一使用活动周期内符合参与开服天数门槛的活跃玩家作为总体人群。"
