@@ -147,6 +147,7 @@ FROM
                     WHERE u."domain" = 'release'
                       AND u."#account_id" IS NOT NULL
                       AND u."server_open_time" IS NOT NULL
+                      AND cast(u."channel_id" AS varchar) = '2'
 
                     GROUP BY 1
                 ) u0
