@@ -219,6 +219,7 @@ FROM
                         cast(e0."#account_id" AS varchar) AS "#account_id",
                         e0."#event_time",
                         e0."product_id",
+                        e0."product_name",
                         e0."payment",
                         e0."token_payment"
 
@@ -251,26 +252,29 @@ FROM
                 INNER JOIN
                 (
                     SELECT
-                        try_cast("product_id" AS bigint) AS "product_id"
+                        try_cast("product_id" AS bigint) AS "product_id",
+                        cast("product_name" AS varchar) AS "product_name"
 
-                    FROM ta_ext.product_id_41
+                    FROM ta_ext.product_id_name_41
 
                     WHERE "product_id" IS NOT NULL
-
-                    GROUP BY 1
-
-                    HAVING regexp_like(
-                        coalesce(
-                            max(
-                                cast("product_type_two" AS varchar)
+                      AND "product_name" IS NOT NULL
+                      AND regexp_like(
+                            coalesce(
+                                cast("product_type_two" AS varchar),
+                                ''
                             ),
-                            ''
-                        ),
-                        '${Selector:selector1}'
-                    )
+                            '${Selector:selector1}'
+                      )
+
+                    GROUP BY
+                        1,
+                        2
                 ) product_cfg
                     ON try_cast(e."product_id" AS bigint)
                         = product_cfg."product_id"
+                   AND cast(e."product_name" AS varchar)
+                        = product_cfg."product_name"
 
                 GROUP BY 1
 
