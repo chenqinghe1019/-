@@ -3,14 +3,19 @@ project_code: xiafangle
 project_id: 41
 created_at: '2026-08-24'
 updated_at: '2026-08-24'
-purpose: 21类核心资源获取分布检测
+purpose: 21类核心资源每日获取分布检测
 sql_file: sql/xiafangle/21类道具获取_人均及四分位检测.sql
+
+grouping:
+  primary_dimension: 自然日
+  date_field: '$part_date'
+  rule: 每日分别统计21类资源获取分布
 
 population:
   event: in_out_log
-  rule: 查询周期内发生 in_out_log 的活跃角色作为总体
+  rule: 每个自然日发生 in_out_log 的活跃角色作为当天总体
   date_filter: '${PartDate:date}'
-  zero_fill: 未获取某道具的活跃玩家按0补齐后参与人均与四分位计算
+  zero_fill: 当天活跃但未获取某道具的玩家按0补齐后参与人均、最小值、P25、P50、P75、最大值计算
 
 acquisition_rule:
   change_type: 1
@@ -20,17 +25,21 @@ acquisition_rule:
     - item_log
     - money_log
     - voucher_log
+  acquisition_rate_formula: 获取玩家数 * 1.0000 / 活跃玩家数
   note: 本专题只统计获取，不涉及项目记忆中“消耗不取ABS”的口径调整
 
 metrics:
+  - 日期
   - 活跃玩家数
   - 获取玩家数
   - 获取率
   - 获取总量
   - 人均获取数量
+  - 最小获取数量
   - P25获取数量
   - P50获取数量
   - P75获取数量
+  - 最大获取数量
 
 resources:
   - 钻石
