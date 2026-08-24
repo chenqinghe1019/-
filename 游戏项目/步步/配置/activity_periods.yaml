@@ -34,6 +34,10 @@ analysis_usage:
     activity_match: "temp_use1_22.activity_type 对应活动名称"
     revenue_field: "temp_use1_22.price"
     payer_rule: "活动付费人数仅统计命中对应活动商品且 temp_use1_22.price > 0 的 pay_log 玩家"
+    special_product_rules:
+      crossover_battle_pass:
+        product_ids: [30012, 30013, 30014]
+        note: "厨神小当家、保卫萝卜、葫芦兄弟、我叫MT 的联动双战令周期统一只统计 product_id in (30012,30013,30014)，活动流水仍按 temp_use1_22.price 累计且 price > 0。"
     overlap_rules:
       - "月度活动付费商品固定取汪东城代言人商品中的 product_id in (905,906)。"
       - "product_id 905/906 在月度活动周期内允许同时计入汪东城代言人和月度活动，跨活动不做互斥归属。"
@@ -63,6 +67,11 @@ activities:
         start_date: "2025-05-24"
         end_date: "2025-06-02"
         activity_period: "2025-05-24~2025-06-02"
+      - period_name: "联动双战令"
+        start_date: "2025-06-14"
+        end_date: "2025-06-20"
+        activity_period: "2025-06-14~2025-06-20"
+        product_ids: [30012, 30013, 30014]
       - period_name: "第二期"
         start_date: "2025-06-21"
         end_date: "2025-06-30"
@@ -78,6 +87,11 @@ activities:
         start_date: "2025-08-07"
         end_date: "2025-08-16"
         activity_period: "2025-08-07~2025-08-16"
+      - period_name: "联动双战令"
+        start_date: "2025-09-12"
+        end_date: "2025-09-18"
+        activity_period: "2025-09-12~2025-09-18"
+        product_ids: [30012, 30013, 30014]
       - period_name: "第二期"
         start_date: "2025-09-22"
         end_date: "2025-09-27"
@@ -97,6 +111,11 @@ activities:
         start_date: "2026-02-02"
         end_date: "2026-02-11"
         activity_period: "2026-02-02~2026-02-11"
+      - period_name: "联动双战令"
+        start_date: "2026-03-16"
+        end_date: "2026-03-22"
+        activity_period: "2026-03-16~2026-03-22"
+        product_ids: [30012, 30013, 30014]
       - period_name: "第二期"
         start_date: "2026-03-20"
         end_date: "2026-03-29"
@@ -116,6 +135,11 @@ activities:
         start_date: "2026-07-06"
         end_date: "2026-07-11"
         activity_period: "2026-07-06~2026-07-11"
+      - period_name: "联动双战令"
+        start_date: "2026-07-06"
+        end_date: "2026-07-11"
+        activity_period: "2026-07-06~2026-07-11"
+        product_ids: [30012, 30013, 30014]
       - period_name: "第三期"
         start_date: "2026-08-06"
         end_date: "2026-08-15"
@@ -150,5 +174,6 @@ notes:
   - "活动周期按自然日闭区间统计，起止日期均包含。"
   - "授权时间用于校验联动活动是否处于有效合作期；汪东城代言人按完整代言周期 2026-06-22~2026-09-22 单独统计，月度活动按 2026-06-22~2026-07-22 单独统计，二者均为开服天数 > 0 即可参与。"
   - "月度活动付费固定取汪东城代言人中的 product_id 905/906；在月度活动周期内，905/906 同时计入汪东城代言人和月度活动。"
+  - "厨神小当家、保卫萝卜、葫芦兄弟、我叫MT 各新增一段联动双战令周期，活动商品统一仅取 product_id 30012/30013/30014；参与开服天数沿用普通联动活动 >= 7。"
   - "第一步效果指标统一使用活动周期内符合参与开服天数门槛的活跃玩家作为总体人群。"
   - "活动付费指标以 ta_ext.temp_use1_22 商品配置为准，good_id 对应 pay_log.product_id；活动流水按 price 统计；活动付费人数及活动流水均要求 price > 0。"
