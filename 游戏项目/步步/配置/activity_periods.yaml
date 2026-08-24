@@ -10,6 +10,7 @@ analysis_usage:
   active_event: "log_in_out"
   payment_event: "pay_log"
   payment_unit: "分，统计金额时 /100 转元"
+  overall_payer_rule: "总体付费玩家仅统计 pay_log 且 payment > 0 的玩家；总体付费率与总体ARPPU均使用该付费玩家数"
   server_open_source:
     table: "user_result_cluster_22"
     cluster_name: "server_open_day_tag"
@@ -35,11 +36,11 @@ analysis_usage:
     note: "活动付费人数通过活动周期内、满足参与开服天数门槛、product_id 命中对应 activity_type 商品配置且 price > 0 的 pay_log 识别；活动付费金额不取 pay_log.payment，统一按每笔命中购买对应的 temp_use1_22.price 累计，且仅统计 price > 0。"
   first_step_metrics:
     - "活跃玩家数"
-    - "付费玩家数（活动周期内有 pay_log 即算）"
+    - "付费玩家数（活动周期内有 pay_log 且 payment > 0）"
     - "总体付费金额"
-    - "总体付费率 = 付费玩家数 / 活跃玩家数"
+    - "总体付费率 = payment > 0 的付费玩家数 / 活跃玩家数"
     - "总体ARPU = 总体付费金额 / 活跃玩家数"
-    - "总体ARPPU = 总体付费金额 / 付费玩家数"
+    - "总体ARPPU = 总体付费金额 / payment > 0 的付费玩家数"
     - "活动付费金额（按 temp_use1_22.price 累计，仅 price > 0）"
     - "活动付费人数（仅 price > 0）"
     - "活动付费率 = 活动付费人数 / 活跃玩家数"
@@ -129,6 +130,7 @@ activities:
 notes:
   - "后续步步活动效果分析默认按活动名称、活动期数、活动周期分组。"
   - "本轮活动效果分析统一限制事件 channel_id = 2，活跃、总体付费、活动付费使用同一渠道口径。"
+  - "总体付费玩家、总体付费率和总体ARPPU统一要求 pay_log.payment > 0，0 元 pay_log 不计入总体付费人数。"
   - "活动周期按自然日闭区间统计，起止日期均包含。"
   - "授权/代言整体时间用于校验活动是否处于有效合作期，不等同于单期活动统计周期。"
   - "第一步效果指标统一使用活动周期内符合参与开服天数门槛的活跃玩家作为总体人群。"
