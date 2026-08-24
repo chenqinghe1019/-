@@ -20,6 +20,7 @@ analysis_usage:
   server_day_definition: "date_diff('day', date(tag_value_tm), event_date) + 1"
   participation_rules:
     default: "开服天数 >= 7"
+    spokesperson_activity: "开服天数 > 0"
     monthly_activity: "开服天数 > 0"
   activity_goods_source:
     table: "ta_ext.temp_use1_22"
@@ -122,6 +123,17 @@ activities:
     overall_end_date: "2026-09-22"
     participation_rule: "开服天数 > 0"
     periods:
+      - period_name: "代言期"
+        start_date: "2026-06-22"
+        end_date: "2026-09-22"
+        activity_period: "2026-06-22~2026-09-22"
+
+  - activity_name: "月度活动"
+    overall_period_type: "活动时间"
+    overall_start_date: "2026-06-22"
+    overall_end_date: "2026-07-22"
+    participation_rule: "开服天数 > 0"
+    periods:
       - period_name: "月度活动"
         start_date: "2026-06-22"
         end_date: "2026-07-22"
@@ -132,6 +144,6 @@ notes:
   - "本轮活动效果分析统一限制事件 channel_id = 2，活跃、总体付费、活动付费使用同一渠道口径。"
   - "总体付费玩家、总体付费率和总体ARPPU统一要求 pay_log.payment > 0，0 元 pay_log 不计入总体付费人数。"
   - "活动周期按自然日闭区间统计，起止日期均包含。"
-  - "授权/代言整体时间用于校验活动是否处于有效合作期，不等同于单期活动统计周期。"
+  - "授权时间用于校验联动活动是否处于有效合作期；汪东城代言人按完整代言周期 2026-06-22~2026-09-22 单独统计，月度活动按 2026-06-22~2026-07-22 单独统计，二者均为开服天数 > 0 即可参与。"
   - "第一步效果指标统一使用活动周期内符合参与开服天数门槛的活跃玩家作为总体人群。"
   - "活动付费指标以 ta_ext.temp_use1_22 商品配置为准，good_id 对应 pay_log.product_id；活动流水按 price 统计；活动付费人数及活动流水均要求 price > 0。"
