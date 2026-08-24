@@ -1,0 +1,84 @@
+project: 下方了
+project_code: xiafangle
+project_id: 41
+created_at: '2026-08-24'
+updated_at: '2026-08-24'
+purpose: 21类核心资源获取分布检测
+sql_file: sql/xiafangle/21类道具获取_人均及四分位检测.sql
+
+population:
+  event: in_out_log
+  rule: 查询周期内发生 in_out_log 的活跃角色作为总体
+  date_filter: '${PartDate:date}'
+  zero_fill: 未获取某道具的活跃玩家按0补齐后参与人均与四分位计算
+
+acquisition_rule:
+  change_type: 1
+  fallback: change_type为空时 item_num>0 视为获取
+  quantity: abs(item_num)
+  event_tables:
+    - item_log
+    - money_log
+    - voucher_log
+  note: 本专题只统计获取，不涉及项目记忆中“消耗不取ABS”的口径调整
+
+metrics:
+  - 活跃玩家数
+  - 获取玩家数
+  - 获取率
+  - 获取总量
+  - 人均获取数量
+  - P25获取数量
+  - P50获取数量
+  - P75获取数量
+
+resources:
+  - 钻石
+  - 高抽
+  - 种族抽
+  - 星辰石
+  - 神器精华
+  - 黄金钥
+  - 远古精魄
+  - 铁锭
+  - 升品石
+  - 九天息壤
+  - 城墙阵图
+  - 龙珠积分
+  - 公会币
+  - 组队积分
+  - 英雄精魄
+  - 异能魂晶
+  - 竞技积分
+  - 诡矿积分
+  - 古墓币
+  - 1小时通用加速
+  - 代金券
+
+confirmed_mapping:
+  diamond:
+    event: money_log
+    item_id: 1
+    display_name: 钻石
+  advanced_draw_resource:
+    event: item_log
+    item_id: 1000006
+    display_name: 高抽
+    aliases:
+      - 高级灵签
+      - 高级招募券
+      - 高级招募卡
+      - 高级召唤券
+      - 高级召唤卡
+  voucher:
+    event: voucher_log
+    display_name: 代金券
+  ancient_essence:
+    event: item_log
+    matching_rule: item_name='远古精魄'
+
+safe_matching_notes:
+  - 种族抽优先按 item_name 中“种族+灵签/招募/召唤/祈愿/许愿”识别，不把 recruit_log 实际抽卡次数混入资源获取。
+  - 星辰石、神器精华、黄金钥、远古精魄、九天息壤、城墙阵图等资源优先按 item_name 识别。
+  - 铁锭与升品石历史资料出现过 item_id=1000103 的冲突记录，因此统计两者时不得仅凭该ID硬映射，优先使用 item_name。
+  - 货币类资源即使未来在 item_log / money_log 之间调整，只要 item_name 保持稳定，本SQL仍可识别。
