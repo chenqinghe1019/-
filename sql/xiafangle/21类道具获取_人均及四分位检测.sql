@@ -1,30 +1,37 @@
--- 下方了｜21类道具获取分布检测
+-- 下方了｜21类道具每日获取分布检测
 -- 日期：2026-08-24
 --
 -- 口径：
 -- 1. 查询周期由数数动态日期参数 ${PartDate:date} 控制。
--- 2. 总体 = 查询周期内发生 in_out_log 的活跃角色。
+-- 2. 按自然日分组；每天发生 in_out_log 的活跃角色作为当天总体。
 -- 3. 获取 = change_type = 1；若 change_type 为空，则 item_num > 0 作为兜底。
--- 4. 未获取某道具的活跃玩家按 0 补齐后，再计算人均、P25、P50、P75。
--- 5. 代金券使用 voucher_log；其他资源从 item_log / money_log 获取。
--- 6. 高抽按“高级灵签/高级招募/高级召唤”等资源名识别，并保留 item_id=1000006 兜底。
--- 7. 种族抽按资源名称识别，不把 recruit_log 的实际抽卡次数混入本口径。
--- 8. 铁锭与升品石历史资料存在 item_id 冲突记录，因此本 SQL 优先按 item_name 区分，避免硬猜 ID。
+-- 4. 当天活跃但未获取某道具的玩家按 0 补齐后，再计算人均、最小值、P25、P50、P75、最大值。
+-- 5. 获取率 = 获取玩家数 * 1.0000 / 活跃玩家数。
+-- 6. 代金券使用 voucher_log；其他资源从 item_log / money_log 获取。
+-- 7. 高抽按“高级灵签/高级招募/高级召唤”等资源名识别，并保留 item_id=1000006 兜底。
+-- 8. 种族抽按资源名称识别，不把 recruit_log 的实际抽卡次数混入本口径。
+-- 9. 铁锭与升品石历史资料存在 item_id 冲突记录，因此优先按 item_name 区分。
 
 SELECT
-    row_number() OVER (ORDER BY q."排序") AS "序号",
+    row_number() OVER (
+        ORDER BY q."日期", q."排序"
+    ) AS "序号",
+    q."日期",
     q."道具",
     q."活跃玩家数",
     q."获取玩家数",
     q."获取率",
     q."获取总量",
     q."人均获取数量",
+    q."最小获取数量",
     q."P25获取数量",
     q."P50获取数量",
-    q."P75获取数量"
+    q."P75获取数量",
+    q."最大获取数量"
 FROM
 (
     SELECT
+        t."日期",
         t."排序",
         t."道具",
         count(*) AS "活跃玩家数",
@@ -37,29 +44,54 @@ FROM
         round(
             sum(
                 CASE
-                    WHEN t."获取数量" > 0 THEN 1.0
-                    ELSE 0.0
+                    WHEN t."获取数量" > 0 THEN 1
+                    ELSE 0
                 END
-            ) / nullif(count(*), 0),
+            ) * 1.0000
+            / nullif(count(*), 0),
             4
         ) AS "获取率",
-        round(sum(t."获取数量"), 2) AS "获取总量",
-        round(avg(cast(t."获取数量" AS double)), 2) AS "人均获取数量",
         round(
-            approx_percentile(cast(t."获取数量" AS double), 0.25),
+            sum(t."获取数量"),
+            2
+        ) AS "获取总量",
+        round(
+            avg(cast(t."获取数量" AS double)),
+            2
+        ) AS "人均获取数量",
+        round(
+            min(cast(t."获取数量" AS double)),
+            2
+        ) AS "最小获取数量",
+        round(
+            approx_percentile(
+                cast(t."获取数量" AS double),
+                0.25
+            ),
             2
         ) AS "P25获取数量",
         round(
-            approx_percentile(cast(t."获取数量" AS double), 0.50),
+            approx_percentile(
+                cast(t."获取数量" AS double),
+                0.50
+            ),
             2
         ) AS "P50获取数量",
         round(
-            approx_percentile(cast(t."获取数量" AS double), 0.75),
+            approx_percentile(
+                cast(t."获取数量" AS double),
+                0.75
+            ),
             2
-        ) AS "P75获取数量"
+        ) AS "P75获取数量",
+        round(
+            max(cast(t."获取数量" AS double)),
+            2
+        ) AS "最大获取数量"
     FROM
     (
         SELECT
+            a."日期",
             a."#account_id",
             c."排序",
             c."道具",
@@ -67,11 +99,12 @@ FROM
         FROM
         (
             SELECT DISTINCT
+                cast(e."$part_date" AS varchar) AS "日期",
                 cast(e."#account_id" AS varchar) AS "#account_id"
             FROM ta.v_event_41 e
-            WHERE e."$part_event" = 'in_out_log'
+            WHERE ${PartDate:date}
               AND e."domain" = 'release'
-              AND ${PartDate:date}
+              AND e."$part_event" = 'in_out_log'
               AND e."#account_id" IS NOT NULL
         ) a
         CROSS JOIN
@@ -102,12 +135,14 @@ FROM
         LEFT JOIN
         (
             SELECT
+                s."日期",
                 s."#account_id",
                 s."道具",
                 sum(s."单次获取数量") AS "获取数量"
             FROM
             (
                 SELECT
+                    r."日期",
                     r."#account_id",
                     CASE
                         WHEN r."$part_event" = 'voucher_log'
@@ -196,6 +231,7 @@ FROM
                 FROM
                 (
                     SELECT
+                        cast(e."$part_date" AS varchar) AS "日期",
                         cast(e."#account_id" AS varchar) AS "#account_id",
                         cast(e."$part_event" AS varchar) AS "$part_event",
                         try_cast(e."item_id" AS bigint) AS "item_id",
@@ -220,28 +256,32 @@ FROM
                             END
                         ) AS "变化类型"
                     FROM ta.v_event_41 e
-                    WHERE e."$part_event" IN (
+                    WHERE ${PartDate:date}
+                      AND e."domain" = 'release'
+                      AND e."$part_event" IN (
                               'money_log',
                               'item_log',
                               'voucher_log'
                           )
-                      AND e."domain" = 'release'
-                      AND ${PartDate:date}
                       AND e."#account_id" IS NOT NULL
                 ) r
             ) s
             WHERE s."道具" IS NOT NULL
               AND s."变化类型" = 1
             GROUP BY
+                s."日期",
                 s."#account_id",
                 s."道具"
         ) g
-            ON a."#account_id" = g."#account_id"
+            ON a."日期" = g."日期"
+           AND a."#account_id" = g."#account_id"
            AND c."道具" = g."道具"
     ) t
     GROUP BY
+        t."日期",
         t."排序",
         t."道具"
 ) q
 ORDER BY
+    q."日期",
     q."排序";
