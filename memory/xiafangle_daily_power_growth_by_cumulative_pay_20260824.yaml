@@ -51,6 +51,8 @@ power_growth:
   use_mathematical_abs: false
   negative_growth: 战力下降时保留负数
   no_change_log: 当日活跃但没有有效change_power_log时按0参与分布
+  percentile_population: P25/P50/P75/P99均按全部活跃玩家计算，0和负数参与
+  max_to_p99: 最大战力提升 / P99战力提升；P99=0时返回NULL
   warning: change_power_log可能有服务端后台重算，因此禁止单独用其判定活跃，只在in_out_log活跃日纳入统计
 
 metrics:
@@ -62,4 +64,6 @@ metrics:
   - P25战力提升
   - P50战力提升
   - P75战力提升
+  - P99战力提升
   - 最大战力提升
+  - 最大值/P99倍数
