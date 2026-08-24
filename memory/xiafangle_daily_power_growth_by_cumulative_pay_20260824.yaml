@@ -3,7 +3,7 @@ project_code: xiafangle
 project_id: 41
 created_at: '2026-08-24'
 updated_at: '2026-08-24'
-topic: 按开服天数与截至当天累计付费分层的战力提升幅度监控
+topic: 按开服天数与截至当天累计付费分层的战力绝对提升监控
 sql_file: sql/xiafangle/战力监控_按日累计付费分层_提升分布.sql
 
 population:
@@ -47,19 +47,19 @@ power_growth:
     - change_reason
   start_power: min_by(before, '#event_time')
   end_power: max_by(after, '#event_time')
-  daily_growth_pct: (end_power - start_power) * 100.0000 / start_power
-  no_change_log: 当日活跃但没有change_power_log时按0%参与分布
-  invalid_baseline: 若存在change_power_log但start_power<=0，则提升百分比记NULL，不参与均值、最值和四分位
+  daily_growth: end_power - start_power
+  use_mathematical_abs: false
+  negative_growth: 战力下降时保留负数
+  no_change_log: 当日活跃但没有有效change_power_log时按0参与分布
   warning: change_power_log可能有服务端后台重算，因此禁止单独用其判定活跃，只在in_out_log活跃日纳入统计
 
 metrics:
   - 活跃玩家数
-  - 有效战力样本数
   - 战力有变动玩家数
   - 战力提升玩家数
-  - 平均战力提升幅度(%)
-  - 最小战力提升幅度(%)
-  - P25战力提升幅度(%)
-  - P50战力提升幅度(%)
-  - P75战力提升幅度(%)
-  - 最大战力提升幅度(%)
+  - 平均战力提升
+  - 最小战力提升
+  - P25战力提升
+  - P50战力提升
+  - P75战力提升
+  - 最大战力提升
