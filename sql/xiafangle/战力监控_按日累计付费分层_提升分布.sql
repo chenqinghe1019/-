@@ -7,7 +7,9 @@
 -- 5. 累计付费分层：0、(0,6]、(6,30]、(30,100]、(100,300]、(300,500]、(500,1000]、1000+。
 -- 6. 当天开始战力 = 当天 change_power_log 第一条 before；当天结束战力 = 当天最后一条 after。
 -- 7. 当天战力提升幅度 = (结束战力 - 开始战力) * 100 / 开始战力，12.35 代表 12.35%。
--- 8. 当天活跃但没有有效 change_power_log 的角色，提升幅度按 0。
+-- 8. 当天活跃但没有 change_power_log 的角色，提升幅度按 0。
+-- 9. 若存在 change_power_log 但当天开始战力 <= 0，则百分比无意义，记为 NULL，不参与均值/最值/四分位。
+-- 10. change_power_log 可能存在后台重算，因此只在 in_out_log 活跃日纳入统计。
 
 select      row_number() over(
                 order by q."开服天数",q."分层排序"
@@ -15,6 +17,7 @@ select      row_number() over(
             q."开服天数",
             q."累计付费分层",
             q."活跃玩家数",
+            q."有效战力样本数",
             q."战力有变动玩家数",
             q."战力提升玩家数",
             round(q."平均战力提升幅度",2) "平均战力提升幅度(%)",
@@ -31,6 +34,10 @@ from
                 t."分层排序",
 
                 count(*) "活跃玩家数",
+
+                count(
+                    t."当天战力提升幅度"
+                ) "有效战力样本数",
 
                 sum(
                     case
@@ -101,31 +108,24 @@ from
                     case
                         when s."累计付费金额" = 0
                             then 'a_free'
-
                         when s."累计付费金额" > 0
                          and s."累计付费金额" <= 6
                             then 'b_(0,6]'
-
                         when s."累计付费金额" > 6
                          and s."累计付费金额" <= 30
                             then 'c_(6,30]'
-
                         when s."累计付费金额" > 30
                          and s."累计付费金额" <= 100
                             then 'd_(30,100]'
-
                         when s."累计付费金额" > 100
                          and s."累计付费金额" <= 300
                             then 'e_(100,300]'
-
                         when s."累计付费金额" > 300
                          and s."累计付费金额" <= 500
                             then 'f_(300,500]'
-
                         when s."累计付费金额" > 500
                          and s."累计付费金额" <= 1000
                             then 'g_(500,1000]'
-
                         else 'h_(1000,+)'
                     end "累计付费分层",
 
@@ -140,10 +140,10 @@ from
                         else 8
                     end "分层排序",
 
-                    coalesce(
-                        pw."当天战力提升幅度",
-                        0
-                    ) "当天战力提升幅度"
+                    case
+                        when pw."#account_id" is null then 0
+                        else pw."当天战力提升幅度"
+                    end "当天战力提升幅度"
 
         from
         (
@@ -184,6 +184,7 @@ from
 
                 where       ${PartDate:date}
                             and e."domain" = 'release'
+                            and u."domain" = 'release'
                             and e."$part_event" = 'in_out_log'
                             and e."#account_id" is not null
                             and u."server_open_time" is not null
@@ -248,8 +249,7 @@ from
                                 )
                                 * 100.0000
                                 / z."开始战力"
-
-                            else 0
+                            else null
                         end "当天战力提升幅度"
 
             from
