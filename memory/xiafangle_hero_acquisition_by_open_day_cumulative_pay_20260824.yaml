@@ -1,0 +1,60 @@
+project: 下方了
+project_code: xiafangle
+project_id: 41
+created_at: '2026-08-24'
+updated_at: '2026-08-24'
+purpose: 英雄获取分布按开服天数与累计付费分层统计
+sql_file: sql/xiafangle/英雄获取_按日人均及四分位检测.sql
+
+grouping:
+  dimensions:
+    - 开服天数
+    - 截至当天累计付费分层
+    - 英雄
+  date_display: false
+  date_usage: 日期仅用于内部关联活跃、付费和英雄获取事件
+  open_day_rule: 活跃日期 - server_open_time + 1，开服当天记D1
+
+population:
+  event: in_out_log
+  rule: 每个开服天数下实际存在in_out_log的角色作为活跃总体
+  date_filter: '${PartDate:date}'
+  zero_fill: 活跃但未获取某英雄的玩家按0参与人均、最小值、P25、P50、P75、最大值
+
+cumulative_payment:
+  event: pay_log
+  field: payment
+  source_unit: 分
+  display_unit: 元
+  conversion: payment / 100.0000
+  window: 截至该活跃日，包含当天
+  payment_filter: payment > 0
+  pay_result_filter: 不额外限制
+  segments:
+    - a_free: 0
+    - 'b_(0,6]': '(0,6]'
+    - 'c_(6,30]': '(6,30]'
+    - 'd_(30,100]': '(30,100]'
+    - 'e_(100,300]': '(100,300]'
+    - 'f_(300,500]': '(300,500]'
+    - 'g_(500,1000]': '(500,1000]'
+    - 'h_(1000,+)': '(1000,+)'
+
+hero_acquisition:
+  event: role_obtain_log
+  hero_field: role_id
+  note: role_id当前实际上报为英雄名
+  player_daily_count: 同一玩家同一天同一英雄的role_obtain_log事件条数
+  hero_universe: 查询周期内role_obtain_log中出现过的全部role_id
+
+metrics:
+  - 活跃玩家数
+  - 获取玩家数
+  - 获取率
+  - 获取总次数
+  - 人均获取次数
+  - 最小获取次数
+  - P25获取次数
+  - P50获取次数
+  - P75获取次数
+  - 最大获取次数
