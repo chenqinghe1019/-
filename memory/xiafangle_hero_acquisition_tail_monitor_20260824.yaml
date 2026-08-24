@@ -1,0 +1,57 @@
+project: 下方了
+project_code: xiafangle
+project_id: 41
+created_at: '2026-08-24'
+updated_at: '2026-08-24'
+topic: 英雄获取分布与尾部强度监控
+sql_file: sql/xiafangle/英雄获取异常监控_获取分布与尾部强度.sql
+
+grouping:
+  - 日期
+  - 开服天数
+  - 截至当天累计付费分层
+  - 英雄
+
+population:
+  active_event: in_out_log
+  rule: 当日存在in_out_log的角色作为活跃总体
+  open_day_rule: date_diff('day', date(server_open_time), 活跃日期)+1，开服当天记D1
+
+cumulative_payment:
+  event: pay_log
+  amount: payment / 100
+  window: 截至该活跃日含当天
+  filter: payment > 0
+  pay_result_filter: 不额外限制
+  segments:
+    - a_free: 0
+    - 'b_(0,6]': '(0,6]'
+    - 'c_(6,30]': '(6,30]'
+    - 'd_(30,100]': '(30,100]'
+    - 'e_(100,300]': '(100,300]'
+    - 'f_(300,500]': '(300,500]'
+    - 'g_(500,1000]': '(500,1000]'
+    - 'h_(1000,+)': '(1000,+)'
+
+hero_acquisition:
+  event: role_obtain_log
+  hero_field: role_id
+  role_id_note: 当前实际上报为英雄名
+  player_daily_metric: 同一玩家当天同一英雄role_obtain_log事件条数
+  acquisition_rate_denominator: 同日期、同开服天数、同累计付费分层全部活跃玩家
+  tail_population: 仅实际获取该英雄的玩家
+  metrics:
+    - 活跃玩家数
+    - 获取玩家数
+    - 获取率
+    - 获取总次数
+    - 获取玩家人均次数
+    - P50获取次数
+    - P95获取次数
+    - P99获取次数
+    - 最大获取次数
+    - 最大值/P99倍数
+  zero_acquisition_output: 当天无获取玩家的英雄组合不输出
+
+optimization:
+  rule: 不再做活跃玩家×全英雄笛卡尔积；先在活跃玩家分层中计算活跃人数，再仅关联实际发生role_obtain_log的玩家英雄记录
