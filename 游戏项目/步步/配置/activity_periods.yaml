@@ -9,10 +9,27 @@ analysis_usage:
   active_event: "log_in_out"
   payment_event: "pay_log"
   payment_unit: "分，统计金额时 /100 转元"
-  server_day_definition: "date_diff('day', date(server_open_time), event_date) + 1"
+  server_open_source:
+    table: "user_result_cluster_22"
+    cluster_name: "server_open_day_tag"
+    join_key: "#double_id -> v_event_22.#user_id"
+    value_field: "tag_value_tm"
+    note: "活动分析开服时间不再优先依赖 v_user_22.server_open_time，因为用户表开服时间不全。"
+  server_day_definition: "date_diff('day', date(tag_value_tm), event_date) + 1"
   participation_rules:
     default: "开服天数 >= 7"
     monthly_activity: "开服天数 > 0"
+  activity_goods_source:
+    table: "ta_ext.temp_use1_22"
+    fields:
+      - "good_id"
+      - "activity_type"
+      - "store_type"
+      - "good_name"
+      - "price"
+    payment_join: "pay_log.product_id = temp_use1_22.good_id"
+    activity_match: "temp_use1_22.activity_type 对应活动名称"
+    note: "活动付费金额/人数仅统计活动周期内、满足参与开服天数门槛、且 product_id 命中对应 activity_type 商品配置的 pay_log。"
   first_step_metrics:
     - "活跃玩家数"
     - "付费玩家数（活动周期内有 pay_log 即算）"
@@ -20,6 +37,11 @@ analysis_usage:
     - "总体付费率 = 付费玩家数 / 活跃玩家数"
     - "总体ARPU = 总体付费金额 / 活跃玩家数"
     - "总体ARPPU = 总体付费金额 / 付费玩家数"
+    - "活动付费金额"
+    - "活动付费人数"
+    - "活动付费率 = 活动付费人数 / 活跃玩家数"
+    - "活动ARPU = 活动付费金额 / 活跃玩家数"
+    - "活动ARPPU = 活动付费金额 / 活动付费人数"
 
 activities:
   - activity_name: "厨神小当家"
@@ -106,3 +128,4 @@ notes:
   - "活动周期按自然日闭区间统计，起止日期均包含。"
   - "授权/代言整体时间用于校验活动是否处于有效合作期，不等同于单期活动统计周期。"
   - "第一步效果指标统一使用活动周期内符合参与开服天数门槛的活跃玩家作为总体人群。"
+  - "活动付费指标以 ta_ext.temp_use1_22 商品配置为准，good_id 对应 pay_log.product_id。"
