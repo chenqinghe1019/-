@@ -117,7 +117,7 @@ FROM
                         WHEN r."$part_event" = 'money_log'
                          AND r."item_id" = 1
                             THEN '钻石'
-                        WHEN r."item_name" IN ('钻石', '宝石')
+                        WHEN r."item_name" = '钻石'
                             THEN '钻石'
 
                         WHEN r."$part_event" = 'item_log'
