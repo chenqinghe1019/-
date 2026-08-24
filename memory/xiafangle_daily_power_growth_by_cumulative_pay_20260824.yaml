@@ -3,7 +3,7 @@ project_code: xiafangle
 project_id: 41
 created_at: '2026-08-24'
 updated_at: '2026-08-24'
-topic: 按开服天数与截至当天累计付费分层的战力绝对提升监控
+topic: 按日期、开服天数与截至当天累计付费分层的战力绝对提升监控
 sql_file: sql/xiafangle/战力监控_按日累计付费分层_提升分布.sql
 
 population:
@@ -11,9 +11,10 @@ population:
   rule: 仅统计查询周期内实际存在in_out_log的活跃角色
   date_filter: '${PartDate:date}'
   final_grouping:
+    - 日期
     - 开服天数
     - 截至当天累计付费分层
-  date_display: false
+  date_display: true
   open_day_rule: 活跃日期 - server_open_time + 1，开服当天记D1
   user_domain_filter: release
 
@@ -51,7 +52,7 @@ power_growth:
   use_mathematical_abs: false
   negative_growth: 战力下降时保留负数
   no_change_log: 当日活跃但没有有效change_power_log时按0参与分布
-  percentile_population: P25/P50/P75/P99均按全部活跃玩家计算，0和负数参与
+  percentile_population: P25/P50/P75/P99按同日期、同开服天数、同累计付费分层下全部活跃玩家计算，0和负数参与
   max_to_p99: 最大战力提升 / P99战力提升；P99=0时返回NULL
   warning: change_power_log可能有服务端后台重算，因此禁止单独用其判定活跃，只在in_out_log活跃日纳入统计
 
