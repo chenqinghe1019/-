@@ -8,7 +8,9 @@
 -- 6. 当天开始战力 = 当天 change_power_log 第一条 before；当天结束战力 = 当天最后一条 after。
 -- 7. 当天战力提升 = 当天结束战力 - 当天开始战力，不取数学 ABS；战力下降时保留负数。
 -- 8. 当天活跃但没有有效 change_power_log 的角色，当天战力提升按 0。
--- 9. change_power_log 可能存在后台重算，因此只在 in_out_log 活跃日纳入统计。
+-- 9. P25/P50/P75/P99均按全部活跃玩家计算，0和负数继续参与分布。
+-- 10. 最大值/P99倍数 = 最大战力提升 / P99战力提升；P99=0时返回NULL。
+-- 11. change_power_log 可能存在后台重算，因此只在 in_out_log 活跃日纳入统计。
 
 select      row_number() over(
                 order by q."开服天数",q."分层排序"
@@ -23,7 +25,13 @@ select      row_number() over(
             round(q."P25战力提升",2) "P25战力提升",
             round(q."P50战力提升",2) "P50战力提升",
             round(q."P75战力提升",2) "P75战力提升",
-            round(q."最大战力提升",2) "最大战力提升"
+            round(q."P99战力提升",2) "P99战力提升",
+            round(q."最大战力提升",2) "最大战力提升",
+            round(
+                q."最大战力提升"
+                / nullif(q."P99战力提升",0),
+                2
+            ) "最大值/P99倍数"
 
 from
 (
@@ -84,6 +92,14 @@ from
                     ),
                     0.75
                 ) "P75战力提升",
+
+                approx_percentile(
+                    cast(
+                        t."当天战力提升"
+                        as double
+                    ),
+                    0.99
+                ) "P99战力提升",
 
                 max(
                     cast(
