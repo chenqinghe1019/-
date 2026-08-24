@@ -3,23 +3,42 @@ project_code: xiafangle
 project_id: 41
 created_at: '2026-08-24'
 updated_at: '2026-08-24'
-purpose: 21类核心资源按开服天数获取分布检测
+purpose: 21类核心资源按开服天数与累计付费分层的获取分布检测
 sql_file: sql/xiafangle/21类道具获取_人均及四分位检测.sql
 
 grouping:
-  primary_dimension: 开服天数
-  rule: 开服天数 = 活跃日期 - server_open_time + 1，开服当天记D1
+  primary_dimensions:
+    - 开服天数
+    - 截至当天累计付费分层
+    - 道具
   date_display: false
-  internal_date_usage: 日期仅用于将当天活跃与当天资源获取对齐
+  date_internal_use: 日期仅用于当天活跃与当天资源获取关联
+  open_day_rule: 活跃日期 - server_open_time + 1，开服当天记D1
 
 population:
   event: in_out_log
-  rule: 每个开服天数下存在in_out_log的活跃角色作为总体
+  rule: 每个开服天数、累计付费分层下发生in_out_log的活跃角色作为总体
   date_filter: '${PartDate:date}'
-  user_table: ta.v_user_41
-  server_open_time_field: server_open_time
-  user_domain_filter: release
   zero_fill: 活跃但未获取某道具的玩家按0补齐后参与人均、最小值、P25、P50、P75、P95、最大值计算
+
+cumulative_payment:
+  event: pay_log
+  field: payment
+  source_unit: 分
+  display_unit: 元
+  conversion: payment / 100.0000
+  window: 截至该活跃日，包含当天
+  payment_filter: payment > 0
+  pay_result_filter: 不额外限制
+  segments:
+    - a_free: 0
+    - 'b_(0,6]': '(0,6]'
+    - 'c_(6,30]': '(6,30]'
+    - 'd_(30,100]': '(30,100]'
+    - 'e_(100,300]': '(100,300]'
+    - 'f_(300,500]': '(300,500]'
+    - 'g_(500,1000]': '(500,1000]'
+    - 'h_(1000,+)': '(1000,+)'
 
 acquisition_rule:
   change_type: 1
@@ -30,13 +49,14 @@ acquisition_rule:
     - money_log
     - voucher_log
   acquisition_rate_formula: 获取玩家数 * 1.0000 / 活跃玩家数
-  p95_rule: P95基于同一开服天数下该道具全部活跃玩家的获取数量计算，未获取玩家按0参与
+  p95_rule: P95基于同开服天数、同累计付费分层、同道具下全部活跃玩家的获取数量计算，未获取玩家按0参与
   p95_outlier_rule: 获取数量 > 2 * P95获取数量 的玩家计入“超出P95两倍玩家数”
   p95_zero_note: 若P95=0，则所有获取数量>0的玩家都会被计入超出P95两倍玩家数
-  note: 本专题只统计获取，不涉及项目记忆中“消耗不取ABS”的口径调整
 
 metrics:
   - 开服天数
+  - 累计付费分层
+  - 道具
   - 活跃玩家数
   - 获取玩家数
   - 获取率
@@ -96,7 +116,7 @@ confirmed_mapping:
     matching_rule: item_name='远古精魄'
 
 safe_matching_notes:
-  - 种族抽优先按 item_name 中“种族+灵签/招募/召唤/祈愿/许愿”识别，不把 recruit_log 实际抽卡次数混入资源获取。
-  - 星辰石、神器精华、黄金钥、远古精魄、九天息壤、城墙阵图等资源优先按 item_name 识别。
-  - 铁锭与升品石历史资料出现过 item_id=1000103 的冲突记录，因此统计两者时不得仅凭该ID硬映射，优先使用 item_name。
-  - 货币类资源即使未来在 item_log / money_log 之间调整，只要 item_name 保持稳定，本SQL仍可识别。
+  - 种族抽优先按item_name中“种族+灵签/招募/召唤/祈愿/许愿”识别，不把recruit_log实际抽卡次数混入资源获取。
+  - 星辰石、神器精华、黄金钥、远古精魄、九天息壤、城墙阵图等资源优先按item_name识别。
+  - 铁锭与升品石历史资料出现过item_id=1000103的冲突记录，因此统计两者时不得仅凭该ID硬映射，优先使用item_name。
+  - 货币类资源即使未来在item_log/money_log之间调整，只要item_name保持稳定，本SQL仍可识别。
