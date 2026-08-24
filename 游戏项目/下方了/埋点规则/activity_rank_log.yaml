@@ -2,7 +2,7 @@ project: 下方了
 project_code: xiafangle
 project_id: 41
 status: baseline
-updated_at: '2026-08-05'
+updated_at: '2026-08-24'
 event:
   name: activity_rank_log
   deprecated_names:
@@ -26,7 +26,12 @@ fields:
     chinese_name: 玩法期次
     type: varchar
     required: true
-    rule: 使用“刷新开始时间_区服ID”或“刷新开始时间_赛季ID”，保证同一活动不同期次可区分
+    rule: 建议使用“刷新开始时间_区服ID”或“刷新开始时间_赛季ID”，保证同一活动不同期次可区分
+  - name: '#account_id'
+    chinese_name: 玩家id
+    type: varchar
+    required: true
+    note: 最新工作簿已在 activity_rank_log 中显式列出；同时它也是公共事件属性
   - name: rnum
     chinese_name: 对应排名需求的最终值
     type: double
