@@ -12,9 +12,9 @@ analysis_usage:
   server_open_source:
     table: "user_result_cluster_22"
     cluster_name: "server_open_day_tag"
-    join_key: "#double_id -> v_event_22.#user_id"
+    join_key: "#double_id -> v_event_22.region_id"
     value_field: "tag_value_tm"
-    note: "活动分析开服时间不再优先依赖 v_user_22.server_open_time，因为用户表开服时间不全。"
+    note: "活动分析开服时间不再优先依赖 v_user_22.server_open_time，因为用户表开服时间不全；server_open_day_tag 的 #double_id 按区服ID关联事件 region_id。"
   server_day_definition: "date_diff('day', date(tag_value_tm), event_date) + 1"
   participation_rules:
     default: "开服天数 >= 7"
