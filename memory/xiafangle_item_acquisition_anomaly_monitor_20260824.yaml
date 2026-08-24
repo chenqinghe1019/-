@@ -1,0 +1,63 @@
+project: 下方了
+project_code: xiafangle
+project_id: 41
+created_at: '2026-08-24'
+updated_at: '2026-08-24'
+topic: 道具获取异常监控v1
+sql_file: sql/xiafangle/道具获取异常监控_玩家尾部异常.sql
+
+scope:
+  stage: v1玩家尾部异常
+  historical_baseline: false
+  next_stage: 增加历史14天同开服天数同累计付费层基线，监控整体获取率/获取者人均/P95变化
+
+grouping:
+  - 日期
+  - 开服天数
+  - 截至当天累计付费分层
+  - 道具
+  note: 日期保留用于异常定位；开服当天记D1
+
+population:
+  active_event: in_out_log
+  rule: 当日存在in_out_log的角色作为活跃总体
+
+cumulative_payment:
+  event: pay_log
+  amount: payment / 100
+  window: 截至该活跃日含当天
+  filter: payment > 0
+  pay_result_filter: 不额外限制
+  segments:
+    - a_free: 0
+    - 'b_(0,6]': '(0,6]'
+    - 'c_(6,30]': '(6,30]'
+    - 'd_(30,100]': '(30,100]'
+    - 'e_(100,300]': '(100,300]'
+    - 'f_(300,500]': '(300,500]'
+    - 'g_(500,1000]': '(500,1000]'
+    - 'h_(1000,+)': '(1000,+)'
+
+acquisition_distribution:
+  acquisition_rate_denominator: 全部活跃玩家
+  tail_population: 仅获取数量>0的玩家
+  metrics:
+    - 获取玩家人均数量
+    - 获取玩家P50
+    - 获取玩家P95
+    - 获取玩家P99
+    - 最大获取数量
+    - 最大值/P95倍数
+    - 超P95两倍玩家数
+    - 超P95三倍玩家数
+
+sample_guard:
+  active_players_min: 30
+  acquired_players_min: 10
+  rule: 任一不足则异常等级=样本不足
+
+alert_rule:
+  severe: 存在获取数量>3*P95的玩家
+  watch: 存在获取数量>2*P95的玩家
+  normal: 其余
+  note: P95/P99只基于获取玩家，避免低获取率资源因大量0导致P95=0
