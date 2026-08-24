@@ -1,0 +1,129 @@
+project: 下方了
+project_code: xiafangle
+project_id: 41
+update_type: tracking_delta
+updated_at: '2026-08-24'
+source:
+  file: fa16a4c0-e634-4d05-bb25-45f8e985e296.xlsx
+  canonical_sheet: 事件属性
+  canonical_range: A3:J735
+summary:
+  event_definition_rows: 112
+  unique_event_count: 105
+  user_property_count: 44
+  common_event_property_count: 17
+property_updates:
+  - property: zone_id
+    chinese_name: 战区ID
+    user_property_type: varchar
+    common_event_property_type: double
+    note: 工作簿中用户属性与公共事件属性类型不一致，查询时按对应表实际类型处理。
+behavior_updates:
+  - pay_log 新增 token_payment（double，代金支付金额；说明为代金券数量*100）。
+  - battle_star 合作试炼扩展增加 host_id、opponent_id、opponent_battle_array。
+  - battle_result 基础口径保留 battle_result（0失败/1胜利/2跳关）；合作试炼扩展增加 host_id、opponent_id、opponent_battle_array、round、result。
+  - shop_flush_log / shop_buy_log 增加 activity_name、activity_id，用于活动商店复用。
+  - gumu_log 扩展为古墓房间事件，增加 activity_id、start_time、change_reason、room_type、battle_uid、choice_id、wall_hp_after、result。
+  - activity_rank_log 显式增加 #account_id（varchar，玩家id）。
+  - rename_log 按玩家改名成功上报；#account_id 为公共事件属性，默认随事件存在。
+data_quality_warnings:
+  - region_group_log 在主事件表重复定义两次；一份显式包含 #account_id（显示名=服务器ID、类型=double），另一份仅 region_id/group_type/group_id。
+  - 公共事件属性 #account_id 的正式类型为 varchar；不能用 region_group_log 专项行中的 double 改变全局类型。
+  - battle_star、battle_result、shop_flush_log、shop_buy_log、pvp_log、gumu_log、region_group_log 存在重复/扩展定义，知识层按同名事件取字段并集。
+new_events:
+  gem_log:
+    chinese_name: 宝石获得/消耗
+    fields: [change_type, gem_uid, gem_id, gem_name, quality, advance, level, advance_attr_type, advance_attr_quality, advance_attr_value, change_reason]
+  gem_upgrade_log:
+    chinese_name: 宝石强化
+    fields: [gem_uid, gem_id, quality, advance, level_before, level_after, exp_before, exp_add, exp_after, cost_item, cost_gem, cost_silver, return_silver]
+  gem_advance_log:
+    chinese_name: 宝石升阶/升品
+    fields: [gem_uid, quality_before, quality_after, advance_before, advance_after, operation_type, probability_exp_add, probability_exp_need, display_probability, result, cost_item, cost_gem]
+  gem_inherit_log:
+    chinese_name: 宝石继承
+    fields: [main_gem_uid, material_gem_uid, main_before, main_after]
+  mengpo_boil_log:
+    chinese_name: 煮汤结果
+    fields: [activity_id, activity_round, activity_day, round_uid, boil_times, cost_item, pot_before, point_add, pot_after, destroyed_num, cook_item_result]
+  mengpo_collect_log:
+    chinese_name: 汤药收取
+    fields: [activity_id, activity_round, activity_day, round_uid, boil_times, pot_result, normal_num, rare_num, top_num, round_total_point, best_round_point_after, cumulative_point_after, top_collect_after]
+  mengpo_repair_log:
+    chinese_name: 坩埚修复
+    fields: [activity_id, activity_round, activity_day, round_uid, pot_pos, before_point, cost_item, repair_item_result, pot_after]
+  mengpo_idle_collect_log:
+    chinese_name: 雾幽露挂机领取
+    fields: [activity_id, activity_round, activity_day, idle_seconds, max_idle_seconds, chapter_num, efficiency_per_hour, material_num, material_result, auto_exchange_num, cook_item_result]
+  mengpo_reward_log:
+    chinese_name: 孟婆煮汤奖励领取
+    fields: [activity_id, activity_round, activity_day, reward_type, reward_id, award, is_jackpot, guarantee_before, guarantee_after, pool_round]
+  guild_duel_match_log:
+    chinese_name: 公会对决匹配结果
+    fields: [activity_id, activity_round, activity_day, qualify_status, clan_uid, clan_rank_before, duel_score_before, match_segment, opponent_clan_uid, opponent_score_before]
+  guild_duel_merit_log:
+    chinese_name: 公会对决功绩获得
+    fields: [activity_id, activity_round, activity_day, duel_day, target_type, task_id, finish_times, base_merit, book_bonus_rate, research_bonus_rate, merit_add, personal_day_merit_after, personal_total_merit_after, guild_day_merit_after, clan_uid]
+  guild_duel_reward_log:
+    chinese_name: 公会对决奖励领取
+    fields: [activity_id, activity_round, activity_day, reward_type, reward_id, duel_day, claim_type, eligible, merit_value, award]
+  guild_duel_settle_log:
+    chinese_name: 公会对决结算
+    fields: [activity_id, activity_round, activity_day, settle_type, duel_day, target_type, result, clan_uid, opponent_clan_uid, guild_day_merit, opponent_day_merit, duel_score_after, win_count_after, hidden_score_add, personal_merit, personal_rank]
+  guishi_dice_log:
+    chinese_name: 骰子投掷与移动
+    fields: [activity_name, activity_id, activity_round, activity_day, roll_uid, dice_type, select_points, roll_point, is_free, cost_item, pos_before, pos_after, lap_add, lap_after, step_after, dice_result]
+  guishi_grid_log:
+    chinese_name: 格位经过/到达结算
+    fields: [activity_name, activity_id, activity_round, activity_day, roll_uid, trigger_type, grid_pos, grid_type, quality_before, quality_after, exp_before, exp_add, exp_after, is_upgrade, event_id, effect_value, award, activity_currency_result]
+  catch_ghost_draw_log:
+    chinese_name: 抓诡/探宝结果
+    trigger: 每开启1个格位并完成扣除与发奖后上报1条；自动探宝也逐格上报
+    fields: [activity_id, activity_round, pool_round, grid_pos, target_treasure_id, is_target_treasure, cost_item, award, guarantee_after, cumulative_times_after, item_result]
+  mojin_treasure_draw_log:
+    chinese_name: 摸金探宝抽奖
+    trigger: 单抽或十连完成扣除、抽奖、发奖后上报1条；十连结果按 draw_results 顺序记录
+    fields: [activity_id, activity_round, draw_uid, pool_round, gacha_num, cost_item, draw_results, limited_guarantee_after, ultimate_guarantee_after, cumulative_times_after]
+  rename_log:
+    chinese_name: 改名日志
+    trigger: 玩家改名成功后记录
+    fields: [clan_uid, rename, clan_name, same_name_num, clan_member_num, history_same_name_num]
+  rename_finish_log:
+    chinese_name: 同名任务完成
+    fields: [task_id, task_name]
+  rename_reward_log:
+    chinese_name: 同名任务奖励领取
+    fields: [task_id, task_name, award]
+  guichu_chest_open_log:
+    chinese_name: 诡橱秘宝开箱结果
+    trigger: 每次确认开启1~20个宝箱，钥匙扣除及全部奖励结算成功后上报1条；弱网重试不得重复上报
+    fields: [activity_id, activity_round, activity_day, open_uid, open_num, cost_item, open_results, cumulative_times_after, item_result, activity_currency_result]
+  merge2048_round_log:
+    chinese_name: 2048棋盘轮次结算
+    trigger: 失败后重新开始、每日重置或活动结束导致棋盘清空/重建时上报；取消失败弹窗、使用道具继续时不结算
+    fields: [activity_id, activity_round, activity_day, round_uid, board_multiplier, end_reason, is_failed_before_reset, move_times, merge_times, stamina_cost, round_score, first_merge_bonus_score, normal_merge_score, max_piece_level, fail_trigger_times, rearrange_times, eliminate_times, single_best_score_after, daily_total_score_after]
+  seafood_idle_settle_log:
+    chinese_name: 海鲜挂机掉落结算
+    trigger: 领取挂机海鲜、跨天清除未领取海鲜或活动结束清理时上报；同一批次仅1条
+    fields: [activity_id, activity_round, activity_day, settle_uid, change_reason, idle_seconds, seafood_results, daily_total_drop_after, daily_total_drop_limit, pending_num_after]
+  region_group_log:
+    chinese_name: 跨服分组情况
+    trigger: 每日上报跨服分组信息
+    fields: ['#account_id', region_id, group_type, group_id]
+changed_events:
+  pay_log:
+    added_fields: [token_payment]
+  battle_star:
+    added_fields: [host_id, opponent_id, opponent_battle_array]
+  battle_result:
+    base_result_field: battle_result
+    base_result_enum: {0: 失败, 1: 胜利, 2: 跳关}
+    cooperation_added_fields: [host_id, opponent_id, opponent_battle_array, round, result]
+  shop_flush_log:
+    added_fields: [activity_name, activity_id]
+  shop_buy_log:
+    added_fields: [activity_name, activity_id]
+  gumu_log:
+    added_fields: [activity_id, start_time, change_reason, room_type, battle_uid, choice_id, wall_hp_after, result]
+  activity_rank_log:
+    added_fields: ['#account_id']
