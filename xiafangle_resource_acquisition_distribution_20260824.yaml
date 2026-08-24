@@ -15,7 +15,7 @@ population:
   event: in_out_log
   rule: 每个自然日发生 in_out_log 的活跃角色作为当天总体
   date_filter: '${PartDate:date}'
-  zero_fill: 当天活跃但未获取某道具的玩家按0补齐后参与人均、最小值、P25、P50、P75、最大值计算
+  zero_fill: 当天活跃但未获取某道具的玩家按0补齐后参与人均、最小值、P25、P50、P75、P95、最大值计算
 
 acquisition_rule:
   change_type: 1
@@ -26,6 +26,9 @@ acquisition_rule:
     - money_log
     - voucher_log
   acquisition_rate_formula: 获取玩家数 * 1.0000 / 活跃玩家数
+  p95_rule: P95基于当日该道具全部活跃玩家的获取数量计算，未获取玩家按0参与
+  p95_outlier_rule: 获取数量 > 2 * P95获取数量 的玩家计入“超出P95两倍玩家数”
+  p95_zero_note: 若P95=0，则所有获取数量>0的玩家都会被计入超出P95两倍玩家数
   note: 本专题只统计获取，不涉及项目记忆中“消耗不取ABS”的口径调整
 
 metrics:
@@ -39,7 +42,9 @@ metrics:
   - P25获取数量
   - P50获取数量
   - P75获取数量
+  - P95获取数量
   - 最大获取数量
+  - 超出P95两倍玩家数
 
 resources:
   - 钻石
