@@ -34,7 +34,11 @@ analysis_usage:
     activity_match: "temp_use1_22.activity_type 对应活动名称"
     revenue_field: "temp_use1_22.price"
     payer_rule: "活动付费人数仅统计命中对应活动商品且 temp_use1_22.price > 0 的 pay_log 玩家"
-    note: "活动付费人数通过活动周期内、满足参与开服天数门槛、product_id 命中对应 activity_type 商品配置且 price > 0 的 pay_log 识别；活动付费金额不取 pay_log.payment，统一按每笔命中购买对应的 temp_use1_22.price 累计，且仅统计 price > 0。"
+    overlap_rules:
+      - "月度活动付费商品固定取汪东城代言人商品中的 product_id in (905,906)。"
+      - "product_id 905/906 在月度活动周期内允许同时计入汪东城代言人和月度活动，跨活动不做互斥归属。"
+      - "同一活动内部仍需保证每笔 pay_log 只累计一次，避免 temp_use1_22 多行配置导致重复流水。"
+    note: "活动付费人数通过活动周期内、满足参与开服天数门槛、product_id 命中对应活动商品且 price > 0 的 pay_log 识别；活动付费金额不取 pay_log.payment，统一按每笔命中购买对应的 temp_use1_22.price 累计，且仅统计 price > 0。"
   first_step_metrics:
     - "活跃玩家数"
     - "付费玩家数（活动周期内有 pay_log 且 payment > 0）"
@@ -145,5 +149,6 @@ notes:
   - "总体付费玩家、总体付费率和总体ARPPU统一要求 pay_log.payment > 0，0 元 pay_log 不计入总体付费人数。"
   - "活动周期按自然日闭区间统计，起止日期均包含。"
   - "授权时间用于校验联动活动是否处于有效合作期；汪东城代言人按完整代言周期 2026-06-22~2026-09-22 单独统计，月度活动按 2026-06-22~2026-07-22 单独统计，二者均为开服天数 > 0 即可参与。"
+  - "月度活动付费固定取汪东城代言人中的 product_id 905/906；在月度活动周期内，905/906 同时计入汪东城代言人和月度活动。"
   - "第一步效果指标统一使用活动周期内符合参与开服天数门槛的活跃玩家作为总体人群。"
   - "活动付费指标以 ta_ext.temp_use1_22 商品配置为准，good_id 对应 pay_log.product_id；活动流水按 price 统计；活动付费人数及活动流水均要求 price > 0。"
