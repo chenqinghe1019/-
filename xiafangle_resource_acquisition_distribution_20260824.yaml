@@ -3,19 +3,23 @@ project_code: xiafangle
 project_id: 41
 created_at: '2026-08-24'
 updated_at: '2026-08-24'
-purpose: 21类核心资源每日获取分布检测
+purpose: 21类核心资源按开服天数获取分布检测
 sql_file: sql/xiafangle/21类道具获取_人均及四分位检测.sql
 
 grouping:
-  primary_dimension: 自然日
-  date_field: '$part_date'
-  rule: 每日分别统计21类资源获取分布
+  primary_dimension: 开服天数
+  rule: 开服天数 = 活跃日期 - server_open_time + 1，开服当天记D1
+  date_display: false
+  internal_date_usage: 日期仅用于将当天活跃与当天资源获取对齐
 
 population:
   event: in_out_log
-  rule: 每个自然日发生 in_out_log 的活跃角色作为当天总体
+  rule: 每个开服天数下存在in_out_log的活跃角色作为总体
   date_filter: '${PartDate:date}'
-  zero_fill: 当天活跃但未获取某道具的玩家按0补齐后参与人均、最小值、P25、P50、P75、P95、最大值计算
+  user_table: ta.v_user_41
+  server_open_time_field: server_open_time
+  user_domain_filter: release
+  zero_fill: 活跃但未获取某道具的玩家按0补齐后参与人均、最小值、P25、P50、P75、P95、最大值计算
 
 acquisition_rule:
   change_type: 1
@@ -26,13 +30,13 @@ acquisition_rule:
     - money_log
     - voucher_log
   acquisition_rate_formula: 获取玩家数 * 1.0000 / 活跃玩家数
-  p95_rule: P95基于当日该道具全部活跃玩家的获取数量计算，未获取玩家按0参与
+  p95_rule: P95基于同一开服天数下该道具全部活跃玩家的获取数量计算，未获取玩家按0参与
   p95_outlier_rule: 获取数量 > 2 * P95获取数量 的玩家计入“超出P95两倍玩家数”
   p95_zero_note: 若P95=0，则所有获取数量>0的玩家都会被计入超出P95两倍玩家数
   note: 本专题只统计获取，不涉及项目记忆中“消耗不取ABS”的口径调整
 
 metrics:
-  - 日期
+  - 开服天数
   - 活跃玩家数
   - 获取玩家数
   - 获取率
