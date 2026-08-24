@@ -1,0 +1,50 @@
+project: 下方了
+project_code: xiafangle
+project_id: 41
+created_at: '2026-08-24'
+updated_at: '2026-08-24'
+topic: 按日累计付费分层战力提升监控
+sql_file: sql/xiafangle/战力监控_按日累计付费分层_提升分布.sql
+
+population:
+  active_event: in_out_log
+  rule: 仅统计目标自然日实际存在in_out_log的活跃角色
+  date_filter: '${PartDate:date}'
+
+cumulative_payment:
+  event: pay_log
+  field: payment
+  source_unit: 分
+  display_unit: 元
+  conversion: payment / 100.0000
+  window: 截至目标自然日，包含目标当日
+  note: 为避免历史日期被当前用户表total_payment污染，不使用当前快照total_payment做历史日期分层
+  payment_filter: payment > 0
+  segments:
+    - a_free: 0
+    - 'b_(0,6]': '(0,6]'
+    - 'c_(6,30]': '(6,30]'
+    - 'd_(30,100]': '(30,100]'
+    - 'e_(100,300]': '(100,300]'
+    - 'f_(300,500]': '(300,500]'
+    - 'g_(500,1000]': '(500,1000]'
+    - 'h_(1000,+)': '(1000,+)'
+
+power_growth:
+  event: change_power_log
+  start_power: min_by(before, '#event_time')
+  end_power: max_by(after, '#event_time')
+  daily_growth: end_power - start_power
+  zero_fill: 当日活跃但无有效change_power_log时按0增长
+  warning: change_power_log可能有服务端后台重算，因此禁止单独用其判定活跃，只在in_out_log活跃日纳入统计
+
+metrics:
+  - 活跃玩家数
+  - 战力有变动玩家数
+  - 战力提升玩家数
+  - 平均战力提升
+  - 最小战力提升
+  - P25战力提升
+  - P50战力提升
+  - P75战力提升
+  - 最大战力提升
