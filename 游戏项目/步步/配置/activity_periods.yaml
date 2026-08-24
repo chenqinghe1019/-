@@ -6,6 +6,7 @@ analysis_usage:
     - "活动期数"
     - "活动周期"
   activity_period_format: "YYYY-MM-DD~YYYY-MM-DD"
+  channel_filter: "v_event_22.channel_id = 2"
   active_event: "log_in_out"
   payment_event: "pay_log"
   payment_unit: "分，统计金额时 /100 转元"
@@ -127,6 +128,7 @@ activities:
 
 notes:
   - "后续步步活动效果分析默认按活动名称、活动期数、活动周期分组。"
+  - "本轮活动效果分析统一限制事件 channel_id = 2，活跃、总体付费、活动付费使用同一渠道口径。"
   - "活动周期按自然日闭区间统计，起止日期均包含。"
   - "授权/代言整体时间用于校验活动是否处于有效合作期，不等同于单期活动统计周期。"
   - "第一步效果指标统一使用活动周期内符合参与开服天数门槛的活跃玩家作为总体人群。"
