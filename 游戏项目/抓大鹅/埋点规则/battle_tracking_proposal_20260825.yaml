@@ -1,0 +1,85 @@
+project: 抓大鹅
+status: proposal
+updated_at: '2026-08-25'
+tracking_scope: 对局仅记录开始与结算两个事件
+
+principles:
+  - 使用 battle_uid 唯一串联同一局开始与结算
+  - 难度配置快照放在 battle_start
+  - 对局过程行为不拆事件，统一在 battle_result 中做计数/汇总
+  - 随机关卡必须记录 level_version/config_id/seed 中至少能唯一定位本局配置的一组字段
+  - 结算必须能区分胜利、失败、主动退出及异常中断
+
+events:
+  - event_name: battle_start
+    display_name: 对局开始
+    trigger: 玩家实际进入可操作的对局场景时
+    properties:
+      - {name: battle_uid, type: varchar, required: true, description: 单局唯一ID}
+      - {name: level_id, type: varchar, required: true, description: 关卡/局型ID}
+      - {name: level_no, type: bigint, required: false, description: 关卡序号，例如第1关/第2关}
+      - {name: game_mode, type: varchar, required: false, description: 普通/活动/挑战等玩法类型}
+      - {name: difficulty, type: varchar, required: false, description: 难度档位}
+      - {name: level_version, type: varchar, required: true, description: 关卡配置版本或每日关卡批次}
+      - {name: random_seed, type: varchar, required: false, description: 若摆放随机则记录随机种子}
+      - {name: initial_item_count, type: bigint, required: false, description: 本局初始物品总数}
+      - {name: slot_capacity, type: bigint, required: false, description: 槽位上限}
+      - {name: entry_source, type: varchar, required: false, description: 对局入口来源}
+      - {name: retry_no, type: bigint, required: false, description: 当前关卡第几次挑战}
+
+  - event_name: battle_result
+    display_name: 对局结算
+    trigger: 胜利、失败、主动退出或系统判定本局结束时
+    properties:
+      - {name: battle_uid, type: varchar, required: true, description: 与 battle_start 对应}
+      - {name: level_id, type: varchar, required: true, description: 关卡/局型ID}
+      - {name: level_version, type: varchar, required: true, description: 关卡配置版本或每日关卡批次}
+      - {name: battle_result, type: bigint, required: true, description: '1=胜利, 0=失败, 2=主动退出, 3=异常中断'}
+      - {name: end_reason, type: varchar, required: true, description: clear/slot_full/quit/timeout/disconnect/other}
+      - {name: duration, type: bigint, required: true, description: 对局时长，秒}
+      - {name: eliminated_item_count, type: bigint, required: true, description: 已消除物品数量}
+      - {name: remaining_item_count, type: bigint, required: true, description: 结算时剩余物品数量}
+      - {name: progress_pct, type: double, required: true, description: 本局完成进度，0~1}
+      - {name: max_slot_used, type: bigint, required: true, description: 本局槽位峰值占用}
+      - {name: final_slot_items, type: array(varchar), required: false, description: 失败/退出时槽位内物品ID列表，用于定位卡点物品}
+      - {name: blocker_item_ids, type: array(varchar), required: false, description: 可选，本局最主要未消除/堆积物品ID}
+      - {name: remove_prop_cnt, type: bigint, required: false, description: 移出/撤回类道具使用次数}
+      - {name: shuffle_prop_cnt, type: bigint, required: false, description: 洗牌类道具使用次数}
+      - {name: revive_cnt, type: bigint, required: false, description: 复活/续局次数}
+      - {name: other_prop_cnt, type: bigint, required: false, description: 其他对局道具使用次数}
+      - {name: ad_continue_cnt, type: bigint, required: false, description: 本局看广告续局次数，如适用}
+
+recommended_minimum_fields:
+  battle_start:
+    - battle_uid
+    - level_id
+    - level_no
+    - level_version
+    - random_seed
+    - initial_item_count
+    - slot_capacity
+    - retry_no
+  battle_result:
+    - battle_uid
+    - level_id
+    - level_version
+    - battle_result
+    - end_reason
+    - duration
+    - eliminated_item_count
+    - remaining_item_count
+    - progress_pct
+    - max_slot_used
+    - final_slot_items
+    - remove_prop_cnt
+    - shuffle_prop_cnt
+    - revive_cnt
+
+analysis_supported:
+  - 各关卡挑战人数/次数、通关人数/次数、人数与次数通关率
+  - 首通率、重试次数分布、平均挑战次数
+  - 胜负对局时长与失败发生阶段
+  - 失败进度分布及槽位爆满率
+  - 道具使用与通关率关系
+  - 不同随机种子/配置版本的难度差异
+  - final_slot_items 定位高频卡槽物品及配置问题
