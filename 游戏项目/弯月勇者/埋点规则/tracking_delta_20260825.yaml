@@ -1,0 +1,41 @@
+project: 弯月勇者
+project_code: wanyue
+project_id: 44
+update_type: second_test_tracking_delta
+updated_at: '2026-08-25'
+source:
+  file: 57dfef19-f324-4ec9-87bc-4b700b54dfe6.xlsx
+  sheet: 版本新增埋点
+  note: 用户说明该批埋点为弯月勇者二测新增系统/养成相关埋点，由其负责设计/补充。
+summary:
+  event_count: 18
+  scope:
+    - 头衔
+    - 坐骑
+    - 藏品/招募
+    - 战术
+    - 自选十连
+    - 合作副本
+    - 种植园
+    - 公会对抗赛
+new_or_extended_events:
+  - {name: title_ablity, display: 头衔晋升, data_type: 服务端}
+  - {name: mount_improve, display: 坐骑洗练, data_type: 服务端}
+  - {name: gacha_log, display: 招募, tag: 藏品, data_type: 服务端}
+  - {name: treasure_star_up, display: 藏品升星, data_type: 服务端}
+  - {name: treasure_lv_up, display: 藏品升级, data_type: 服务端}
+  - {name: tactics_star_up, display: 战术升星（包含解锁）, tag: 战术, data_type: 服务端}
+  - {name: custom_select_gacha, display: 自选十连抽取记录, tag: 自选十连, data_type: 服务端}
+  - {name: custom_select, display: 自选十连选择时记录, data_type: 服务端}
+  - {name: battle_star, display: 战斗开始, tag: 合作副本, data_type: 客户端, note: 合作模式扩展字段}
+  - {name: battle_result, display: 战斗结算, data_type: 客户端, note: 合作模式扩展字段}
+  - {name: plantation_lv_up, display: 种植园升级, tag: 种植园, data_type: 服务端}
+  - {name: plantation_build_lv_up, display: 种植园建筑升级, data_type: 服务端}
+  - {name: plantation_steal, display: 种植园偷取, data_type: 服务端}
+  - {name: plantation_expel, display: 种植园驱逐, data_type: 服务端}
+  - {name: guild_duel_match_log, display: 公会对决匹配结果, tag: 公会对抗赛, data_type: 服务端}
+  - {name: pvp_log, display: PVP战报, data_type: 服务端, note: 增加公会对抗赛场景}
+  - {name: guild_duel_result_log, display: 公会对抗赛结束结果, data_type: 服务端}
+responsibility_note:
+  - 用户参与弯月勇者一测，并在二测阶段负责新增系统/养成相关埋点的设计与补充。
+  - 转正述职可作为“从参与测试到承担新系统数据建设”的成长节点呈现。
