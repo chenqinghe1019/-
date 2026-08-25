@@ -1,0 +1,10 @@
+project: "步步项目 / 一步两步"
+updated_at: "2026-08-25"
+report: "渠道新增/DAU/内购流水"
+rules:
+  - "change_reason=8 定义为小黄车付费。"
+  - "行为渠道侧原内购流水需拆分：内购流水排除 change_reason=8；新增小黄车付费列统计 change_reason=8。"
+  - "微小收入侧拆分：微小内购收入继续统计 change_reason=1；新增微小小黄车收入统计 change_reason=8。"
+  - "微小安卓内购收入仍只统计 change_reason=1 且 system<>'ios'，不并入小黄车。"
+  - "现有占安卓内购、占总内购口径继续使用普通内购流水，不将小黄车计入分子。"
+  - "除上述拆分外，其余原SQL口径保持不变。"
