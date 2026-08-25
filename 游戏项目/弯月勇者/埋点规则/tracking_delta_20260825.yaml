@@ -8,7 +8,7 @@ source:
   sheet: 版本新增埋点
   note: 用户说明该批埋点为弯月勇者二测新增系统/养成相关埋点，由其负责设计/补充。
 summary:
-  event_count: 18
+  event_count: 17
   scope:
     - 头衔
     - 坐骑
