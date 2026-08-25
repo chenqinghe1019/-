@@ -1,0 +1,119 @@
+project: 抓大鹅
+updated_at: '2026-08-25'
+source: 2026-08-25 数数原始事件样本 CSV
+status: proposal
+
+naming_rules:
+  - 事件名、属性名以字母开头，仅使用字母、数字、下划线
+  - 同义属性跨事件复用同一属性名
+  - game_channel 作为公共事件属性
+  - 数数 SDK 自动事件保留原名，不重复造系统属性
+
+battle_rule:
+  - 对局只保留 battle_start 与 battle_result
+  - 使用 battle_uid 串联同一局开始与结算
+  - 对局过程行为不拆独立事件，统一在 battle_result 聚合
+  - 原 level_result 改为 battle_result
+  - 原 star_1 / star_2 合并为 battle_result.star_count
+  - 原 item_used / item_collected 不再逐次上报，转为结算汇总字段
+  - 原 props_sweeper / props_magnet / props_fan / props_ufo 不再单独打事件，按功能归类到 battle_result 道具计数字段
+
+formal_events:
+  - ta_app_install
+  - ta_app_start
+  - ta_app_end
+  - ta_app_crash
+  - page_view
+  - page_duration
+  - battle_start
+  - battle_result
+  - currency_changed
+  - purchase_success
+  - level_fail_shop_click
+
+key_properties:
+  page_view:
+    - game_channel
+    - page_id
+    - page_name
+    - source_page
+  page_duration:
+    - game_channel
+    - page_id
+    - page_name
+    - duration
+    - source_page
+  battle_start:
+    - game_channel
+    - battle_uid
+    - level_id
+    - level_no
+    - game_mode
+    - difficulty
+    - level_version
+    - random_seed
+    - initial_item_count
+    - slot_capacity
+    - entry_source
+    - retry_no
+  battle_result:
+    - game_channel
+    - battle_uid
+    - level_id
+    - level_version
+    - battle_result
+    - end_reason
+    - duration
+    - star_count
+    - eliminated_item_count
+    - remaining_item_count
+    - progress_pct
+    - max_slot_used
+    - final_slot_items
+    - blocker_item_ids
+    - remove_prop_cnt
+    - shuffle_prop_cnt
+    - revive_cnt
+    - other_prop_cnt
+    - ad_continue_cnt
+  currency_changed:
+    - game_channel
+    - currency_name
+    - change_amount
+    - source
+    - before_amount
+    - after_amount
+  purchase_success:
+    - game_channel
+    - order_id
+    - product_id
+    - product_name
+    - product_type
+    - payment
+    - pay_currency
+    - pay_method
+    - source
+  level_fail_shop_click:
+    - game_channel
+    - level_id
+    - button_name
+    - source_page
+
+current_event_mapping:
+  level_result: battle_result
+  star_1: battle_result.star_count=1
+  star_2: battle_result.star_count=2
+  item_used: battle_result aggregate
+  item_collected: battle_result aggregate
+  props_sweeper: battle_result prop counter
+  props_magnet: battle_result prop counter
+  props_fan: battle_result prop counter
+  props_ufo: battle_result prop counter
+  item_exchange: currency_changed when used only for in-battle currency exchange
+  shop_level_fail_bp: level_fail_shop_click
+  thinkingdata_editor_test: exclude_from_production
+
+open_questions:
+  - shop_level_fail_bp 中 bp 的真实业务含义需研发确认
+  - 扇子、磁铁、清扫车、UFO 分别映射到 remove_prop_cnt / shuffle_prop_cnt / other_prop_cnt 的规则需玩法侧确认
+  - game_channel 正式环境枚举需确认，当前样本值均为 debug
