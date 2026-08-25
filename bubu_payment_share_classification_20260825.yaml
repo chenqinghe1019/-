@@ -1,0 +1,50 @@
+project:
+  name: "步步项目 / 一步两步"
+  table_suffix: 22
+  updated_at: "2026-08-25"
+
+scope:
+  event: "pay_log"
+  purpose: "按激活渠道、当笔付费渠道、小黄车标记、system、payment_method 对支付流水进行分成分类"
+  note: "该口径是订单支付分类/分成口径，不替代基于历史 log_in_out 的用户转端口径。"
+
+priority:
+  - "1. change_reason=8 的小黄车订单优先分类"
+  - "2. 非小黄车且付费渠道类型=星云支付，归星云支付"
+  - "3. 付费渠道类型=平台支付时，再按 system + payment_method 细分"
+
+platform_payment_final_classification:
+  rules:
+    - condition: "payment_method IS NULL 或 trim(payment_method)=''"
+      result: "payment_method为空"
+      priority: 1
+    - condition: "payment_method IN ('customer_pay','wxpay')"
+      result: "客服支付"
+      priority: 2
+    - condition: "payment_method='douyin_iap' AND system='ios'"
+      result: "小程序-ios虚拟支付"
+      priority: 3
+    - condition: "payment_method='douyin_iap' AND system<>'ios'"
+      result: "小程序-安卓虚拟支付"
+      priority: 3
+    - condition: "payment_method='apple_iap'"
+      result: "小程序-ios虚拟支付"
+      priority: 3
+    - condition: "payment_method='wechat_iap' AND system='ios'"
+      result: "小程序-ios虚拟支付"
+      priority: 4
+    - condition: "payment_method='wechat_iap' AND system<>'ios'"
+      result: "小程序-安卓虚拟支付"
+      priority: 4
+    - condition: "payment_method='qr_pay' AND system<>'ios'"
+      result: "小程序-安卓虚拟支付"
+      priority: 4
+    - condition: "其他未命中"
+      result: "其他"
+
+clarifications:
+  - "客服支付包含 customer_pay、wxpay，不再只认 customer_pay。"
+  - "douyin_iap 按 system 分流：Android/非iOS -> 安卓虚拟支付；iOS -> iOS虚拟支付。"
+  - "apple_iap 不再单列苹果官方支付，统一归入 iOS 虚拟支付。"
+  - "payment_method 为空需单独输出一列，不并入其他或Android。"
+  - "当前 system 仍只将显式 ios 认作 iOS，其他值默认按非iOS处理；若后续用户调整该口径，以最新规则覆盖。"
