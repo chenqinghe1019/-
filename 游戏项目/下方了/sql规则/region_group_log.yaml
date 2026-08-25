@@ -1,0 +1,26 @@
+project: 下方了
+project_code: xiafangle
+project_id: 41
+updated_at: '2026-08-25'
+rule: region_group_log 跨服分组统计
+source_event: region_group_log
+fields:
+  - region_id
+  - group_type
+  - group_id
+group_type_mapping:
+  1: 跨服聊天
+  2: 跨服活动
+  3: 竞技场
+  4: 矿脉
+  5: 公会boss
+  6: 合作试炼
+  7: 诡都邮局
+  8: 公会对决
+sql_notes:
+  - region_group_log 负责提供每日区服与跨服分组关系。
+  - 活跃玩家、活跃区服、活跃部落统计关联 in_out_log。
+  - 当前这类统计不限制 domain='release'。
+  - 活跃区服按当天存在 in_out_log 活跃玩家的 region_id 去重。
+  - 活跃玩家按 #account_id 去重。
+  - 活跃部落按 clan_uid 去重，并剔除 NULL、空字符串和 '0'。
