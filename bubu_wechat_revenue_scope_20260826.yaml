@@ -1,0 +1,23 @@
+project: "步步项目 / 一步两步"
+updated_at: "2026-08-26"
+scope: "收入看板 t_6 微信收入口径"
+rule:
+  attribution: "按 pay_log 当笔实际行为渠道归因，不再按用户最初 active_channel 归因"
+  wechat_channel_ids:
+    - "2"
+    - "3"
+    - "5"
+    - "3041910"
+    - "3041911"
+    - "3041912"
+  null_channel_handling: "pay_log.channel_id 为空时按 2 处理"
+  normal_iap: "change_reason=1 AND pay_result=1"
+  xiaohuangche: "change_reason=8 AND pay_result=1"
+  android_revenue: "上述微信实际行为渠道中 system<>'ios' 的普通内购流水"
+  naming:
+    az_daily_payment: "微信安卓内购收入"
+    daily_payment: "微信内购收入"
+    xhc_daily_payment: "微信小黄车收入"
+notes:
+  - "由于 t_6 已覆盖微小与微信安卓微端等多个微信体系渠道，指标命名不再使用‘微小’，统一改为‘微信’。"
+  - "t_6 按日期汇总微信体系实际行为渠道的收入，不再关联 v_user_22 计算 active_channel。"
