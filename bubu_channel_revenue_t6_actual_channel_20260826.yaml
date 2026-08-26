@@ -1,0 +1,22 @@
+project: "步步项目 / 一步两步"
+table_suffix: 22
+updated_at: "2026-08-26"
+
+sql_scope:
+  block: "t_6"
+  purpose: "渠道流水看板中的微小收入分母口径"
+
+rule:
+  old: "通过 v_user_22 计算 open_id/nb_open_id 的最初 active_channel，并筛 active_channel='2'"
+  new: "不再使用最初渠道；直接按 pay_log 当笔实际行为渠道 channel_id 判断"
+  target_channel: "coalesce(pay_log.channel_id,'2')='2'"
+  implication: "t_6 可删除与 v_user_22 的 LEFT JOIN 及 active_channel 计算"
+
+metrics:
+  az_daily_payment: "实际 pay_log.channel_id=2，change_reason=1，pay_result=1，system<>'ios' 的当日流水"
+  daily_payment: "实际 pay_log.channel_id=2，change_reason=1，pay_result=1 的当日流水"
+  xhc_daily_payment: "实际 pay_log.channel_id=2，change_reason=8，pay_result=1 的当日小黄车流水"
+
+notes:
+  - "channel_id 为 NULL 仍按 2 处理，沿用当前 SQL 既有规则。"
+  - "该口径是实际支付行为渠道口径，不再按用户来源渠道归因。"
