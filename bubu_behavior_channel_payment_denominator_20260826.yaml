@@ -1,0 +1,17 @@
+project: "步步项目 / 一步两步"
+table_suffix: 22
+updated_at: "2026-08-26"
+
+channel_payment_denominator:
+  scope: "渠道新增/DAU/内购流水看板 t_6"
+  old_rule: "通过用户最早创角 channel_id 计算 active_channel，并限制 active_channel='2'，因此统计的是微小来源用户跨端产生的收入。"
+  new_rule: "不再关联用户表、不再判断最初渠道；直接使用当笔 pay_log.channel_id 作为实际行为渠道。channel_id 为空仍按'2'处理。"
+  aggregation_grain:
+    - "paydate"
+    - "实际行为渠道（pay_log.channel_id）"
+  metrics:
+    normal_android_payment: "change_reason=1 且 pay_result=1 且 system<>'ios' 的实际行为渠道收入"
+    normal_payment: "change_reason=1 且 pay_result=1 的实际行为渠道收入"
+    xhc_payment: "change_reason=8 且 pay_result=1 的实际行为渠道小黄车收入"
+  join_rule: "t_5.日期=t_6.paydate 且 t_5.行为渠道=t_6.实际行为渠道"
+  note: "原字段名若继续叫‘微小安卓内购收入/微小内购收入’，仅在行为渠道=2时名称严格成立；其他渠道行实际代表对应行为渠道收入。"
