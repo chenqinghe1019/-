@@ -10,16 +10,19 @@
 - 卡池等级门槛：Lv1 0~999；Lv2 1000~3499；Lv3 3500~7499；Lv4 7500~12499；Lv5 12500~19999；Lv6 20000~34999；Lv7 35000~84999；Lv8 85000~184999；Lv9 185000~384999；Lv10 >=385000。
 - 为避免同一天跨等级的数据被整体归到同一等级，累计顺序应使用 `#event_time`，而不是 `$part_date`。
 
-## 种族抽抽数
+## 招募抽数与经验
 
 - 事件：`recruit_log`。
-- `gacha_type = 3` 为种族抽。
-- `award_ting` 结构：`array(row(star double, num double, id varchar, "type" double, gacha_num double))`。
-- 真实抽数使用 `award_ting.gacha_num`，不要用 `count(*)`、`cardinality(award_ting)` 或拆数组后的奖励行数代替。
-- 统计某个卡池等级的总种族抽数时，应对该等级下 `award_ting.gacha_num` 求和。
+- `gacha_type = 1` 普通招募，`gacha_type = 2` 高级招募，`gacha_type = 3` 种族招募。
+- 真实抽数使用 `recruit_log.gacha_num` 顶层字段，不使用 `award_ting` 内部的同名字段。
+- 卡池累计经验按每条 `recruit_log` 的顶层 `gacha_num` 换算：普通 `gacha_num × 1`，高级 `gacha_num × 10`，种族 `gacha_num × 30`。
+- 累计经验必须按玩家 `#event_time` 顺序计算，并在每次种族抽事件发生时判断该次事件所在卡池等级。
+- 统计某个卡池等级的种族抽总抽数时，只累计该等级下 `gacha_type = 3` 事件的顶层 `gacha_num`。
+- 顶层 `gacha_num` 必须在拆 `award_ting` 之前保留；拆数组后不能直接对它重复求和，否则会按奖励元素数量重复累计。
 
-## 英雄产出
+## award_ting 与英雄产出
 
+- `award_ting` 结构中虽然也存在名为 `gacha_num` 的子字段，但已验证该子字段线上数据可为 NULL，不作为抽数来源。
 - `award_ting.type = 2` 为英雄。
 - 英雄数量使用 `award_ting.num`。
 - 英雄归类沿用 `knowledge/xiafangle_gacha_hero_rarity_groups_20260826.md`：狗粮卡 / 传说卡 / 传说+。
@@ -27,5 +30,5 @@
 ## 指标
 
 - 人均产出数量 = 某等级某类型英雄产出数量 / 该等级发生种族抽的去重玩家数。
-- 平均多少抽产出1张 = 该等级种族抽总抽数（sum(gacha_num)） / 某等级某类型英雄产出数量。
+- 平均多少抽产出1张 = 该等级种族抽总抽数（顶层 `recruit_log.gacha_num`） / 某等级某类型英雄产出数量。
 - 等级内数量占比 = 某等级某类型英雄产出数量 / 该等级全部英雄产出数量。
