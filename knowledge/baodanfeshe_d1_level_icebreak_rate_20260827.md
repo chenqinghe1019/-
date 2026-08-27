@@ -43,7 +43,7 @@
 - 延续累计关卡 LTV 的 D1 口径，统计新增首日所有 `payment>0` 订单。
 - 每一笔订单按付费发生前最后一条主线 `battle_start` 或 `battle_result` 归因到对应 `map_id`；无前序主线战斗事件则归为 `map_id=0`。
 - 明细按 `map_id + product_id + product_name` 汇总。
-- 当前精简输出：主线关卡ID、product_id、product_name、购买人数、购买金额、ARPU。
+- 当前精简输出：主线关卡ID、新增人数、product_id、product_name、购买人数、购买金额、ARPU；新增人数重复展示在各行用于验数。
 - 商品级关卡 ARPU 的分母统一使用所选新增日期范围内的全部新增人数，不使用关卡到达人数。计算为：该关卡该商品首日购买金额 / 全部新增人数。
 - `product_id=20001` 在该明细中保留展示，不做剔除，以便单独判断其在哪些关卡阶段贡献流水。
 - 订单级统计优先使用 `order_id` 去重；若同一订单存在重复 `pay_log`，不能用 `row_number()` 视为多笔订单，否则会高估购买次数和流水。
