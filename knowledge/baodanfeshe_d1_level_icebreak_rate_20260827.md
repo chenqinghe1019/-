@@ -9,26 +9,25 @@
 - 主体：`#account_id`
 - 新增日期：`create_role_time` Unix 秒转换后的日期
 - 主线：`battle_type=1`
-- 关卡开始事件：暴弹项目统一使用 `battle_start`。
-- `battle_result` 仅用于关卡通关判断，不参与付费阶段归因。
+- 关卡行为事件：暴弹项目关卡统计及付费阶段归因统一同时使用 `battle_start`、`battle_result`。
+- `battle_result` 同时用于关卡通关判断。
 - 付费：`$part_event='pay_log' AND payment>0`，`payment` 单位为元，不除以 100。
 
 ## 破冰定义
 - 破冰 = 玩家新增首日首次发生正向付费。
 - 首次付费时间：玩家新增首日所有 `payment>0` 订单中的最早 `#event_time`。
-- 破冰关卡/付费阶段归因：每笔付费发生前最后一条主线 `battle_start` 对应的 `map_id`。
-- 这等价于按“当前关卡首次/最近一次 `battle_start` 到下一关 `battle_start` 之前”的区间归因。
-- 若付费前不存在任何主线 `battle_start`，归为 `map_id=0`，作为异常/验数项。理论上产品在 1-3 前不能付费，因此正常情况下 `map_id=0`、10001、10002 的付费应为 0。
+- 破冰关卡/付费阶段归因：每笔付费发生前最后一条主线 `battle_start` 或 `battle_result` 对应的 `map_id`。
+- 若付费前不存在任何主线 `battle_start`/`battle_result`，归为 `map_id=0`，作为异常/验数项。理论上产品在 1-3 前不能付费，因此正常情况下 `map_id=0`、10001、10002 的付费应为 0。
 
 ## 关卡破冰率
-- 关卡到达人数：首日出现该主线关卡 `battle_start` 的去重角色数。
-- 到达时未破冰人数：首次到达该关卡时尚未发生首日首次付费的角色数；未付费玩家也计入。
-- 该关卡破冰人数：首日首次付费按“付费前最后一条 `battle_start`”归因到该 `map_id` 的玩家数。
+- 关卡到达人数：首日出现该主线关卡 `battle_start` 或 `battle_result` 的去重角色数。
+- 到达时未破冰人数：首次出现该关卡 `battle_start`/`battle_result` 时尚未发生首日首次付费的角色数；未付费玩家也计入。
+- 该关卡破冰人数：首日首次付费按“付费前最后一条 `battle_start`/`battle_result`”归因到该 `map_id` 的玩家数。
 - 关卡破冰率 = 该关卡破冰人数 / 到达时未破冰人数。
 
 ## 累进累计付费率与累计关卡 LTV（最终推荐口径）
 - 整体只统计新增首日 D1。
-- 每一笔新增首日 `payment>0` 的订单，按“付费发生前最后一条主线 `battle_start`”归因到对应 `map_id`；`battle_result` 不参与付费归因。
+- 每一笔新增首日 `payment>0` 的订单，按“付费发生前最后一条主线 `battle_start` 或 `battle_result`”归因到对应 `map_id`。
 - 本关新增付费人数：首日首次付费归因在该关卡的去重角色数。同一玩家只在一个关卡计入一次。
 - 累计付费人数：按主线 `map_id` 顺序累计本关新增付费人数。
 - 累计付费率 = 累计付费人数 / 全部新增人数。
@@ -40,7 +39,7 @@
 
 ## 关卡付费项明细（2026-08-27）
 - 延续累计关卡 LTV 的 D1 口径，统计新增首日所有 `payment>0` 订单。
-- 每一笔订单按付费发生前最后一条主线 `battle_start` 归因到对应 `map_id`；无前序主线开始事件则归为 `map_id=0`。
+- 每一笔订单按付费发生前最后一条主线 `battle_start` 或 `battle_result` 归因到对应 `map_id`；无前序主线战斗事件则归为 `map_id=0`。
 - 明细按 `map_id + product_id + product_name` 汇总。
 - 推荐输出：关卡到达人数、付费项购买人数、购买次数、付费金额、单笔均价、付费项购买率（购买人数/关卡到达人数）、付费项关卡流水占比（该商品流水/该关卡总流水）。
 - `product_id=20001` 在该明细中保留展示，不做剔除，以便单独判断其在哪些关卡阶段贡献流水。
@@ -55,4 +54,4 @@
 ## 说明
 - 当前口径按角色 `#account_id` 去重。
 - 若后续需要账号口径，可改为 `nb_open_id`。
-- 暴弹关卡开始事件统一使用 `battle_start`；禁止再使用 `battle_star`。
+- 暴弹关卡统计与付费阶段归因统一同时使用 `battle_start`、`battle_result`；不再只使用 `battle_start`。
