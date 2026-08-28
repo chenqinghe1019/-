@@ -2,7 +2,7 @@
 -- 口径：
 -- 1. ${PartDate:date1} 筛选新增日期，不直接筛 change_power_log 事件日期。
 -- 2. 新增天数：创角当天 D1，次日 D2，以此类推。
--- 3. 首日付费：仅统计创角当天 pay_log；payment 单位为分，/100 转元后分层。
+-- 3. 首日付费：仅统计创角当天 payment>0 的 pay_log；payment 单位为分，/100 转元后分层。
 -- 4. 战力变化值沿用原查询：after - before。
 -- 5. 正向战力贡献占比：同新增天数、同首日付费分层内，各 change_reason 的正向战力提升 / 总正向战力提升。
 -- 6. 保留 change_reason ID，并通过 ta_dim.dim_41_0_16734 映射原因名称。
@@ -120,23 +120,23 @@ FROM
 
                 CASE
                     WHEN s."首日付费金额" = 0 THEN 'a_free'
-                    WHEN s."首日付费金额" <= 6 THEN 'b_(0,6]'
-                    WHEN s."首日付费金额" <= 30 THEN 'c_(6,30]'
-                    WHEN s."首日付费金额" <= 100 THEN 'd_(30,100]'
-                    WHEN s."首日付费金额" <= 300 THEN 'e_(100,300]'
-                    WHEN s."首日付费金额" <= 500 THEN 'f_(300,500]'
-                    WHEN s."首日付费金额" <= 1000 THEN 'g_(500,1000]'
+                    WHEN s."首日付费金额" > 0 AND s."首日付费金额" <= 6 THEN 'b_(0,6]'
+                    WHEN s."首日付费金额" > 6 AND s."首日付费金额" <= 30 THEN 'c_(6,30]'
+                    WHEN s."首日付费金额" > 30 AND s."首日付费金额" <= 100 THEN 'd_(30,100]'
+                    WHEN s."首日付费金额" > 100 AND s."首日付费金额" <= 300 THEN 'e_(100,300]'
+                    WHEN s."首日付费金额" > 300 AND s."首日付费金额" <= 500 THEN 'f_(300,500]'
+                    WHEN s."首日付费金额" > 500 AND s."首日付费金额" <= 1000 THEN 'g_(500,1000]'
                     ELSE 'h_(1000,+)'
                 END AS "首日付费分层",
 
                 CASE
                     WHEN s."首日付费金额" = 0 THEN 1
-                    WHEN s."首日付费金额" <= 6 THEN 2
-                    WHEN s."首日付费金额" <= 30 THEN 3
-                    WHEN s."首日付费金额" <= 100 THEN 4
-                    WHEN s."首日付费金额" <= 300 THEN 5
-                    WHEN s."首日付费金额" <= 500 THEN 6
-                    WHEN s."首日付费金额" <= 1000 THEN 7
+                    WHEN s."首日付费金额" > 0 AND s."首日付费金额" <= 6 THEN 2
+                    WHEN s."首日付费金额" > 6 AND s."首日付费金额" <= 30 THEN 3
+                    WHEN s."首日付费金额" > 30 AND s."首日付费金额" <= 100 THEN 4
+                    WHEN s."首日付费金额" > 100 AND s."首日付费金额" <= 300 THEN 5
+                    WHEN s."首日付费金额" > 300 AND s."首日付费金额" <= 500 THEN 6
+                    WHEN s."首日付费金额" > 500 AND s."首日付费金额" <= 1000 THEN 7
                     ELSE 8
                 END AS "分层排序"
 
@@ -189,6 +189,7 @@ FROM
                     WHERE p0."$part_event" = 'pay_log'
                       AND p0."domain" = 'release'
                       AND p0."#account_id" IS NOT NULL
+                      AND coalesce(try_cast(p0."payment" AS double), 0) > 0
                       AND date(p0."#event_time") < current_date
 
                     GROUP BY 1, 2
