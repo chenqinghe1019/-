@@ -6,84 +6,147 @@
 -- 4. 战力变化值沿用原查询：after - before。
 -- 5. 正向战力贡献占比：同新增天数、同首日付费分层内，各 change_reason 的正向战力提升 / 总正向战力提升。
 -- 6. 保留 change_reason ID，并通过 ta_dim.dim_41_0_16734 映射原因名称。
+-- 7. 每个新增天数额外增加一条“天汇总”行，不拆首日付费分层和变化原因；汇总玩家数按当天角色真实去重，不累加明细人数。
 
 SELECT
     row_number() OVER (
         ORDER BY
             q."新增天数",
+            q."汇总排序",
             q."分层排序",
             q."正向战力提升" DESC,
             q."变化原因ID"
     ) AS "序号",
 
     q."新增天数",
-    q."首日付费分层",
-    q."变化原因ID",
-    q."变化原因",
+
+    CASE
+        WHEN q."汇总排序" = 0 THEN '全部'
+        ELSE q."首日付费分层"
+    END AS "首日付费分层",
+
+    CASE
+        WHEN q."汇总排序" = 0 THEN 'ALL'
+        ELSE q."变化原因ID"
+    END AS "变化原因ID",
+
+    CASE
+        WHEN q."汇总排序" = 0 THEN '天汇总'
+        ELSE q."变化原因"
+    END AS "变化原因",
+
     q."战力变化玩家数",
     q."战力变化次数",
 
-    round(q."正向战力提升", 2) AS "正向战力提升",
-    round(q."战力下降量", 2) AS "战力下降量",
-    round(q."战力净变化", 2) AS "战力净变化",
+    round(
+        q."正向战力提升",
+        2
+    ) AS "正向战力提升",
+
+    round(
+        q."战力下降量",
+        2
+    ) AS "战力下降量",
+
+    round(
+        q."战力净变化",
+        2
+    ) AS "战力净变化",
 
     round(
         q."战力净变化"
-        / nullif(q."战力变化玩家数", 0),
+        / nullif(
+            q."战力变化玩家数",
+            0
+        ),
         2
     ) AS "变动玩家人均净战力变化",
 
     round(
         q."战力净变化"
-        / nullif(q."战力变化次数", 0),
+        / nullif(
+            q."战力变化次数",
+            0
+        ),
         2
     ) AS "单次平均净战力变化",
 
-    round(
-        q."正向战力提升"
-        / nullif(
-            sum(q."正向战力提升") OVER (
-                PARTITION BY
-                    q."新增天数",
-                    q."首日付费分层"
+    CASE
+        WHEN q."汇总排序" = 0
+            THEN 1.0000
+        ELSE round(
+            q."正向战力提升"
+            / nullif(
+                sum(
+                    q."正向战力提升"
+                ) OVER (
+                    PARTITION BY
+                        q."新增天数",
+                        q."首日付费分层"
+                ),
+                0
             ),
-            0
-        ),
-        4
-    ) AS "正向战力贡献占比",
+            4
+        )
+    END AS "正向战力贡献占比",
 
-    round(q."单次最大战力提升", 2) AS "单次最大战力提升",
-    round(q."单次最大战力下降", 2) AS "单次最大战力下降"
+    round(
+        q."单次最大战力提升",
+        2
+    ) AS "单次最大战力提升",
+
+    round(
+        q."单次最大战力下降",
+        2
+    ) AS "单次最大战力下降"
 
 FROM
 (
     SELECT
         t."新增天数",
         t."首日付费分层",
-        t."分层排序",
+        coalesce(t."分层排序", 0) AS "分层排序",
         t."变化原因ID",
         t."变化原因",
 
-        count(DISTINCT t."#account_id") AS "战力变化玩家数",
+        CASE
+            WHEN t."首日付费分层" IS NULL THEN 0
+            ELSE 1
+        END AS "汇总排序",
+
+        count(
+            DISTINCT t."#account_id"
+        ) AS "战力变化玩家数",
+
         count(*) AS "战力变化次数",
 
         sum(
             CASE
-                WHEN t."战力变化值" > 0 THEN t."战力变化值"
+                WHEN t."战力变化值" > 0
+                    THEN t."战力变化值"
                 ELSE 0
             END
         ) AS "正向战力提升",
 
         sum(
             CASE
-                WHEN t."战力变化值" < 0 THEN -t."战力变化值"
+                WHEN t."战力变化值" < 0
+                    THEN -t."战力变化值"
                 ELSE 0
             END
         ) AS "战力下降量",
 
-        sum(t."战力变化值") AS "战力净变化",
-        max(t."战力变化值") AS "单次最大战力提升",
-        min(t."战力变化值") AS "单次最大战力下降"
+        sum(
+            t."战力变化值"
+        ) AS "战力净变化",
+
+        max(
+            t."战力变化值"
+        ) AS "单次最大战力提升",
+
+        min(
+            t."战力变化值"
+        ) AS "单次最大战力下降"
 
     FROM
     (
@@ -97,17 +160,33 @@ FROM
             c."首日付费分层",
             c."分层排序",
 
-            cast(e."change_reason" AS varchar) AS "变化原因ID",
+            cast(
+                e."change_reason"
+                AS varchar
+            ) AS "变化原因ID",
 
             coalesce(
                 d."change_reason@reason_name",
-                cast(e."change_reason" AS varchar)
+                cast(
+                    e."change_reason"
+                    AS varchar
+                )
             ) AS "变化原因",
 
-            cast(e."#account_id" AS varchar) AS "#account_id",
+            cast(
+                e."#account_id"
+                AS varchar
+            ) AS "#account_id",
 
-            try_cast(e."after" AS double)
-            - try_cast(e."before" AS double) AS "战力变化值"
+            try_cast(
+                e."after"
+                AS double
+            )
+            -
+            try_cast(
+                e."before"
+                AS double
+            ) AS "战力变化值"
 
         FROM ta.v_event_41 e
 
@@ -119,24 +198,57 @@ FROM
                 s."首日付费金额",
 
                 CASE
-                    WHEN s."首日付费金额" = 0 THEN 'a_free'
-                    WHEN s."首日付费金额" > 0 AND s."首日付费金额" <= 6 THEN 'b_(0,6]'
-                    WHEN s."首日付费金额" > 6 AND s."首日付费金额" <= 30 THEN 'c_(6,30]'
-                    WHEN s."首日付费金额" > 30 AND s."首日付费金额" <= 100 THEN 'd_(30,100]'
-                    WHEN s."首日付费金额" > 100 AND s."首日付费金额" <= 300 THEN 'e_(100,300]'
-                    WHEN s."首日付费金额" > 300 AND s."首日付费金额" <= 500 THEN 'f_(300,500]'
-                    WHEN s."首日付费金额" > 500 AND s."首日付费金额" <= 1000 THEN 'g_(500,1000]'
+                    WHEN s."首日付费金额" = 0
+                        THEN 'a_free'
+
+                    WHEN s."首日付费金额" > 0
+                     AND s."首日付费金额" <= 6
+                        THEN 'b_(0,6]'
+
+                    WHEN s."首日付费金额" > 6
+                     AND s."首日付费金额" <= 30
+                        THEN 'c_(6,30]'
+
+                    WHEN s."首日付费金额" > 30
+                     AND s."首日付费金额" <= 100
+                        THEN 'd_(30,100]'
+
+                    WHEN s."首日付费金额" > 100
+                     AND s."首日付费金额" <= 300
+                        THEN 'e_(100,300]'
+
+                    WHEN s."首日付费金额" > 300
+                     AND s."首日付费金额" <= 500
+                        THEN 'f_(300,500]'
+
+                    WHEN s."首日付费金额" > 500
+                     AND s."首日付费金额" <= 1000
+                        THEN 'g_(500,1000]'
+
                     ELSE 'h_(1000,+)'
                 END AS "首日付费分层",
 
                 CASE
                     WHEN s."首日付费金额" = 0 THEN 1
-                    WHEN s."首日付费金额" > 0 AND s."首日付费金额" <= 6 THEN 2
-                    WHEN s."首日付费金额" > 6 AND s."首日付费金额" <= 30 THEN 3
-                    WHEN s."首日付费金额" > 30 AND s."首日付费金额" <= 100 THEN 4
-                    WHEN s."首日付费金额" > 100 AND s."首日付费金额" <= 300 THEN 5
-                    WHEN s."首日付费金额" > 300 AND s."首日付费金额" <= 500 THEN 6
-                    WHEN s."首日付费金额" > 500 AND s."首日付费金额" <= 1000 THEN 7
+
+                    WHEN s."首日付费金额" > 0
+                     AND s."首日付费金额" <= 6 THEN 2
+
+                    WHEN s."首日付费金额" > 6
+                     AND s."首日付费金额" <= 30 THEN 3
+
+                    WHEN s."首日付费金额" > 30
+                     AND s."首日付费金额" <= 100 THEN 4
+
+                    WHEN s."首日付费金额" > 100
+                     AND s."首日付费金额" <= 300 THEN 5
+
+                    WHEN s."首日付费金额" > 300
+                     AND s."首日付费金额" <= 500 THEN 6
+
+                    WHEN s."首日付费金额" > 500
+                     AND s."首日付费金额" <= 1000 THEN 7
+
                     ELSE 8
                 END AS "分层排序"
 
@@ -145,7 +257,11 @@ FROM
                 SELECT
                     u."#account_id",
                     u."新增日期",
-                    coalesce(p."首日付费金额", 0) AS "首日付费金额"
+
+                    coalesce(
+                        p."首日付费金额",
+                        0
+                    ) AS "首日付费金额"
 
                 FROM
                 (
@@ -156,16 +272,35 @@ FROM
                     FROM
                     (
                         SELECT
-                            cast(u0."#account_id" AS varchar) AS "#account_id",
-                            date(u0."create_role_time") AS "新增日期",
-                            cast(date(u0."create_role_time") AS varchar) AS "$part_date"
+                            cast(
+                                u0."#account_id"
+                                AS varchar
+                            ) AS "#account_id",
+
+                            date(
+                                u0."create_role_time"
+                            ) AS "新增日期",
+
+                            cast(
+                                date(
+                                    u0."create_role_time"
+                                )
+                                AS varchar
+                            ) AS "$part_date"
 
                         FROM ta.v_user_41 u0
 
                         WHERE u0."domain" = 'release'
-                          AND u0."#account_id" IS NOT NULL
-                          AND u0."create_role_time" IS NOT NULL
-                          AND date(u0."create_role_time") < current_date
+
+                          AND u0."#account_id"
+                              IS NOT NULL
+
+                          AND u0."create_role_time"
+                              IS NOT NULL
+
+                          AND date(
+                                u0."create_role_time"
+                              ) < current_date
                     ) u1
 
                     WHERE ${PartDate:date1}
@@ -174,12 +309,21 @@ FROM
                 LEFT JOIN
                 (
                     SELECT
-                        cast(p0."#account_id" AS varchar) AS "#account_id",
-                        date(p0."#event_time") AS "付费日期",
+                        cast(
+                            p0."#account_id"
+                            AS varchar
+                        ) AS "#account_id",
+
+                        date(
+                            p0."#event_time"
+                        ) AS "付费日期",
 
                         sum(
                             coalesce(
-                                try_cast(p0."payment" AS double),
+                                try_cast(
+                                    p0."payment"
+                                    AS double
+                                ),
                                 0
                             )
                         ) / 100.0000 AS "首日付费金额"
@@ -188,41 +332,90 @@ FROM
 
                     WHERE p0."$part_event" = 'pay_log'
                       AND p0."domain" = 'release'
-                      AND p0."#account_id" IS NOT NULL
-                      AND coalesce(try_cast(p0."payment" AS double), 0) > 0
-                      AND date(p0."#event_time") < current_date
 
-                    GROUP BY 1, 2
+                      AND p0."#account_id"
+                          IS NOT NULL
+
+                      AND coalesce(
+                            try_cast(
+                                p0."payment"
+                                AS double
+                            ),
+                            0
+                          ) > 0
+
+                      AND date(
+                            p0."#event_time"
+                          ) < current_date
+
+                    GROUP BY
+                        1,
+                        2
                 ) p
-                    ON u."#account_id" = p."#account_id"
-                   AND u."新增日期" = p."付费日期"
+
+                    ON u."#account_id"
+                     = p."#account_id"
+
+                   AND u."新增日期"
+                     = p."付费日期"
             ) s
         ) c
-            ON cast(e."#account_id" AS varchar) = c."#account_id"
+
+            ON cast(
+                e."#account_id"
+                AS varchar
+            ) = c."#account_id"
 
         LEFT JOIN ta_dim.dim_41_0_16734 d
-            ON cast(e."change_reason" AS varchar)
-             = d."change_reason@change_reson"
+
+            ON cast(
+                e."change_reason"
+                AS varchar
+            ) = d."change_reason@change_reson"
 
         WHERE e."$part_event" = 'change_power_log'
           AND e."domain" = 'release'
-          AND e."#account_id" IS NOT NULL
-          AND try_cast(e."before" AS double) IS NOT NULL
-          AND try_cast(e."after" AS double) IS NOT NULL
-          AND date(e."#event_time") >= c."新增日期"
-          AND date(e."#event_time") < current_date
+
+          AND e."#account_id"
+              IS NOT NULL
+
+          AND try_cast(
+                e."before"
+                AS double
+              ) IS NOT NULL
+
+          AND try_cast(
+                e."after"
+                AS double
+              ) IS NOT NULL
+
+          AND date(
+                e."#event_time"
+              ) >= c."新增日期"
+
+          AND date(
+                e."#event_time"
+              ) < current_date
     ) t
 
-    GROUP BY
-        t."新增天数",
-        t."首日付费分层",
-        t."分层排序",
-        t."变化原因ID",
-        t."变化原因"
+    GROUP BY GROUPING SETS
+    (
+        (
+            t."新增天数",
+            t."首日付费分层",
+            t."分层排序",
+            t."变化原因ID",
+            t."变化原因"
+        ),
+        (
+            t."新增天数"
+        )
+    )
 ) q
 
 ORDER BY
     q."新增天数",
+    q."汇总排序",
     q."分层排序",
     q."正向战力提升" DESC,
     q."变化原因ID";
