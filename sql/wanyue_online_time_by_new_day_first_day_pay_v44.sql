@@ -454,6 +454,13 @@ FROM
 
             WHERE event_e."$part_event" = 'in_out_log'
               AND event_e."#account_id" IS NOT NULL
+              AND coalesce(
+                    try_cast(
+                        event_e."online_time"
+                        AS double
+                    ),
+                    0
+                  ) <= 86400
               AND date(event_e."$part_date")
                   BETWEEN event_range.min_create_date
                       AND event_range.max_event_date
