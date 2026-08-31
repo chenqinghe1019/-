@@ -274,7 +274,6 @@ FROM
 
                 WHERE pay_e."$part_event" = 'pay_log'
                   AND pay_e.${PartDate:date}
-                  AND pay_e."domain" = 'release'
                   AND pay_e."#account_id" IS NOT NULL
 
                   AND coalesce(
@@ -364,7 +363,6 @@ FROM
             ) event_range
 
             WHERE event_e."$part_event" = 'in_out_log'
-              AND event_e."domain" = 'release'
               AND event_e."#account_id" IS NOT NULL
 
               AND date(
