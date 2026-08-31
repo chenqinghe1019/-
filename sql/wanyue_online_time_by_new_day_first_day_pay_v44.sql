@@ -270,12 +270,68 @@ FROM
                             ),
                             0
                         )
-                    ) AS first_day_pay
+                    ) / 100.0000 AS first_day_pay
 
                 FROM ta.v_event_44 pay_e
 
+                CROSS JOIN
+                (
+                    SELECT
+                        min(pay_range_raw.create_date) AS min_create_date,
+                        max(pay_range_raw.create_date) AS max_create_date
+
+                    FROM
+                    (
+                        SELECT
+                            coalesce(
+                                date(
+                                    try_cast(
+                                        cast(pay_range_v."create_role_time" AS varchar)
+                                        AS timestamp
+                                    )
+                                ),
+                                date(
+                                    from_unixtime(
+                                        try_cast(
+                                            cast(pay_range_v."create_role_time" AS varchar)
+                                            AS double
+                                        )
+                                    )
+                                )
+                            ) AS create_date,
+
+                            cast(
+                                coalesce(
+                                    date(
+                                        try_cast(
+                                            cast(pay_range_v."create_role_time" AS varchar)
+                                            AS timestamp
+                                        )
+                                    ),
+                                    date(
+                                        from_unixtime(
+                                            try_cast(
+                                                cast(pay_range_v."create_role_time" AS varchar)
+                                                AS double
+                                            )
+                                        )
+                                    )
+                                )
+                                AS varchar
+                            ) AS "$part_date"
+
+                        FROM ta.v_user_44 pay_range_v
+
+                        WHERE pay_range_v."domain" = 'release'
+                          AND pay_range_v."#account_id" IS NOT NULL
+                          AND pay_range_v."create_role_time" IS NOT NULL
+                    ) pay_range_raw
+
+                    WHERE pay_range_raw.create_date IS NOT NULL
+                      AND pay_range_raw.${PartDate:date}
+                ) pay_range
+
                 WHERE pay_e."$part_event" = 'pay_log'
-                  AND pay_e.${PartDate:date}
                   AND pay_e."#account_id" IS NOT NULL
                   AND coalesce(
                         try_cast(
@@ -284,6 +340,12 @@ FROM
                         ),
                         0
                       ) > 0
+                  AND date(pay_e."$part_date")
+                      BETWEEN pay_range.min_create_date
+                          AND pay_range.max_create_date
+                  AND date(pay_e."#event_time")
+                      BETWEEN pay_range.min_create_date
+                          AND pay_range.max_create_date
 
                 GROUP BY
                     cast(
@@ -393,6 +455,9 @@ FROM
             WHERE event_e."$part_event" = 'in_out_log'
               AND event_e."#account_id" IS NOT NULL
               AND date(event_e."$part_date")
+                  BETWEEN event_range.min_create_date
+                      AND event_range.max_event_date
+              AND date(event_e."#event_time")
                   BETWEEN event_range.min_create_date
                       AND event_range.max_event_date
 
