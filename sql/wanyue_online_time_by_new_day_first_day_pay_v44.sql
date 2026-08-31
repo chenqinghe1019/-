@@ -44,7 +44,9 @@ FROM
 
         p.day_num AS "天数排序",
 
-        count(DISTINCT p."#account_id") AS "新增玩家数",
+        count(
+            DISTINCT p."#account_id"
+        ) AS "新增玩家数",
 
         count(
             DISTINCT CASE
@@ -195,14 +197,47 @@ FROM
                 FROM
                 (
                     SELECT
-                        date(v."create_role_time") AS create_date,
+                        coalesce(
+                            date(
+                                try_cast(
+                                    cast(v."create_role_time" AS varchar)
+                                    AS timestamp
+                                )
+                            ),
+                            date(
+                                from_unixtime(
+                                    try_cast(
+                                        cast(v."create_role_time" AS varchar)
+                                        AS double
+                                    )
+                                )
+                            )
+                        ) AS create_date,
 
                         cast(
-                            date(v."create_role_time")
+                            coalesce(
+                                date(
+                                    try_cast(
+                                        cast(v."create_role_time" AS varchar)
+                                        AS timestamp
+                                    )
+                                ),
+                                date(
+                                    from_unixtime(
+                                        try_cast(
+                                            cast(v."create_role_time" AS varchar)
+                                            AS double
+                                        )
+                                    )
+                                )
+                            )
                             AS varchar
                         ) AS "$part_date",
 
-                        cast(v."#account_id" AS varchar) AS "#account_id"
+                        cast(
+                            v."#account_id"
+                            AS varchar
+                        ) AS "#account_id"
 
                     FROM ta.v_user_44 v
 
@@ -211,18 +246,28 @@ FROM
                       AND v."create_role_time" IS NOT NULL
                 ) user_raw
 
-                WHERE user_raw.${PartDate:date}
+                WHERE user_raw.create_date IS NOT NULL
+                  AND user_raw.${PartDate:date}
             ) u
 
             LEFT JOIN
             (
                 SELECT
-                    cast(pay_e."#account_id" AS varchar) AS "#account_id",
-                    date(pay_e."#event_time") AS pay_date,
+                    cast(
+                        pay_e."#account_id"
+                        AS varchar
+                    ) AS "#account_id",
+
+                    date(
+                        pay_e."#event_time"
+                    ) AS pay_date,
 
                     sum(
                         coalesce(
-                            try_cast(pay_e."payment" AS double),
+                            try_cast(
+                                pay_e."payment"
+                                AS double
+                            ),
                             0
                         )
                     ) AS first_day_pay
@@ -233,13 +278,21 @@ FROM
                   AND pay_e.${PartDate:date}
                   AND pay_e."#account_id" IS NOT NULL
                   AND coalesce(
-                        try_cast(pay_e."payment" AS double),
+                        try_cast(
+                            pay_e."payment"
+                            AS double
+                        ),
                         0
                       ) > 0
 
                 GROUP BY
-                    cast(pay_e."#account_id" AS varchar),
-                    date(pay_e."#event_time")
+                    cast(
+                        pay_e."#account_id"
+                        AS varchar
+                    ),
+                    date(
+                        pay_e."#event_time"
+                    )
             ) fp
                 ON u."#account_id" = fp."#account_id"
                AND u.create_date = fp.pay_date
@@ -252,13 +305,23 @@ FROM
         LEFT JOIN
         (
             SELECT
-                cast(event_e."#account_id" AS varchar) AS "#account_id",
-                date(event_e."#event_time") AS event_date,
+                cast(
+                    event_e."#account_id"
+                    AS varchar
+                ) AS "#account_id",
+
+                date(
+                    event_e."#event_time"
+                ) AS event_date,
+
                 1 AS is_active,
 
                 sum(
                     coalesce(
-                        try_cast(event_e."online_time" AS double),
+                        try_cast(
+                            event_e."online_time"
+                            AS double
+                        ),
                         0
                     )
                 ) / 60.0000 AS online_minutes
@@ -269,6 +332,7 @@ FROM
             (
                 SELECT
                     min(range_raw.create_date) AS min_create_date,
+
                     date_add(
                         'day',
                         13,
@@ -278,10 +342,40 @@ FROM
                 FROM
                 (
                     SELECT
-                        date(range_v."create_role_time") AS create_date,
+                        coalesce(
+                            date(
+                                try_cast(
+                                    cast(range_v."create_role_time" AS varchar)
+                                    AS timestamp
+                                )
+                            ),
+                            date(
+                                from_unixtime(
+                                    try_cast(
+                                        cast(range_v."create_role_time" AS varchar)
+                                        AS double
+                                    )
+                                )
+                            )
+                        ) AS create_date,
 
                         cast(
-                            date(range_v."create_role_time")
+                            coalesce(
+                                date(
+                                    try_cast(
+                                        cast(range_v."create_role_time" AS varchar)
+                                        AS timestamp
+                                    )
+                                ),
+                                date(
+                                    from_unixtime(
+                                        try_cast(
+                                            cast(range_v."create_role_time" AS varchar)
+                                            AS double
+                                        )
+                                    )
+                                )
+                            )
                             AS varchar
                         ) AS "$part_date"
 
@@ -292,7 +386,8 @@ FROM
                       AND range_v."create_role_time" IS NOT NULL
                 ) range_raw
 
-                WHERE range_raw.${PartDate:date}
+                WHERE range_raw.create_date IS NOT NULL
+                  AND range_raw.${PartDate:date}
             ) event_range
 
             WHERE event_e."$part_event" = 'in_out_log'
@@ -302,8 +397,13 @@ FROM
                       AND event_range.max_event_date
 
             GROUP BY
-                cast(event_e."#account_id" AS varchar),
-                date(event_e."#event_time")
+                cast(
+                    event_e."#account_id"
+                    AS varchar
+                ),
+                date(
+                    event_e."#event_time"
+                )
         ) e
             ON c."#account_id" = e."#account_id"
            AND e.event_date = date_add(
@@ -338,7 +438,10 @@ FROM
 
 ORDER BY
     "日期排序",
-    try_cast("新增日期" AS date) DESC,
+    try_cast(
+        "新增日期"
+        AS date
+    ) DESC,
     "天数排序",
     "分层排序",
     "新增首日付费分层";
