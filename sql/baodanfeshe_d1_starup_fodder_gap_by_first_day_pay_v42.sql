@@ -420,13 +420,12 @@ FROM
 
                                         FROM ta.v_user_42 u
 
-                                        WHERE u."domain" = 'release'
-                                          AND u."#account_id" IS NOT NULL
+                                        WHERE u."#account_id" IS NOT NULL
                                           AND u."create_role_time" IS NOT NULL
                                     ) u0
 
                                     WHERE u0."新增日期" IS NOT NULL
-                                      AND u0."新增日期" < current_date
+                                      AND u0."新增日期" <= current_date
                                 ) u1
 
                                 WHERE ${PartDate:date1}
@@ -440,7 +439,6 @@ FROM
                                 ) = u."#account_id"
 
                                AND pay_e."$part_event" = 'pay_log'
-                               AND pay_e."domain" = 'release'
 
                                AND date(
                                     pay_e."$part_date"
@@ -467,7 +465,7 @@ FROM
                                 date_diff(
                                     'day',
                                     c."新增日期",
-                                    current_date - interval '1' day
+                                    current_date
                                 ) + 1
                                 AS integer
                             )
@@ -482,7 +480,6 @@ FROM
                         ) = c."#account_id"
 
                        AND e."$part_event" = 'role_obtain_log'
-                       AND e."domain" = 'release'
 
                        AND date(e."$part_date")
                            BETWEEN c."新增日期"
@@ -554,7 +551,6 @@ FROM
                     )
 
                     WHERE e."$part_event" = 'role_upstar_log'
-                      AND e."domain" = 'release'
                       AND e."#account_id" IS NOT NULL
                       AND e."cost_thing_list" IS NOT NULL
                 ) s
