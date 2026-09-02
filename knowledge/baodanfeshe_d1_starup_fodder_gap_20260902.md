@@ -12,6 +12,7 @@
 - 首日付费分层：`a_free`、`b_(0,6]`、`c_(6,30]`、`d_(30,100]`、`e_(100,300]`、`f_(300,500]`、`g_(500,1000]`、`h_(1000,+)`。
 - 英雄获得：`role_obtain_log`，核心字段 `ins_id / role_id / hero_name / init_star / init_quality / init_lv / op_type`。
 - 英雄升星：`role_upstar_log`，核心字段 `ins_id / role_id / hero_name / ostar / nstar / cost_thing_list`。
+- 线上字段已确认：`role_upstar_log.cost_thing_list` 的仓库类型是 `array(row(num double, name varchar, cid double))`，不是 JSON/varchar；SQL 必须直接 `UNNEST(cost_thing_list)`，并按 3 个字段别名展开，禁止 `cast(cost_thing_list as varchar)` 再 `json_parse`。
 
 ## 2026-09-02 上传 role 配置确认的紫色狗粮
 按用户定义：**紫色品质英雄全部视为狗粮**，并按阵营计算同阵营狗粮库存。
@@ -47,7 +48,7 @@
 1. 先按新增日期筛选 cohort；事件日期不跟随 `${PartDate:date1}` 截断。
 2. 对每个玩家生成从 D1 到当前已完整结束日期的每日统计节点。
 3. `role_obtain_log` 累计统计从新增日到该统计日为止，每个 `role_id` 的累计获得实例数。
-4. 解析 `role_upstar_log.cost_thing_list`，累计扣减从新增日到该统计日为止已经消耗的英雄实例。
+4. `role_upstar_log.cost_thing_list` 直接按 `array(row(num,name,cid))` UNNEST，累计扣减从新增日到该统计日为止已经消耗的英雄实例。
 5. 当前星级取从新增日到该统计日为止，同一玩家、同一 `role_id` 最后一次 `nstar`；没有升星记录则取 `init_star`。
 6. 某本体可用数量 = `累计剩余同名英雄实例数 - 1`，减去 1 是保留当前主英雄实例。
 7. 某阵营可用紫色狗粮 = 截至该统计日，该阵营全部紫色英雄“累计获得数量 - 累计升星消耗数量”的合计。
