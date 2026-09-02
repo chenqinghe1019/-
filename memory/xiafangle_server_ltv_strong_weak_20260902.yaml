@@ -1,0 +1,11 @@
+project: 下方了
+updated_at: '2026-09-02'
+topic: 强弱倍率服务器明细与LTV分析
+rules:
+  - 数数动态日期参数 ${PartDate:date} 用于筛选服务器开服日期，不再筛选玩家 create_role_time。
+  - 服务器开服时间优先取 ta.v_user_41.server_open_time（timestamp）。
+  - 服务器强弱倍率沿用 7日倍率 = D1-D7累计流水 / D1流水；<3 为弱倍率，>=3 为强倍率。
+  - D1-D7 仍按每个玩家自己的 create_role_time 计算，创角当天为 D1。
+  - 计算完整 LTV7 时，玩家需满足 date(create_role_time) <= date_add('day', -7, current_date)。
+  - pay_log.payment 单位为分，除以100转元；payment>0，不额外限制 pay_result。
+  - 当前付费留存口径沿用：Dn当日付费人数 / D1付费人数；若后续改为严格首日付费 cohort 再次付费，需要单独调整分子口径。
