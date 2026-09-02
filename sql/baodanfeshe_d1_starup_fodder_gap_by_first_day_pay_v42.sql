@@ -532,44 +532,26 @@ FROM
                         ) AS "nstar",
 
                         trim(
-                            json_extract_scalar(
-                                x."消耗项",
-                                '$.name'
+                            cast(
+                                x."name"
+                                AS varchar
                             )
                         ) AS "消耗英雄名称",
 
                         coalesce(
-                            try_cast(
-                                json_extract_scalar(
-                                    x."消耗项",
-                                    '$.num'
-                                )
-                                AS double
-                            ),
+                            x."num",
                             0
                         ) AS "消耗数量"
 
                     FROM ta.v_event_42 e
 
                     CROSS JOIN UNNEST(
-                        coalesce(
-                            try(
-                                cast(
-                                    json_parse(
-                                        cast(
-                                            e."cost_thing_list"
-                                            AS varchar
-                                        )
-                                    )
-                                    AS array(json)
-                                )
-                            ),
-                            cast(
-                                array[]
-                                AS array(json)
-                            )
-                        )
-                    ) AS x("消耗项")
+                        e."cost_thing_list"
+                    ) AS x(
+                        "num",
+                        "name",
+                        "cid"
+                    )
 
                     WHERE e."$part_event" = 'role_upstar_log'
                       AND e."domain" = 'release'
