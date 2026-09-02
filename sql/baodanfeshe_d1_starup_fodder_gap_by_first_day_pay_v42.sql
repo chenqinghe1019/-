@@ -1,23 +1,21 @@
 SELECT
     row_number() OVER (
         ORDER BY
-            q."新增日期" DESC,
+            q."新增天数",
             q."分层排序",
             q."阵营排序",
             q."目标星级"
     ) AS "序号",
 
-    q."新增日期",
+    q."新增天数",
     q."首日付费分层",
     q."阵营",
     q."当前星级",
     q."目标星级",
     q."需要本体数",
     q."需要紫色狗粮数",
-
     q."本体足够玩家数",
     q."本体足够英雄数",
-
     q."本体足够但狗粮不足玩家数",
     q."本体足够但狗粮不足英雄数",
 
@@ -36,7 +34,7 @@ SELECT
 FROM
 (
     SELECT
-        t."新增日期",
+        t."新增天数",
         t."首日付费分层",
         t."分层排序",
         t."阵营",
@@ -88,7 +86,7 @@ FROM
     (
         SELECT
             x."#account_id",
-            x."新增日期",
+            x."新增天数",
             x."首日付费分层",
             x."分层排序",
             x."role_id",
@@ -96,7 +94,6 @@ FROM
             x."阵营",
             x."阵营排序",
             x."当前星级",
-            x."剩余英雄数量",
 
             greatest(
                 x."剩余英雄数量" - 1,
@@ -113,7 +110,7 @@ FROM
         (
             SELECT
                 i."#account_id",
-                i."新增日期",
+                i."新增天数",
                 i."首日付费分层",
                 i."分层排序",
                 i."role_id",
@@ -133,6 +130,7 @@ FROM
                 ) OVER (
                     PARTITION BY
                         i."#account_id",
+                        i."新增天数",
                         i."阵营"
                 ) AS "可用紫色狗粮数"
 
@@ -140,9 +138,11 @@ FROM
             (
                 SELECT
                     o."#account_id",
+                    o."新增日期",
+                    o."新增天数",
+                    o."统计日期",
                     o."首日付费分层",
                     o."分层排序",
-                    o."新增日期",
                     o."role_id",
                     o."英雄名称",
                     o."英雄类型",
@@ -150,13 +150,32 @@ FROM
                     o."阵营排序",
 
                     coalesce(
-                        s."当前星级",
+                        max_by(
+                            CASE
+                                WHEN s."role_id" = o."role_id"
+                                    THEN s."nstar"
+                            END,
+                            CASE
+                                WHEN s."role_id" = o."role_id"
+                                    THEN s."#event_time"
+                            END
+                        ),
                         o."初始星级"
                     ) AS "当前星级",
 
                     greatest(
                         o."获得数量"
-                        - coalesce(c."升星消耗数量", 0),
+                        -
+                        coalesce(
+                            sum(
+                                CASE
+                                    WHEN s."消耗英雄名称" = o."英雄名称"
+                                        THEN s."消耗数量"
+                                    ELSE 0
+                                END
+                            ),
+                            0
+                        ),
                         0
                     ) AS "剩余英雄数量"
 
@@ -165,6 +184,14 @@ FROM
                     SELECT
                         c."#account_id",
                         c."新增日期",
+                        d."新增天数",
+
+                        date_add(
+                            'day',
+                            d."新增天数" - 1,
+                            c."新增日期"
+                        ) AS "统计日期",
+
                         c."首日付费分层",
                         c."分层排序",
 
@@ -289,9 +316,7 @@ FROM
 
                         count(*) AS "获得数量"
 
-                    FROM ta.v_event_42 e
-
-                    INNER JOIN
+                    FROM
                     (
                         SELECT
                             p."#account_id",
@@ -301,25 +326,18 @@ FROM
                             CASE
                                 WHEN p."首日付费金额" = 0
                                     THEN 'a_free'
-
                                 WHEN p."首日付费金额" <= 6
                                     THEN 'b_(0,6]'
-
                                 WHEN p."首日付费金额" <= 30
                                     THEN 'c_(6,30]'
-
                                 WHEN p."首日付费金额" <= 100
                                     THEN 'd_(30,100]'
-
                                 WHEN p."首日付费金额" <= 300
                                     THEN 'e_(100,300]'
-
                                 WHEN p."首日付费金额" <= 500
                                     THEN 'f_(300,500]'
-
                                 WHEN p."首日付费金额" <= 1000
                                     THEN 'g_(500,1000]'
-
                                 ELSE 'h_(1000,+)'
                             END AS "首日付费分层",
 
@@ -362,6 +380,7 @@ FROM
                                     SELECT
                                         u0."#account_id",
                                         u0."新增日期",
+
                                         cast(
                                             u0."新增日期"
                                             AS varchar
@@ -423,7 +442,9 @@ FROM
                                AND pay_e."$part_event" = 'pay_log'
                                AND pay_e."domain" = 'release'
 
-                               AND date(pay_e."$part_date") = u."新增日期"
+                               AND date(
+                                    pay_e."$part_date"
+                                   ) = u."新增日期"
 
                                AND coalesce(
                                     try_cast(
@@ -439,21 +460,45 @@ FROM
                         ) p
                     ) c
 
+                    CROSS JOIN UNNEST(
+                        sequence(
+                            1,
+                            cast(
+                                date_diff(
+                                    'day',
+                                    c."新增日期",
+                                    current_date - interval '1' day
+                                ) + 1
+                                AS integer
+                            )
+                        )
+                    ) AS d("新增天数")
+
+                    INNER JOIN ta.v_event_42 e
+
                         ON cast(
                             e."#account_id"
                             AS varchar
                         ) = c."#account_id"
 
-                       AND date(e."$part_date") = c."新增日期"
+                       AND e."$part_event" = 'role_obtain_log'
+                       AND e."domain" = 'release'
 
-                    WHERE e."$part_event" = 'role_obtain_log'
-                      AND e."domain" = 'release'
-                      AND e."#account_id" IS NOT NULL
+                       AND date(e."$part_date")
+                           BETWEEN c."新增日期"
+                               AND date_add(
+                                    'day',
+                                    d."新增天数" - 1,
+                                    c."新增日期"
+                                   )
+
+                    WHERE e."#account_id" IS NOT NULL
                       AND e."role_id" IS NOT NULL
 
                     GROUP BY
                         c."#account_id",
                         c."新增日期",
+                        d."新增天数",
                         c."首日付费分层",
                         c."分层排序",
                         try_cast(
@@ -470,27 +515,39 @@ FROM
                             AS varchar
                         ) AS "#account_id",
 
-                        date(e."$part_date") AS "事件日期",
+                        date(
+                            e."$part_date"
+                        ) AS "事件日期",
+
+                        e."#event_time",
+
+                        try_cast(
+                            e."role_id"
+                            AS bigint
+                        ) AS "role_id",
+
+                        try_cast(
+                            e."nstar"
+                            AS bigint
+                        ) AS "nstar",
 
                         trim(
                             json_extract_scalar(
                                 x."消耗项",
                                 '$.name'
                             )
-                        ) AS "英雄名称",
+                        ) AS "消耗英雄名称",
 
-                        sum(
-                            coalesce(
-                                try_cast(
-                                    json_extract_scalar(
-                                        x."消耗项",
-                                        '$.num'
-                                    )
-                                    AS double
-                                ),
-                                0
-                            )
-                        ) AS "升星消耗数量"
+                        coalesce(
+                            try_cast(
+                                json_extract_scalar(
+                                    x."消耗项",
+                                    '$.num'
+                                )
+                                AS double
+                            ),
+                            0
+                        ) AS "消耗数量"
 
                     FROM ta.v_event_42 e
 
@@ -518,73 +575,28 @@ FROM
                       AND e."domain" = 'release'
                       AND e."#account_id" IS NOT NULL
                       AND e."cost_thing_list" IS NOT NULL
-                      AND ${PartDate:date1}
-
-                    GROUP BY
-                        cast(
-                            e."#account_id"
-                            AS varchar
-                        ),
-                        date(e."$part_date"),
-                        trim(
-                            json_extract_scalar(
-                                x."消耗项",
-                                '$.name'
-                            )
-                        )
-                ) c
-
-                    ON o."#account_id" = c."#account_id"
-                   AND o."新增日期" = c."事件日期"
-                   AND o."英雄名称" = c."英雄名称"
-
-                LEFT JOIN
-                (
-                    SELECT
-                        cast(
-                            e."#account_id"
-                            AS varchar
-                        ) AS "#account_id",
-
-                        date(e."$part_date") AS "事件日期",
-
-                        try_cast(
-                            e."role_id"
-                            AS bigint
-                        ) AS "role_id",
-
-                        max_by(
-                            try_cast(
-                                e."nstar"
-                                AS bigint
-                            ),
-                            e."#event_time"
-                        ) AS "当前星级"
-
-                    FROM ta.v_event_42 e
-
-                    WHERE e."$part_event" = 'role_upstar_log'
-                      AND e."domain" = 'release'
-                      AND e."#account_id" IS NOT NULL
-                      AND e."role_id" IS NOT NULL
-                      AND e."nstar" IS NOT NULL
-                      AND ${PartDate:date1}
-
-                    GROUP BY
-                        cast(
-                            e."#account_id"
-                            AS varchar
-                        ),
-                        date(e."$part_date"),
-                        try_cast(
-                            e."role_id"
-                            AS bigint
-                        )
                 ) s
 
                     ON o."#account_id" = s."#account_id"
-                   AND o."新增日期" = s."事件日期"
-                   AND o."role_id" = s."role_id"
+
+                   AND s."事件日期"
+                       BETWEEN o."新增日期"
+                           AND o."统计日期"
+
+                GROUP BY
+                    o."#account_id",
+                    o."新增日期",
+                    o."新增天数",
+                    o."统计日期",
+                    o."首日付费分层",
+                    o."分层排序",
+                    o."role_id",
+                    o."英雄名称",
+                    o."英雄类型",
+                    o."阵营",
+                    o."阵营排序",
+                    o."初始星级",
+                    o."获得数量"
             ) i
         ) x
 
@@ -622,7 +634,7 @@ FROM
     ) t
 
     GROUP BY
-        t."新增日期",
+        t."新增天数",
         t."首日付费分层",
         t."分层排序",
         t."阵营",
@@ -634,7 +646,7 @@ FROM
 ) q
 
 ORDER BY
-    q."新增日期" DESC,
+    q."新增天数",
     q."分层排序",
     q."阵营排序",
     q."目标星级";
