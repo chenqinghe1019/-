@@ -1,7 +1,7 @@
 project: 下方了
 project_code: xiafangle
 project_id: 41
-updated_at: '2026-08-25'
+updated_at: '2026-09-02'
 rule: region_group_log 跨服分组统计
 source_event: region_group_log
 fields:
@@ -27,5 +27,9 @@ sql_notes:
   - 输出增加活跃服务器ID列表，按数值升序聚合去重后的 region_id。
   - 活跃玩家按 #account_id 去重。
   - 活跃部落按区服内 clan_uid 去重后汇总，并剔除 NULL、空字符串和 '0'。
+  - 人均累计付费按昨日活跃玩家为分母；分子查询这些玩家截至昨日的历史全部 pay_log，payment/100，payment>0，不仅统计最近日期。
+  - 最近3天人均充值按昨日活跃玩家为分母，统计昨日、前日、大前日共3个自然日的 pay_log，payment/100，payment>0。
   - 区服平均战力采用区服等权口径：先按区服计算活跃玩家平均战力，再对同一跨服分组内各活跃区服的平均战力取算术平均。
   - 玩家昨日战力取 in_out_log 当天最后一条记录的 power，使用 max_by(power,#event_time)。
+  - 战力TOP1/TOP2/TOP3及P0/P25/P50/P75/P100均基于跨服分组内全部昨日活跃玩家的昨日最终战力计算，不按区服均值计算。
+  - 指标输出顺序：日期、跨服类型、分组ID、活跃区服数量、活跃服务器ID列表、活跃玩家数量、活跃部落数量、人均累计付费、最近3天人均充值、区服平均战力、TOP1战力、TOP2战力、TOP3战力、P0战力、P25战力、P50战力、P75战力、P100战力。
