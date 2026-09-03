@@ -56,6 +56,7 @@
 - `hero_get_log.hero_name` 在当前弯月数据中可能是英文/内部名称，不可直接当作最终中文展示名。
 - “具体卡”必须使用弯月勇者自身的 `hero_id -> 中文英雄名称` 配置映射；禁止借用下方了、暴弹飞射等其他项目英雄映射。
 - 在未确认弯月中文英雄配置表/完整映射前，不自行编造中文英雄名或维表名。
+- 旧版本曾有 `ta.v_config_hero_43`，但这不能推导出 v44 存在 `ta.v_config_hero_44`；同样禁止自行构造 `ta_ext.heroid_44` 等不存在的表。
 - 对应的本体足够人数、狗粮不足人数及占比均按具体卡拆分。
 
 对应 SQL：`sql/wanyue_starup_fodder_gap_by_new_day_first_day_pay_v44.sql`。
