@@ -1,0 +1,40 @@
+project: 暴弹飞射
+updated_at: '2026-09-03'
+metric_scope: 英雄出场率与胜率
+source_tables:
+  user: ta.v_user_42
+  event: ta.v_event_42
+battle_logic:
+  start_event: battle_start
+  result_event: battle_result
+  join_key:
+    - '#account_id'
+    - battle_uid
+  lineup_source: battle_start.battle_array
+  lineup_storage_observed: Array(varchar JSON)
+  hero_fields:
+    - hero_id
+    - hero_star
+    - hero_name
+  skip_rule: "battle_start 或 battle_result 任一事件 autoBattle='跳关' 时，整场从出场率与胜率统计中剔除"
+  win_rule: "lower(trim(cast(battle_result as varchar)))='true'"
+metrics:
+  appearance_battles: "英雄实际出现的 distinct battle_uid"
+  total_battles: "同分层、同新增后天数下，剔除跳关后的 distinct battle_uid"
+  appearance_rate: "appearance_battles / total_battles；不是英雄场次 / 所有英雄场次之和，后者仅代表阵容席位占比"
+  win_battles: "该英雄出场且 battle_result=true 的 distinct battle_uid"
+  win_rate: "win_battles / appearance_battles"
+current_dimensions:
+  - D7_total_payment_R
+  - days
+  - hero_id
+  - hero_star
+payment_logic:
+  unit: yuan
+  d7_window: "创角当天 D0 至 D6"
+filters:
+  event_date: '${PartDate:date1}'
+  cohort_create_date: '${PartDate:date2}'
+notes:
+  - "历史版本曾按首日付费分层；2026-09-03 当前专题沿用用户现有 SQL 的 D7 累充分层。"
+  - "battle_array 线上结构已验证不能按 Array(Row) 的 x.hero_id 读取，应 UNNEST 后按 JSON 提取 hero_id/hero_star。"
