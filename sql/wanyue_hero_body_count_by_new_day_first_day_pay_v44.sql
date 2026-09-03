@@ -5,7 +5,8 @@ SELECT
             q."分层排序",
             q."阵营排序",
             q."hero_id",
-            q."累计本体数量"
+            q."最终星级",
+            q."最终剩余本体数量"
     ) AS "序号",
 
     q."新增天数",
@@ -65,7 +66,8 @@ SELECT
     END AS "具体卡",
 
     q."阵营",
-    q."累计本体数量",
+    q."最终星级",
+    q."最终剩余本体数量",
     q."玩家数",
 
     round(
@@ -80,7 +82,7 @@ SELECT
             0
         ),
         4
-    ) AS "本体数量玩家占比"
+    ) AS "玩家占比"
 
 FROM
 (
@@ -92,313 +94,434 @@ FROM
         t."英雄名称",
         t."阵营",
         t."阵营排序",
-        t."累计本体数量",
+        t."最终星级",
+        t."最终剩余本体数量",
         count(DISTINCT t."#account_id") AS "玩家数"
 
     FROM
     (
         SELECT
-            c."#account_id",
-            c."新增日期",
-            d."新增天数",
-            c."首日付费分层",
-            c."分层排序",
+            g."#account_id",
+            g."新增日期",
+            g."新增天数",
+            g."统计日期",
+            g."首日付费分层",
+            g."分层排序",
+            g."hero_id",
+            g."英雄名称",
+            g."阵营",
+            g."阵营排序",
+            g."累计获得本体数量",
 
-            try_cast(
-                e."hero_id"
-                AS bigint
-            ) AS "hero_id",
-
-            max_by(
-                trim(
-                    cast(
-                        e."hero_name"
-                        AS varchar
-                    )
+            coalesce(
+                max_by(
+                    s."升星后星级",
+                    s."#event_time"
                 ),
-                e."#event_time"
-            ) AS "英雄名称",
+                g."获得星级"
+            ) AS "最终星级",
 
-            CASE
-                WHEN try_cast(e."hero_id" AS bigint) IN (
-                    100001,100002,100003,100004,100005,
-                    100016,100017,100023,100032,100033
-                ) THEN '火'
-
-                WHEN try_cast(e."hero_id" AS bigint) IN (
-                    100006,100007,100008,100009,100010,
-                    100018,100019,100024,100025,100030
-                ) THEN '水'
-
-                WHEN try_cast(e."hero_id" AS bigint) IN (
-                    100011,100012,100013,100014,100015,
-                    100020,100021,100022,100031,100034
-                ) THEN '风'
-
-                WHEN try_cast(e."hero_id" AS bigint) IN (
-                    100026,100028,
-                    100035,100036,100037,100038,100039,
-                    100045,100046
-                ) THEN '光'
-
-                WHEN try_cast(e."hero_id" AS bigint) IN (
-                    100027,100029,
-                    100040,100041,100042,100043,100044,
-                    100047,100048
-                ) THEN '暗'
-
-                ELSE '其他'
-            END AS "阵营",
-
-            CASE
-                WHEN try_cast(e."hero_id" AS bigint) IN (
-                    100001,100002,100003,100004,100005,
-                    100016,100017,100023,100032,100033
-                ) THEN 1
-
-                WHEN try_cast(e."hero_id" AS bigint) IN (
-                    100006,100007,100008,100009,100010,
-                    100018,100019,100024,100025,100030
-                ) THEN 2
-
-                WHEN try_cast(e."hero_id" AS bigint) IN (
-                    100011,100012,100013,100014,100015,
-                    100020,100021,100022,100031,100034
-                ) THEN 3
-
-                WHEN try_cast(e."hero_id" AS bigint) IN (
-                    100026,100028,
-                    100035,100036,100037,100038,100039,
-                    100045,100046
-                ) THEN 4
-
-                WHEN try_cast(e."hero_id" AS bigint) IN (
-                    100027,100029,
-                    100040,100041,100042,100043,100044,
-                    100047,100048
-                ) THEN 5
-
-                ELSE 99
-            END AS "阵营排序",
-
-            cast(
-                round(
-                    coalesce(
-                        max_by(
-                            try_cast(
-                                e."hero_result"
-                                AS double
-                            ),
-                            e."#event_time"
-                        ),
-                        sum(
-                            coalesce(
-                                try_cast(
-                                    e."hero_num"
-                                    AS double
-                                ),
-                                1
-                            )
-                        )
-                    )
+            greatest(
+                g."累计获得本体数量"
+                - coalesce(
+                    sum(s."消耗本体数"),
+                    0
                 )
-                AS bigint
-            ) AS "累计本体数量"
+                - 1,
+                0
+            ) AS "最终剩余本体数量"
 
         FROM
         (
             SELECT
-                p."#account_id",
-                p."新增日期",
+                c."#account_id",
+                c."新增日期",
+                d."新增天数",
+
+                date_add(
+                    'day',
+                    d."新增天数" - 1,
+                    c."新增日期"
+                ) AS "统计日期",
+
+                c."首日付费分层",
+                c."分层排序",
+
+                try_cast(
+                    e."hero_id"
+                    AS bigint
+                ) AS "hero_id",
+
+                max_by(
+                    trim(
+                        cast(
+                            e."hero_name"
+                            AS varchar
+                        )
+                    ),
+                    e."#event_time"
+                ) AS "英雄名称",
 
                 CASE
-                    WHEN p."首日付费金额" = 0
-                        THEN 'a_free'
-                    WHEN p."首日付费金额" <= 6
-                        THEN 'b_(0,6]'
-                    WHEN p."首日付费金额" <= 30
-                        THEN 'c_(6,30]'
-                    WHEN p."首日付费金额" <= 100
-                        THEN 'd_(30,100]'
-                    WHEN p."首日付费金额" <= 300
-                        THEN 'e_(100,300]'
-                    WHEN p."首日付费金额" <= 500
-                        THEN 'f_(300,500]'
-                    WHEN p."首日付费金额" <= 1000
-                        THEN 'g_(500,1000]'
-                    ELSE 'h_(1000,+)'
-                END AS "首日付费分层",
+                    WHEN try_cast(e."hero_id" AS bigint) IN (
+                        100001,100002,100003,100004,100005,
+                        100016,100017,100023,100032,100033
+                    ) THEN '火'
+
+                    WHEN try_cast(e."hero_id" AS bigint) IN (
+                        100006,100007,100008,100009,100010,
+                        100018,100019,100024,100025,100030
+                    ) THEN '水'
+
+                    WHEN try_cast(e."hero_id" AS bigint) IN (
+                        100011,100012,100013,100014,100015,
+                        100020,100021,100022,100031,100034
+                    ) THEN '风'
+
+                    WHEN try_cast(e."hero_id" AS bigint) IN (
+                        100026,100028,
+                        100035,100036,100037,100038,100039,
+                        100045,100046
+                    ) THEN '光'
+
+                    WHEN try_cast(e."hero_id" AS bigint) IN (
+                        100027,100029,
+                        100040,100041,100042,100043,100044,
+                        100047,100048
+                    ) THEN '暗'
+
+                    ELSE '其他'
+                END AS "阵营",
 
                 CASE
-                    WHEN p."首日付费金额" = 0 THEN 1
-                    WHEN p."首日付费金额" <= 6 THEN 2
-                    WHEN p."首日付费金额" <= 30 THEN 3
-                    WHEN p."首日付费金额" <= 100 THEN 4
-                    WHEN p."首日付费金额" <= 300 THEN 5
-                    WHEN p."首日付费金额" <= 500 THEN 6
-                    WHEN p."首日付费金额" <= 1000 THEN 7
-                    ELSE 8
-                END AS "分层排序"
+                    WHEN try_cast(e."hero_id" AS bigint) IN (
+                        100001,100002,100003,100004,100005,
+                        100016,100017,100023,100032,100033
+                    ) THEN 1
+
+                    WHEN try_cast(e."hero_id" AS bigint) IN (
+                        100006,100007,100008,100009,100010,
+                        100018,100019,100024,100025,100030
+                    ) THEN 2
+
+                    WHEN try_cast(e."hero_id" AS bigint) IN (
+                        100011,100012,100013,100014,100015,
+                        100020,100021,100022,100031,100034
+                    ) THEN 3
+
+                    WHEN try_cast(e."hero_id" AS bigint) IN (
+                        100026,100028,
+                        100035,100036,100037,100038,100039,
+                        100045,100046
+                    ) THEN 4
+
+                    WHEN try_cast(e."hero_id" AS bigint) IN (
+                        100027,100029,
+                        100040,100041,100042,100043,100044,
+                        100047,100048
+                    ) THEN 5
+
+                    ELSE 99
+                END AS "阵营排序",
+
+                max_by(
+                    try_cast(
+                        e."star"
+                        AS bigint
+                    ),
+                    e."#event_time"
+                ) AS "获得星级",
+
+                cast(
+                    round(
+                        coalesce(
+                            max_by(
+                                try_cast(
+                                    e."hero_result"
+                                    AS double
+                                ),
+                                e."#event_time"
+                            ),
+                            sum(
+                                coalesce(
+                                    try_cast(
+                                        e."hero_num"
+                                        AS double
+                                    ),
+                                    1
+                                )
+                            )
+                        )
+                    )
+                    AS bigint
+                ) AS "累计获得本体数量"
 
             FROM
             (
                 SELECT
-                    u."#account_id",
-                    u."新增日期",
+                    p."#account_id",
+                    p."新增日期",
 
-                    sum(
-                        coalesce(
-                            try_cast(
-                                pay_e."payment"
-                                AS double
-                            ),
-                            0
-                        )
-                    ) / 100.0000 AS "首日付费金额"
+                    CASE
+                        WHEN p."首日付费金额" = 0
+                            THEN 'a_free'
+                        WHEN p."首日付费金额" <= 6
+                            THEN 'b_(0,6]'
+                        WHEN p."首日付费金额" <= 30
+                            THEN 'c_(6,30]'
+                        WHEN p."首日付费金额" <= 100
+                            THEN 'd_(30,100]'
+                        WHEN p."首日付费金额" <= 300
+                            THEN 'e_(100,300]'
+                        WHEN p."首日付费金额" <= 500
+                            THEN 'f_(300,500]'
+                        WHEN p."首日付费金额" <= 1000
+                            THEN 'g_(500,1000]'
+                        ELSE 'h_(1000,+)'
+                    END AS "首日付费分层",
+
+                    CASE
+                        WHEN p."首日付费金额" = 0 THEN 1
+                        WHEN p."首日付费金额" <= 6 THEN 2
+                        WHEN p."首日付费金额" <= 30 THEN 3
+                        WHEN p."首日付费金额" <= 100 THEN 4
+                        WHEN p."首日付费金额" <= 300 THEN 5
+                        WHEN p."首日付费金额" <= 500 THEN 6
+                        WHEN p."首日付费金额" <= 1000 THEN 7
+                        ELSE 8
+                    END AS "分层排序"
 
                 FROM
                 (
                     SELECT
-                        u1."#account_id",
-                        u1."新增日期",
-                        u1."$part_date"
+                        u."#account_id",
+                        u."新增日期",
+
+                        sum(
+                            coalesce(
+                                try_cast(
+                                    pay_e."payment"
+                                    AS double
+                                ),
+                                0
+                            )
+                        ) / 100.0000 AS "首日付费金额"
 
                     FROM
                     (
                         SELECT
-                            u0."#account_id",
-                            u0."新增日期",
-                            cast(
-                                u0."新增日期"
-                                AS varchar
-                            ) AS "$part_date"
+                            u1."#account_id",
+                            u1."新增日期",
+                            u1."$part_date"
 
                         FROM
                         (
                             SELECT
-                                cast(
-                                    v."#account_id"
-                                    AS varchar
-                                ) AS "#account_id",
+                                u0."#account_id",
+                                u0."新增日期",
 
-                                coalesce(
-                                    date(
-                                        try_cast(
-                                            cast(
-                                                v."create_role_time"
-                                                AS varchar
-                                            )
-                                            AS timestamp
-                                        )
-                                    ),
-                                    date(
-                                        from_unixtime(
+                                cast(
+                                    u0."新增日期"
+                                    AS varchar
+                                ) AS "$part_date"
+
+                            FROM
+                            (
+                                SELECT
+                                    cast(
+                                        v."#account_id"
+                                        AS varchar
+                                    ) AS "#account_id",
+
+                                    coalesce(
+                                        date(
                                             try_cast(
                                                 cast(
                                                     v."create_role_time"
                                                     AS varchar
                                                 )
-                                                AS double
+                                                AS timestamp
+                                            )
+                                        ),
+                                        date(
+                                            from_unixtime(
+                                                try_cast(
+                                                    cast(
+                                                        v."create_role_time"
+                                                        AS varchar
+                                                    )
+                                                    AS double
+                                                )
                                             )
                                         )
-                                    )
-                                ) AS "新增日期"
+                                    ) AS "新增日期"
 
-                            FROM ta.v_user_44 v
+                                FROM ta.v_user_44 v
 
-                            WHERE v."#account_id" IS NOT NULL
-                              AND v."create_role_time" IS NOT NULL
-                        ) u0
+                                WHERE v."#account_id" IS NOT NULL
+                                  AND v."create_role_time" IS NOT NULL
+                            ) u0
 
-                        WHERE u0."新增日期" IS NOT NULL
-                          AND u0."新增日期" <= current_date
-                    ) u1
+                            WHERE u0."新增日期" IS NOT NULL
+                              AND u0."新增日期" <= current_date
+                        ) u1
 
-                    WHERE ${PartDate:date1}
-                ) u
+                        WHERE ${PartDate:date1}
+                    ) u
 
-                LEFT JOIN ta.v_event_44 pay_e
-                    ON cast(
-                        pay_e."#account_id"
-                        AS varchar
-                    ) = u."#account_id"
+                    LEFT JOIN ta.v_event_44 pay_e
+                        ON cast(
+                            pay_e."#account_id"
+                            AS varchar
+                        ) = u."#account_id"
 
-                   AND pay_e."$part_event" = 'pay_log'
-                   AND date(pay_e."#event_time") = u."新增日期"
-                   AND coalesce(
-                        try_cast(
-                            pay_e."payment"
-                            AS double
-                        ),
-                        0
-                       ) > 0
+                       AND pay_e."$part_event" = 'pay_log'
+                       AND date(pay_e."#event_time") = u."新增日期"
+                       AND coalesce(
+                            try_cast(
+                                pay_e."payment"
+                                AS double
+                            ),
+                            0
+                           ) > 0
 
-                GROUP BY
-                    u."#account_id",
-                    u."新增日期"
-            ) p
-        ) c
+                    GROUP BY
+                        u."#account_id",
+                        u."新增日期"
+                ) p
+            ) c
 
-        CROSS JOIN UNNEST(
-            sequence(
-                1,
-                cast(
-                    date_diff(
-                        'day',
-                        c."新增日期",
-                        current_date
-                    ) + 1
-                    AS integer
+            CROSS JOIN UNNEST(
+                sequence(
+                    1,
+                    cast(
+                        date_diff(
+                            'day',
+                            c."新增日期",
+                            current_date
+                        ) + 1
+                        AS integer
+                    )
                 )
-            )
-        ) AS d("新增天数")
+            ) AS d("新增天数")
 
-        INNER JOIN ta.v_event_44 e
-            ON cast(
-                e."#account_id"
-                AS varchar
-            ) = c."#account_id"
+            INNER JOIN ta.v_event_44 e
+                ON cast(
+                    e."#account_id"
+                    AS varchar
+                ) = c."#account_id"
 
-           AND e."$part_event" = 'hero_get_log'
+               AND e."$part_event" = 'hero_get_log'
 
-           AND date(e."#event_time")
-               BETWEEN c."新增日期"
-                   AND date_add(
-                        'day',
-                        d."新增天数" - 1,
-                        c."新增日期"
-                       )
+               AND date(e."#event_time")
+                   BETWEEN c."新增日期"
+                       AND date_add(
+                            'day',
+                            d."新增天数" - 1,
+                            c."新增日期"
+                           )
 
-        WHERE e."hero_id" IS NOT NULL
-          AND try_cast(e."hero_id" AS bigint)
-              BETWEEN 100001 AND 100048
+            WHERE e."hero_id" IS NOT NULL
+              AND try_cast(e."hero_id" AS bigint)
+                  BETWEEN 100001 AND 100048
 
-          AND try_cast(e."hero_id" AS bigint) NOT IN (
-                100004,100005,
-                100009,100010,
-                100014,100015,
-                100038,100039,
-                100043,100044,
-                100016,100017,
-                100018,100019,
-                100020,100021,
-                100045,100046,
-                100047,100048
-          )
+              AND try_cast(e."hero_id" AS bigint) NOT IN (
+                    100004,100005,
+                    100009,100010,
+                    100014,100015,
+                    100038,100039,
+                    100043,100044,
+                    100016,100017,
+                    100018,100019,
+                    100020,100021,
+                    100045,100046,
+                    100047,100048
+              )
+
+            GROUP BY
+                c."#account_id",
+                c."新增日期",
+                d."新增天数",
+                c."首日付费分层",
+                c."分层排序",
+                try_cast(
+                    e."hero_id"
+                    AS bigint
+                )
+        ) g
+
+        LEFT JOIN
+        (
+            SELECT
+                cast(
+                    e."#account_id"
+                    AS varchar
+                ) AS "#account_id",
+
+                date(
+                    e."#event_time"
+                ) AS "事件日期",
+
+                e."#event_time",
+
+                try_cast(
+                    e."hero_id"
+                    AS bigint
+                ) AS "hero_id",
+
+                try_cast(
+                    e."star_after"
+                    AS bigint
+                ) AS "升星后星级",
+
+                CASE try_cast(
+                    e."star_after"
+                    AS bigint
+                )
+                    WHEN 6  THEN 1
+                    WHEN 7  THEN 0
+                    WHEN 8  THEN 1
+                    WHEN 9  THEN 1
+                    WHEN 10 THEN 2
+                    WHEN 11 THEN 2
+                    WHEN 12 THEN 3
+                    WHEN 14 THEN 4
+                    WHEN 15 THEN 5
+                    ELSE 0
+                END AS "消耗本体数"
+
+            FROM ta.v_event_44 e
+
+            WHERE e."$part_event" = 'hero_star_up_log'
+              AND e."#account_id" IS NOT NULL
+              AND e."hero_id" IS NOT NULL
+              AND e."star_after" IS NOT NULL
+        ) s
+
+            ON g."#account_id" = s."#account_id"
+           AND g."hero_id" = s."hero_id"
+
+           AND s."事件日期"
+               BETWEEN g."新增日期"
+                   AND g."统计日期"
 
         GROUP BY
-            c."#account_id",
-            c."新增日期",
-            d."新增天数",
-            c."首日付费分层",
-            c."分层排序",
-            try_cast(
-                e."hero_id"
-                AS bigint
-            )
+            g."#account_id",
+            g."新增日期",
+            g."新增天数",
+            g."统计日期",
+            g."首日付费分层",
+            g."分层排序",
+            g."hero_id",
+            g."英雄名称",
+            g."阵营",
+            g."阵营排序",
+            g."获得星级",
+            g."累计获得本体数量"
     ) t
 
-    WHERE t."累计本体数量" IS NOT NULL
+    WHERE t."累计获得本体数量" IS NOT NULL
+      AND t."最终星级" IS NOT NULL
 
     GROUP BY
         t."新增天数",
@@ -408,7 +531,8 @@ FROM
         t."英雄名称",
         t."阵营",
         t."阵营排序",
-        t."累计本体数量"
+        t."最终星级",
+        t."最终剩余本体数量"
 ) q
 
 ORDER BY
@@ -416,4 +540,5 @@ ORDER BY
     q."分层排序",
     q."阵营排序",
     q."hero_id",
-    q."累计本体数量";
+    q."最终星级",
+    q."最终剩余本体数量";
