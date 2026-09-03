@@ -4,11 +4,14 @@ SELECT
             q."新增天数",
             q."分层排序",
             q."阵营排序",
+            q."hero_id",
             q."目标星级"
     ) AS "序号",
 
     q."新增天数",
     q."首日付费分层",
+    q."hero_id" AS "英雄ID",
+    q."英雄名称" AS "具体卡",
     q."阵营",
     q."当前星级",
     q."目标星级",
@@ -37,6 +40,8 @@ FROM
         t."新增天数",
         t."首日付费分层",
         t."分层排序",
+        t."hero_id",
+        t."英雄名称",
         t."阵营",
         t."阵营排序",
         t."当前星级",
@@ -576,7 +581,10 @@ FROM
                             ELSE '其他'
                         END AS "阵营",
 
-                        CASE try_cast(e."star_after" AS bigint)
+                        CASE try_cast(
+                            e."star_after"
+                            AS bigint
+                        )
                             WHEN 6  THEN 1
                             WHEN 7  THEN 0
                             WHEN 8  THEN 1
@@ -589,7 +597,10 @@ FROM
                             ELSE 0
                         END AS "消耗本体数",
 
-                        CASE try_cast(e."star_after" AS bigint)
+                        CASE try_cast(
+                            e."star_after"
+                            AS bigint
+                        )
                             WHEN 6  THEN 0
                             WHEN 7  THEN 3
                             WHEN 8  THEN 3
@@ -609,6 +620,7 @@ FROM
                       AND e."hero_id" IS NOT NULL
                       AND e."star_after" IS NOT NULL
                 ) s
+
                     ON g."#account_id" = s."#account_id"
                    AND g."阵营" = s."阵营"
                    AND s."事件日期"
@@ -668,6 +680,8 @@ FROM
         t."新增天数",
         t."首日付费分层",
         t."分层排序",
+        t."hero_id",
+        t."英雄名称",
         t."阵营",
         t."阵营排序",
         t."当前星级",
@@ -680,4 +694,5 @@ ORDER BY
     q."新增天数",
     q."分层排序",
     q."阵营排序",
+    q."hero_id",
     q."目标星级";
