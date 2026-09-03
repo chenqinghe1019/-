@@ -16,6 +16,14 @@ battle_logic:
     - hero_id
     - hero_star
     - hero_name
+  hero_name_normalization:
+    purpose: "统一策划截图/口头昵称与数仓 hero_name"
+    mappings:
+      - aliases: ['兔子']
+        warehouse_name: '瑞贝特'
+      - aliases: ['KP8I','KP8L']
+        warehouse_name: 'KP-8-L'
+    sql_rule: "CASE WHEN hero_name IN ('兔子','瑞贝特') THEN '瑞贝特' WHEN hero_name IN ('KP8I','KP8L','KP-8-L') THEN 'KP-8-L' ELSE hero_name END"
   skip_rule: "battle_start 或 battle_result 任一事件 autoBattle='跳关' 时，整场从出场率与胜率统计中剔除"
   win_rule: "lower(trim(cast(battle_result as varchar)))='true'"
 metrics:
@@ -28,6 +36,7 @@ current_dimensions:
   - D7_total_payment_R
   - days
   - hero_id
+  - hero_name
   - hero_star
 payment_logic:
   unit: yuan
@@ -37,4 +46,4 @@ filters:
   cohort_create_date: '${PartDate:date2}'
 notes:
   - "历史版本曾按首日付费分层；2026-09-03 当前专题沿用用户现有 SQL 的 D7 累充分层。"
-  - "battle_array 线上结构已验证不能按 Array(Row) 的 x.hero_id 读取，应 UNNEST 后按 JSON 提取 hero_id/hero_star。"
+  - "battle_array 线上结构已验证不能按 Array(Row) 的 x.hero_id 读取，应 UNNEST 后按 JSON 提取 hero_id/hero_star/hero_name。"
