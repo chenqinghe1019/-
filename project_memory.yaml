@@ -8,7 +8,7 @@ project_memory:
     rule: "同一项目的新对话可能不会完整继承上一段对话的全部细节；因此可复用口径、字段、SQL规范、用户偏好需要沉淀到 GitHub 知识库。"
   user_preferences:
     - "SQL 需求默认直接给最终完整 SQL，不要只给替换片段，除非用户明确只要片段。"
-    - "涉及下方了 / 步步 / 暴弹飞射 / 萝卜4小游戏 / 弯月勇者 / v41 / v22 / v42 / v44 / 埋点字段 / item_log / money_log / battle_result 等项目口径，先查 GitHub 配置，再结合当前上传文件和上下文修改。"
+    - "涉及下方了 / 步步 / 暴弹飞射 / 萝卜4小游戏 / 弯月勇者 / 喵喵岛 / v41 / v22 / v42 / v44 / 埋点字段 / item_log / money_log / battle_result 等项目口径，先查 GitHub 配置，再结合当前上传文件和上下文修改。"
     - "字段不确定时必须说明不确定，并先查配置或让用户确认，不能直接编字段。"
     - "用户希望项目记忆点和口径调整同步到 GitHub，便于切换新对话后继续使用。"
     - "回答以高效、直接为主；SQL 修改完成后直接给可执行的最终版。"
@@ -134,6 +134,18 @@ project_memory:
         - "处理萝卜4需求时必须先读取 luobo4_tracking.yaml，不得套用下方了、暴弹飞射或步步项目事件名。"
         - "公共属性 sever、产消事件英文名与类型、用户 ID 模式均处于待确认状态，不得自行修正或推断。"
         - "ta.v_user_37 线上不存在 domain、create_role_time；新增日期按 ta.v_event_37 的 register 事件 $part_date 取，主线挑战按 level_start.level_id 取。"
+
+    miaomiaodao:
+      project_name: "喵喵岛"
+      status: "埋点方案阶段（proposal）"
+      tracking_directory: "游戏项目/喵喵岛/埋点规则"
+      battle:
+        start_event: "battle_start"
+        result_event: "battle_result"
+        tracking_scope: "对局仅记录开始与结算两个事件"
+      notes:
+        - "数数表后缀、用户表和事件表尚未确认，写 SQL 前必须先确认线上表结构。"
+        - "现有埋点方案与字典分别见 battle_tracking_proposal_20260825.yaml、tracking_dictionary_20260825.yaml。"
 
   tracking_design_rules:
     - "默认不上报入口、页面曝光、按钮曝光；仅在用户明确要求时增加。"
