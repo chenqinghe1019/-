@@ -48,3 +48,8 @@ tracking_projects:
     yaml: "luobo4_tracking.yaml"
   - project: "弯月勇者"
     yaml: "wanyue_tracking.yaml"
+
+  - project: "喵喵岛"
+    status: "proposal"
+    battle_tracking_yaml: "游戏项目/喵喵岛/埋点规则/battle_tracking_proposal_20260825.yaml"
+    tracking_dictionary_yaml: "游戏项目/喵喵岛/埋点规则/tracking_dictionary_20260825.yaml"
