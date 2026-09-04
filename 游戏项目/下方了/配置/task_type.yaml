@@ -1,6 +1,6 @@
 project: 下方了
 project_id: 41
-updated_at: '2026-08-17'
+updated_at: '2026-09-04'
 name: 任务类型配置
 status: active
 source: 用户提供任务类型枚举
@@ -11,6 +11,8 @@ field:
   value_type: integer
 
 enum:
+  1: 日常
+  2: 周常
   3: 成就任务
   4: 冒险任务
   5: 七日目标成长任务
@@ -34,6 +36,8 @@ enum:
 analysis_labels:
   note: 以下为分析侧整理标签，不属于服务端原始枚举字段
   values:
+    1: {module: 常驻, nature: 每日}
+    2: {module: 常驻, nature: 每周}
     3: {module: 常驻, nature: 成就}
     4: {module: 常驻, nature: 冒险}
     5: {module: 七日目标, nature: 成长}
@@ -56,6 +60,8 @@ analysis_labels:
 
 sql_case_reference: |
   CASE
+      WHEN task_type = 1 THEN '日常'
+      WHEN task_type = 2 THEN '周常'
       WHEN task_type = 3 THEN '成就任务'
       WHEN task_type = 4 THEN '冒险任务'
       WHEN task_type = 5 THEN '七日目标成长任务'
