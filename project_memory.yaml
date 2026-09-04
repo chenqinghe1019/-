@@ -39,6 +39,15 @@ project_memory:
       active_event: "in_out_log"
       payment: "pay_log.payment 单位为分，金额与首日付费分层前 /100 转元"
       first_day_payment: "只统计注册当天的 pay_log，不用查询区间累计付费代替"
+      battle_types:
+        1: "主线"
+        2: "日常副本"
+        3: "海盗探险"
+        4: "公会Boss"
+        5: "竞技场"
+        6: "古墓探秘"
+        7: "诡矿"
+        8: "合作试炼"
       mainline:
         battle_type: 1
         start_event: "battle_star"
